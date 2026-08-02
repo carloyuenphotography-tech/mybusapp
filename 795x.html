@@ -119,6 +119,35 @@
       gap: 6px;
     }
 
+    /* 🗺️ Google Maps 捷徑按鈕樣式 */
+    .map-btn-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .map-shortcut-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .map-shortcut-btn:active {
+      background: #d1fae5;
+    }
+
     .card {
       background: #ffffff;
       border-radius: 14px;
@@ -283,7 +312,7 @@
 
   <footer>
     <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.2.4 (795X)</div>
+    <div class="version-tag">版本 v1.2.5 (795X)</div>
   </footer>
 
   <script>
@@ -523,6 +552,19 @@
         ]);
 
         let htmlContent = '';
+
+        // 🗺️ 加入 Google Maps 路線導航捷徑區塊
+        htmlContent += `<div class="section-title">🗺️ Google Maps 路線導航捷徑</div>`;
+        htmlContent += `
+          <div class="map-btn-container">
+            <a href="https://www.google.com/maps/dir/?api=1&origin=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&destination=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&travelmode=transit" target="_blank" class="map-shortcut-btn">
+              📍 荔灣花園 ➔ 播道書院 (Google Maps 導航)
+            </a>
+            <a href="https://www.google.com/maps/dir/?api=1&origin=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&destination=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&travelmode=transit" target="_blank" class="map-shortcut-btn">
+              📍 播道書院 ➔ 荔灣花園 (Google Maps 導航)
+            </a>
+          </div>
+        `;
 
         if (mtrMeiFooToTkoHTML || mtrTkoToMeiFooHTML) {
           htmlContent += `<div class="section-title">🚀 港鐵跨綫預計到達時間</div>`;
