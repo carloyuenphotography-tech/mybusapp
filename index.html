@@ -3,12 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>我的專屬巴士站</title>
   
+  <!-- ✨ 設定 iPhone 主畫面預設顯示名稱 -->
+  <title>美孚巴士到站</title>
+  <meta name="apple-mobile-web-app-title" content="美孚巴士">
+
   <!-- 設定為 iOS / Android PWA 全螢幕模式 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我的專屬巴士站</title>
+  
   <style>
     * {
       box-sizing: border-box;
@@ -201,7 +207,7 @@
 <body>
 
   <header>
-    <h1>🚌 實時巴士/小巴到站資訊</h1>
+    <h1>🚌 實時巴士/小巴資訊</h1>
     <div id="update-time" class="update-time">更新中...</div>
   </header>
 
@@ -226,6 +232,7 @@
     const LOCATIONS = {
       office: {
         title: "🏢 荔枝角巴士總站",
+        isTerminus: true, // 標記為總站（顯示「即將開出」）
         kmb_stops: [
           "75EF762BDAB6F5C3",
           "2F8E1900654BF56C",
@@ -240,6 +247,7 @@
       },
       home_bus: {
         title: "🚌 屋企樓下 (巴士)",
+        isTerminus: false,
         kmb_stops: ["37A4D07D7179CE76"],
         citybus_stops: [],
         gmb_routes: [],
@@ -247,9 +255,9 @@
       },
       home_gmb: {
         title: "🚐 屋企樓下 (小巴)",
+        isTerminus: false,
         kmb_stops: [],
         citybus_stops: [],
-        // 🟢 專線小巴路線 (包含去程與回程，自動抓取實際終點站)
         gmb_routes: [
           { route: "90M", route_id: "2004245", seq: 1, stop_seq: 1, defaultDest: "美孚站" },
           { route: "90P", route_id: "2004246", seq: 1, stop_seq: 1, defaultDest: "美孚站" },
@@ -330,14 +338,14 @@
           });
         });
 
-        // 3. 發送綠色小巴 API 請求 (讀取動態目的地)
+        // 3. 發送綠色小巴 API 請求
         const gmbPromises = (config.gmb_routes || []).map(item =>
           fetch(`https://data.eta.gov.hk/v1/transport/gmb/stop-eta/${item.route_id}/${item.seq}/${item.stop_seq}`)
             .then(res => res.json())
             .then(res => (res.data?.eta || []).map(bus => ({
               company: 'GMB',
               route: item.route,
-              dest_tc: bus.dest_tc || item.defaultDest || '目的地', // ✨ 動態顯示終點站
+              dest_tc: bus.dest_tc || item.defaultDest || '目的地',
               eta: bus.eta_date,
               rmk_tc: bus.remarks_tc || ''
             })))
@@ -364,7 +372,7 @@
         // 5. 按時間由近至遠排序
         filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
 
-        // 6. 按「路線-目的地」分組，最多保留最近 2 班（相同路線不同目的地會分開卡片顯示）
+        // 6. 按「路線-目的地」分組，最多保留最近 2 班
         const groupedByRoute = {};
 
         filteredList.forEach(item => {
@@ -387,7 +395,7 @@
         const routeKeys = Object.keys(groupedByRoute);
 
         if (routeKeys.length === 0) {
-          container.innerHTML = '<p class="loading">暫無小巴班次資料或已尾班車</p>';
+          container.innerHTML = '<p class="loading">暫無車輛班次資料或已尾班車</p>';
           updateTimestamp();
           return;
         }
@@ -401,7 +409,9 @@
 
         container.innerHTML = '';
 
-        // 7. 渲染卡片
+        // 7. 渲染卡片 (根據是否總站調整「即將開出」或「即將到站」)
+        const statusText = config.isTerminus ? '即將開出' : '即將到站';
+
         routeKeys.forEach(key => {
           const busList = groupedByRoute[key];
           const firstBus = busList[0];
@@ -411,14 +421,14 @@
           const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
           const clockTime1 = formatTime(firstBus.eta);
           
-          let etaDisplay1 = diff1 <= 0 ? `即將到站 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+          let etaDisplay1 = diff1 <= 0 ? `${statusText} (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
           let isArriving1 = diff1 <= 0;
 
           let etaDisplay2HTML = '';
           if (secondBus) {
             const diff2 = Math.round((new Date(secondBus.eta) - now) / 60000);
             const clockTime2 = formatTime(secondBus.eta);
-            const text2 = diff2 <= 0 ? `即將到站 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
+            const text2 = diff2 <= 0 ? `${statusText} (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
             etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
           }
 
