@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>795X 專屬巴士站</title>
+  
+  <!-- 設定為 iOS / Android PWA 全螢幕模式 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    header {
+      text-align: center;
+      padding-top: 10px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 6px 0;
+      color: #f5ab16; /* 795X 高亮黃色 */
+      letter-spacing: 1px;
+    }
+    .update-time {
+      font-size: 0.75rem;
+      color: #666666;
+      margin-top: 6px;
+    }
+
+    /* 🏷️ 分頁 Tab 樣式 */
+    .tab-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      background: #2a2a2a;
+      color: #888888;
+      border: 1px solid #333333;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .tab-btn.active {
+      background: #0055a5; /* 城巴藍色 */
+      color: #ffffff;
+      border-color: #0055a5;
+      box-shadow: 0 2px 8px rgba(0, 85, 165, 0.4);
+    }
+
+    #bus-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1e1e1e;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 6px solid #0055a5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .route-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .route-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #f5ab16;
+      line-height: 1.1;
+    }
+    .company-badge {
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 3px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      display: inline-block;
+      background-color: #0055a5;
+      color: #ffcc00;
+    }
+    .destination {
+      font-size: 0.95rem;
+      color: #cccccc;
+      margin-top: 4px;
+    }
+    .eta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .eta-first {
+      font-size: 1.35rem;
+      font-weight: bold;
+      color: #00ff66;
+    }
+    .eta-second {
+      font-size: 0.85rem;
+      color: #888888;
+      margin-top: 3px;
+    }
+    .eta-arriving {
+      color: #ff3333;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+    .loading {
+      text-align: center;
+      color: #888888;
+      font-size: 1rem;
+      padding: 40px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚌 795X 實時班次資訊</h1>
+    <div id="update-time" class="update-time">更新中...</div>
+  </header>
+
+  <!-- 地點切換 Tab -->
+  <div class="tab-container">
+    <div class="tab-btn active" onclick="switchLocation('evangel')">🏫 播道書院</div>
+    <div class="tab-btn" onclick="switchLocation('meifoo')">🚉 美孚</div>
+  </div>
+
+  <div id="bus-container" class="loading">載入數據中...</div>
+
+  <script>
+    // ⚙️ 795X 車站設定檔 (城巴 API 格式)
+    // 795X 屬於城巴營運路線，使用城巴 Stop ID 查詢
+    const LOCATIONS = {
+      evangel: {
+        title: "🏫 播道書院",
+        // 播道書院 (蓬萊路/將軍澳) 車站 Stop ID (城巴編號 003543，可按具體站柱調整)
+        citybus_stops: [
+          { stop: "003543", route: "795X" }
+        ]
+      },
+      meifoo: {
+        title: "🚉 美孚",
+        // 美孚 (美孚巴士總站/葵涌道) 車站 Stop ID (城巴編號 001825，可按具體站柱調整)
+        citybus_stops: [
+          { stop: "001825", route: "795X" }
+        ]
+      }
+    };
+
+    let currentLocation = 'evangel';
+    let autoRefreshTimer = null;
+
+    function switchLocation(locKey) {
+      if (currentLocation === locKey) return;
+      currentLocation = locKey;
+
+      const tabs = document.querySelectorAll('.tab-btn');
+      tabs.forEach((tab, index) => {
+        if ((locKey === 'evangel' && index === 0) || (locKey === 'meifoo' && index === 1)) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+
+      document.getElementById('bus-container').innerHTML = '<p class="loading">載入數據中...</p>';
+      fetchETA();
+    }
+
+    function formatTime(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    async function fetchETA() {
+      try {
+        const container = document.getElementById('bus-container');
+        const config = LOCATIONS[currentLocation];
+        let allEtaData = [];
+
+        // 發送城巴 Open API 請求
+        const promises = config.citybus_stops.map(item => 
+          fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${item.stop}/${item.route}`)
+            .then(res => res.json())
+            .then(res => res.data || [])
+            .catch(() => [])
+        );
+
+        const results = await Promise.all(promises);
+        
+        results.forEach(data => {
+          allEtaData = allEtaData.concat(data);
+        });
+
+        // 1. 過濾無效資料
+        let filteredList = allEtaData.filter(item => item.eta !== null && item.eta !== "");
+
+        // 2. 按時間排序
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+        // 3. 按「目的地」分組，最多保留最近 2 班（方便同時看往蘇屋或往清水灣半島方向）
+        const groupedByDest = {};
+
+        filteredList.forEach(item => {
+          const destKey = item.dest_tc || '目的地未知';
+          if (!groupedByDest[destKey]) {
+            groupedByDest[destKey] = [];
+          }
+          if (groupedByDest[destKey].length < 2) {
+            groupedByDest[destKey].push(item);
+          }
+        });
+
+        const destKeys = Object.keys(groupedByDest);
+
+        if (destKeys.length === 0) {
+          container.innerHTML = '<p class="loading">暫無 795X 班次資料或未到營運時間</p>';
+          updateTimestamp();
+          return;
+        }
+
+        container.innerHTML = '';
+
+        // 4. 渲染卡片
+        destKeys.forEach(dest => {
+          const busList = groupedByDest[dest];
+          const firstBus = busList[0];
+          const secondBus = busList[1];
+
+          const now = new Date();
+          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+          const clockTime1 = formatTime(firstBus.eta);
+          
+          let etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+          let isArriving1 = diff1 <= 0;
+
+          let etaDisplay2HTML = '';
+          if (secondBus) {
+            const diff2 = Math.round((new Date(secondBus.eta) - now) / 60000);
+            const clockTime2 = formatTime(secondBus.eta);
+            const text2 = diff2 <= 0 ? `即將到達 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
+            etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
+          }
+
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="route-info">
+              <div class="route-header">
+                <span class="route-number">795X</span>
+                <span class="company-badge">城巴</span>
+              </div>
+              <span class="destination">往 ${dest}</span>
+            </div>
+            <div class="eta-container">
+              <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+              ${etaDisplay2HTML}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        updateTimestamp();
+
+      } catch (error) {
+        console.error('獲取 795X API 數據失敗:', error);
+        document.getElementById('bus-container').innerHTML = '<p class="loading">數據載入失敗，請檢查網絡連接</p>';
+      }
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('update-time').innerText = `最後更新時間：${hours}:${minutes}:${seconds}`;
+    }
+
+    // 首次執行與自動更新 (每 30 秒)
+    fetchETA();
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(fetchETA, 30000);
+  </script>
+</body>
+</html>
