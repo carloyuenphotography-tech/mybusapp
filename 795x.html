@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>795X 專屬巴士站</title>
+  <title>795X 及港鐵小巴接駁</title>
   
   <!-- 設定為 iOS / Android PWA 全螢幕模式 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -30,7 +30,7 @@
     h1 {
       font-size: 1.4rem;
       margin: 0 0 6px 0;
-      color: #f5ab16; /* 795X 高亮黃色 */
+      color: #f5ab16;
       letter-spacing: 1px;
     }
     .update-time {
@@ -43,7 +43,7 @@
     .tab-container {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 6px;
       margin-bottom: 20px;
       max-width: 500px;
       margin-left: auto;
@@ -51,19 +51,20 @@
     }
     .tab-btn {
       flex: 1;
-      padding: 10px 16px;
+      padding: 10px 8px;
       background: #2a2a2a;
       color: #888888;
       border: 1px solid #333333;
       border-radius: 20px;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: center;
+      white-space: nowrap;
     }
     .tab-btn.active {
-      background: #0055a5; /* 城巴藍色 */
+      background: #0055a5; /* 城巴藍/港鐵風格 */
       color: #ffffff;
       border-color: #0055a5;
       box-shadow: 0 2px 8px rgba(0, 85, 165, 0.4);
@@ -84,13 +85,19 @@
       border-left: 6px solid #0055a5;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
+    .card.mtr {
+      border-left-color: #990000; /* 港鐵紅 */
+    }
+    .card.gmb {
+      border-left-color: #009933; /* 小巴綠 */
+    }
     .route-header {
       display: flex;
       align-items: center;
       gap: 8px;
     }
     .route-number {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 800;
       color: #f5ab16;
       line-height: 1.1;
@@ -104,6 +111,14 @@
       display: inline-block;
       background-color: #0055a5;
       color: #ffcc00;
+    }
+    .badge-mtr {
+      background-color: #990000;
+      color: #ffffff;
+    }
+    .badge-gmb {
+      background-color: #009933;
+      color: #ffffff;
     }
     .destination {
       font-size: 0.95rem;
@@ -145,39 +160,41 @@
 <body>
 
   <header>
-    <h1>🚌 795X 實時班次資訊</h1>
+    <h1>🚌 795X 及交通接駁</h1>
     <div id="update-time" class="update-time">更新中...</div>
   </header>
 
-  <!-- 地點切換 Tab -->
+  <!-- 地點切換 Tab (新增 🚇 港鐵+小巴) -->
   <div class="tab-container">
-    <div class="tab-btn active" onclick="switchLocation('evangel')">🏫 播道書院</div>
-    <div class="tab-btn" onclick="switchLocation('meifoo')">🚉 美孚</div>
+    <div class="tab-btn active" onclick="switchLocation('meifoo')">🚉 美孚 (795X)</div>
+    <div class="tab-btn" onclick="switchLocation('evangel')">🏫 播道書院</div>
+    <div class="tab-btn" onclick="switchLocation('mtr_combo')">🚇 港鐵 + 小巴</div>
   </div>
 
   <div id="bus-container" class="loading">載入數據中...</div>
 
   <script>
-    // ⚙️ 795X 車站設定檔 (城巴 API 格式)
-    // 795X 屬於城巴營運路線，使用城巴 Stop ID 查詢
+    // ⚙️ 車站與路線設定檔
     const LOCATIONS = {
-      evangel: {
-        title: "🏫 播道書院",
-        // 播道書院 (蓬萊路/將軍澳) 車站 Stop ID (城巴編號 003543，可按具體站柱調整)
-        citybus_stops: [
-          { stop: "003543", route: "795X" }
-        ]
-      },
       meifoo: {
+        type: "citybus",
         title: "🚉 美孚",
-        // 美孚 (美孚巴士總站/葵涌道) 車站 Stop ID (城巴編號 001825，可按具體站柱調整)
-        citybus_stops: [
-          { stop: "001825", route: "795X" }
-        ]
+        defaultDest: "清水灣半島",
+        citybus_stops: [{ stop: "001517", route: "795X" }]
+      },
+      evangel: {
+        type: "citybus",
+        title: "🏫 播道書院",
+        defaultDest: "蘇屋",
+        citybus_stops: [{ stop: "003472", route: "795X" }]
+      },
+      mtr_combo: {
+        type: "combo",
+        title: "🚇 港鐵 + 108A 小巴接駁"
       }
     };
 
-    let currentLocation = 'evangel';
+    let currentLocation = 'meifoo';
     let autoRefreshTimer = null;
 
     function switchLocation(locKey) {
@@ -186,7 +203,7 @@
 
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, index) => {
-        if ((locKey === 'evangel' && index === 0) || (locKey === 'meifoo' && index === 1)) {
+        if ((locKey === 'meifoo' && index === 0) || (locKey === 'evangel' && index === 1) || (locKey === 'mtr_combo' && index === 2)) {
           tab.classList.add('active');
         } else {
           tab.classList.remove('active');
@@ -194,7 +211,12 @@
       });
 
       document.getElementById('bus-container').innerHTML = '<p class="loading">載入數據中...</p>';
-      fetchETA();
+      
+      if (locKey === 'mtr_combo') {
+        fetchComboETA();
+      } else {
+        fetchCitybusETA();
+      }
     }
 
     function formatTime(isoString) {
@@ -205,13 +227,13 @@
       return `${hours}:${minutes}`;
     }
 
-    async function fetchETA() {
+    // 1. 處理 795X 城巴 API
+    async function fetchCitybusETA() {
       try {
         const container = document.getElementById('bus-container');
         const config = LOCATIONS[currentLocation];
         let allEtaData = [];
 
-        // 發送城巴 Open API 請求
         const promises = config.citybus_stops.map(item => 
           fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${item.stop}/${item.route}`)
             .then(res => res.json())
@@ -220,85 +242,164 @@
         );
 
         const results = await Promise.all(promises);
-        
-        results.forEach(data => {
-          allEtaData = allEtaData.concat(data);
-        });
+        results.forEach(data => { allEtaData = allEtaData.concat(data); });
 
-        // 1. 過濾無效資料
         let filteredList = allEtaData.filter(item => item.eta !== null && item.eta !== "");
 
-        // 2. 按時間排序
-        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
-
-        // 3. 按「目的地」分組，最多保留最近 2 班（方便同時看往蘇屋或往清水灣半島方向）
-        const groupedByDest = {};
-
-        filteredList.forEach(item => {
-          const destKey = item.dest_tc || '目的地未知';
-          if (!groupedByDest[destKey]) {
-            groupedByDest[destKey] = [];
-          }
-          if (groupedByDest[destKey].length < 2) {
-            groupedByDest[destKey].push(item);
-          }
+        filteredList = filteredList.filter(item => {
+          if (currentLocation === 'meifoo') return !item.dest_tc.includes('蘇屋');
+          return !item.dest_tc.includes('清水灣');
         });
 
-        const destKeys = Object.keys(groupedByDest);
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+        const firstTwoBuses = filteredList.slice(0, 2);
 
-        if (destKeys.length === 0) {
+        if (firstTwoBuses.length === 0) {
           container.innerHTML = '<p class="loading">暫無 795X 班次資料或未到營運時間</p>';
           updateTimestamp();
           return;
         }
 
         container.innerHTML = '';
+        const firstBus = firstTwoBuses[0];
+        const secondBus = firstTwoBuses[1];
 
-        // 4. 渲染卡片
-        destKeys.forEach(dest => {
-          const busList = groupedByDest[dest];
-          const firstBus = busList[0];
-          const secondBus = busList[1];
+        const now = new Date();
+        const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+        const clockTime1 = formatTime(firstBus.eta);
+        let etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+        let isArriving1 = diff1 <= 0;
 
-          const now = new Date();
-          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
-          const clockTime1 = formatTime(firstBus.eta);
-          
-          let etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
-          let isArriving1 = diff1 <= 0;
+        let etaDisplay2HTML = '';
+        if (secondBus) {
+          const diff2 = Math.round((new Date(secondBus.eta) - now) / 60000);
+          const clockTime2 = formatTime(secondBus.eta);
+          const text2 = diff2 <= 0 ? `即將到達 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
+          etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
+        }
 
-          let etaDisplay2HTML = '';
-          if (secondBus) {
-            const diff2 = Math.round((new Date(secondBus.eta) - now) / 60000);
-            const clockTime2 = formatTime(secondBus.eta);
-            const text2 = diff2 <= 0 ? `即將到達 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
-            etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
-          }
+        let displayDest = config.defaultDest;
+        if (firstBus.dest_tc && !firstBus.dest_tc.includes('蘇屋') && currentLocation === 'meifoo') {
+          displayDest = firstBus.dest_tc;
+        }
 
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="route-info">
-              <div class="route-header">
-                <span class="route-number">795X</span>
-                <span class="company-badge">城巴</span>
-              </div>
-              <span class="destination">往 ${dest}</span>
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="route-info">
+            <div class="route-header">
+              <span class="route-number">795X</span>
+              <span class="company-badge">城巴</span>
             </div>
-            <div class="eta-container">
-              <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
-              ${etaDisplay2HTML}
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
+            <span class="destination">往 ${displayDest}</span>
+          </div>
+          <div class="eta-container">
+            <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+            ${etaDisplay2HTML}
+          </div>
+        `;
+        container.appendChild(card);
         updateTimestamp();
 
       } catch (error) {
         console.error('獲取 795X API 數據失敗:', error);
         document.getElementById('bus-container').innerHTML = '<p class="loading">數據載入失敗，請檢查網絡連接</p>';
       }
+    }
+
+    // 2. 處理 港鐵 + 108A 小巴 API
+    async function fetchComboETA() {
+      try {
+        const container = document.getElementById('bus-container');
+        container.innerHTML = '';
+
+        // a. 港鐵美孚站 (荃灣綫往中環方向) API
+        const mtrMeiFooPromise = fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TWL&sta=MEF")
+          .then(res => res.json())
+          .then(data => {
+            const list = data.data["TWL-MEF"].DOWN || []; // DOWN 往中環/荔枝角方向
+            return list.map(item => item.time);
+          }).catch(() => []);
+
+        // b. 港鐵調景嶺站 (將軍澳綫往寶琳/康城方向) API
+        const mtrTiuKengLengPromise = fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TKL&sta=TIK")
+          .then(res => res.json())
+          .then(data => {
+            const list = data.data["TKL-TIK"].UP || []; // UP 往將軍澳方向
+            return list.map(item => item.time);
+          }).catch(() => []);
+
+        // c. 綠色小巴 108A (調景嶺站往坑口/播道書院) API
+        const gmb108APromise = fetch("https://data.eta.gov.hk/v1/transport/gmb/stop-eta/2002361/1/1")
+          .then(res => res.json())
+          .then(data => {
+            const list = data.data?.eta || [];
+            return list.map(item => item.eta_date);
+          }).catch(() => []);
+
+        const [mefTimes, tikTimes, gmbTimes] = await Promise.all([
+          mtrMeiFooPromise, mtrTiuKengLengPromise, gmb108APromise
+        ]);
+
+        const now = new Date();
+
+        // 渲染 1: 港鐵 美孚站
+        renderCard(container, "美孚站 (荃灣綫)", "往 荔枝角 / 太子", mefTimes, "MTR", "mtr");
+
+        // 渲染 2: 港鐵 調景嶺站
+        renderCard(container, "調景嶺站 (將軍澳綫)", "往 將軍澳 / 康城", tikTimes, "MTR", "mtr");
+
+        // 渲染 3: 專線小巴 108A
+        renderCard(container, "108A 小巴 (調景嶺站)", "往 播道書院 / 坑口", gmbTimes, "小巴", "gmb");
+
+        updateTimestamp();
+
+      } catch (error) {
+        console.error('獲取港鐵/小巴 API 數據失敗:', error);
+        document.getElementById('bus-container').innerHTML = '<p class="loading">數據載入失敗，請檢查網絡連接</p>';
+      }
+    }
+
+    function renderCard(container, title, dest, timesList, badgeText, cardType) {
+      const validTimes = timesList.filter(t => t).slice(0, 2);
+      const now = new Date();
+
+      let etaDisplay1 = "無班次資料";
+      let etaDisplay2HTML = "";
+      let isArriving1 = false;
+
+      if (validTimes.length > 0) {
+        const diff1 = Math.round((new Date(validTimes[0]) - now) / 60000);
+        const clockTime1 = formatTime(validTimes[0]);
+        etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+        isArriving1 = diff1 <= 0;
+
+        if (validTimes[1]) {
+          const diff2 = Math.round((new Date(validTimes[1]) - now) / 60000);
+          const clockTime2 = formatTime(validTimes[1]);
+          const text2 = diff2 <= 0 ? `即將到達 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
+          etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
+        }
+      }
+
+      const badgeClass = cardType === 'mtr' ? 'badge-mtr' : 'badge-gmb';
+
+      const card = document.createElement('div');
+      card.className = `card ${cardType}`;
+      card.innerHTML = `
+        <div class="route-info">
+          <div class="route-header">
+            <span class="route-number" style="font-size: 1.3rem;">${title}</span>
+            <span class="company-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <span class="destination">${dest}</span>
+        </div>
+        <div class="eta-container">
+          <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+          ${etaDisplay2HTML}
+        </div>
+      `;
+      container.appendChild(card);
     }
 
     function updateTimestamp() {
@@ -309,10 +410,18 @@
       document.getElementById('update-time').innerText = `最後更新時間：${hours}:${minutes}:${seconds}`;
     }
 
+    function refreshData() {
+      if (currentLocation === 'mtr_combo') {
+        fetchComboETA();
+      } else {
+        fetchCitybusETA();
+      }
+    }
+
     // 首次執行與自動更新 (每 30 秒)
-    fetchETA();
+    refreshData();
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-    autoRefreshTimer = setInterval(fetchETA, 30000);
+    autoRefreshTimer = setInterval(refreshData, 30000);
   </script>
 </body>
 </html>
