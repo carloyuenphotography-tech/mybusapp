@@ -44,7 +44,7 @@
       display: flex;
       justify-content: center;
       gap: 6px;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
@@ -71,8 +71,39 @@
     }
     .tab-btn.gmb-active {
       background: #009933; /* 小巴綠 */
+      color: #ffffff;
       border-color: #009933;
       box-shadow: 0 2px 8px rgba(0, 153, 51, 0.4);
+    }
+
+    /* 🔗 795X 跳轉按鈕樣式 */
+    .link-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .jump-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: #1b263b; /* 深藍色 */
+      color: #f5ab16; /* 795X 黃色 */
+      border: 1px solid #0055a5;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .jump-btn:active {
+      background: #2a3a5a;
     }
 
     #bus-container {
@@ -174,11 +205,18 @@
     <div id="update-time" class="update-time">更新中...</div>
   </header>
 
-  <!-- 地點/交通工具切換 Tab (已獨立拆出小巴按鈕) -->
+  <!-- 地點/交通工具切換 Tab -->
   <div class="tab-container">
     <div class="tab-btn active" onclick="switchLocation('office')">🏢 荔枝角總站</div>
     <div class="tab-btn" onclick="switchLocation('home_bus')">🚌 屋企巴士</div>
     <div class="tab-btn" onclick="switchLocation('home_gmb')">🚐 屋企小巴</div>
+  </div>
+
+  <!-- 🔗 795X 跳轉按鈕 -->
+  <div class="link-container">
+    <a href="795x.html" class="jump-btn">
+      前往 795X 專頁 (播道書院 / 美孚) ➔
+    </a>
   </div>
 
   <div id="bus-container" class="loading">載入數據中...</div>
@@ -211,11 +249,11 @@
         title: "🚐 屋企樓下 (小巴)",
         kmb_stops: [],
         citybus_stops: [],
-        // 🟢 專屬小巴頁面 (90M, 90P, 92M 往美孚站)
+        // 🟢 專線小巴路線 (包含去程與回程，自動抓取實際終點站)
         gmb_routes: [
-          { route: "90M", route_id: "2004245", seq: 1, stop_seq: 1 },
-          { route: "90P", route_id: "2004246", seq: 1, stop_seq: 1 },
-          { route: "92M", route_id: "2004247", seq: 1, stop_seq: 1 }
+          { route: "90M", route_id: "2004245", seq: 1, stop_seq: 1, defaultDest: "美孚站" },
+          { route: "90P", route_id: "2004246", seq: 1, stop_seq: 1, defaultDest: "美孚站" },
+          { route: "92M", route_id: "2004247", seq: 1, stop_seq: 1, defaultDest: "美孚站" }
         ],
         routes: [] 
       }
@@ -237,7 +275,7 @@
         ) {
           tab.classList.add('active');
         } else if (locKey === 'home_gmb' && index === 2) {
-          tab.classList.add('active', 'gmb-active'); // 小巴套用綠色高亮
+          tab.classList.add('active', 'gmb-active');
         }
       });
 
@@ -292,16 +330,16 @@
           });
         });
 
-        // 3. 發送綠色小巴 API 請求
+        // 3. 發送綠色小巴 API 請求 (讀取動態目的地)
         const gmbPromises = (config.gmb_routes || []).map(item =>
           fetch(`https://data.eta.gov.hk/v1/transport/gmb/stop-eta/${item.route_id}/${item.seq}/${item.stop_seq}`)
             .then(res => res.json())
             .then(res => (res.data?.eta || []).map(bus => ({
               company: 'GMB',
               route: item.route,
-              dest_tc: '美孚站',
+              dest_tc: bus.dest_tc || item.defaultDest || '目的地', // ✨ 動態顯示終點站
               eta: bus.eta_date,
-              rmk_tc: ''
+              rmk_tc: bus.remarks_tc || ''
             })))
             .catch(() => [])
         );
@@ -326,7 +364,7 @@
         // 5. 按時間由近至遠排序
         filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
 
-        // 6. 按「路線-目的地」分組，最多保留最近 2 班
+        // 6. 按「路線-目的地」分組，最多保留最近 2 班（相同路線不同目的地會分開卡片顯示）
         const groupedByRoute = {};
 
         filteredList.forEach(item => {
@@ -349,7 +387,7 @@
         const routeKeys = Object.keys(groupedByRoute);
 
         if (routeKeys.length === 0) {
-          container.innerHTML = '<p class="loading">暫無車輛班次資料或已尾班車</p>';
+          container.innerHTML = '<p class="loading">暫無小巴班次資料或已尾班車</p>';
           updateTimestamp();
           return;
         }
@@ -405,7 +443,7 @@
                 <span class="route-number">${firstBus.route}</span>
                 ${badgeHTML}
               </div>
-              <span class="destination">往 ${firstBus.dest_tc || '美孚站'}</span>
+              <span class="destination">往 ${firstBus.dest_tc || '目的地'}</span>
             </div>
             <div class="eta-container">
               <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
