@@ -42,7 +42,7 @@
       margin-top: 6px;
     }
 
-    /* 🏷️ 分頁 Tab 樣式 (三按鈕並排) */
+    /* 🏷️ 分頁 Tab 樣式 */
     .tab-container {
       display: flex;
       justify-content: center;
@@ -74,7 +74,6 @@
     }
     .tab-btn.gmb-active {
       background: #009933; /* 小巴綠 */
-      color: #ffffff;
       border-color: #009933;
       box-shadow: 0 2px 8px rgba(0, 153, 51, 0.4);
     }
@@ -199,6 +198,29 @@
       font-size: 1rem;
       padding: 40px 0;
     }
+
+    /* 💡 使用注意事項提示庫 */
+    footer {
+      max-width: 500px;
+      margin: 24px auto 12px auto;
+      padding: 12px 16px;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .notice-title {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #f5ab16;
+      margin-bottom: 4px;
+    }
+    .notice-text {
+      font-size: 0.75rem;
+      color: #888888;
+      line-height: 1.4;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -223,6 +245,15 @@
   </div>
 
   <div id="bus-container" class="loading">載入數據中...</div>
+
+  <!-- 💡 新增使用注意事項區域 -->
+  <footer>
+    <div class="notice-title">💡 使用注意事項</div>
+    <p class="notice-text">
+      數據由各交通公司 API 實時提供，僅供參考並可能存在誤差。<br>
+      請預留足夠時間，提早到達車站/巴士總站等候。
+    </p>
+  </footer>
 
   <script>
     // ⚙️ 車站與路線設定檔
@@ -363,7 +394,7 @@
           const isToLaiChiKok = item.dest_tc.includes('荔枝角') && currentLocation === 'office';
           const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
           
-          // ✨ 排除 32H 路線
+          // 排除 32H 路線
           const is32H = item.route === '32H';
           
           return hasEta && isTargetRoute && !isToLaiChiKok && !isArrivingOnly && !is32H;
