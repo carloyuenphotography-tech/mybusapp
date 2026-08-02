@@ -13,8 +13,8 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      background-color: #f4f6f9; /* ☀️ 清新明亮淺灰白背景 */
-      color: #1e293b; /* 深色清晰字體 */
+      background-color: #f4f6f9;
+      color: #1e293b;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 16px;
@@ -51,18 +51,18 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .tab-btn.active {
-      background: #e11d48; /* 清新活力紅 */
+      background: #e11d48;
       color: #ffffff;
       border-color: #e11d48;
       box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
     }
     .tab-btn.gmb-active {
-      background: #059669; /* 清新綠 */
+      background: #059669;
       border-color: #059669;
       box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
     }
 
-    /* 🔗 外部專頁跳轉按鈕 */
+    /* 🔗 外部專頁跳轉按鈕 (改為突出但柔和的淺綠色主題) */
     .link-container {
       display: flex;
       flex-direction: column;
@@ -74,32 +74,31 @@
     }
     .jump-btn {
       width: 100%;
-      padding: 12px 16px;
-      background: #ffffff;
-      color: #0284c7; /* 清新藍 */
-      border: 1px solid #bae6fd;
+      padding: 13px 16px;
+      background: #ecfdf5; /* 🌿 柔和高級淺綠色底色 */
+      color: #047857; /* 深翠綠色文字，清晰易讀 */
+      border: 1px solid #a7f3d0; /* 淺綠邊框 */
       border-radius: 12px;
       font-size: 0.95rem;
       font-weight: bold;
       text-align: center;
       text-decoration: none;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.08);
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
       transition: all 0.2s;
     }
-    .jump-btn:active { background: #f0f9ff; }
+    .jump-btn:active { background: #d1fae5; }
     .jump-btn.tsw {
-      background: #ffffff;
-      color: #0369a1;
-      border-color: #7dd3fc;
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #a7f3d0;
     }
 
     #bus-container { max-width: 500px; margin: 0 auto; }
     
-    /* 🚌 實時資訊卡片 (純白明亮) */
     .card {
       background: #ffffff;
       border-radius: 14px;
@@ -108,11 +107,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-left: 6px solid #e11d48; /* 九巴紅 */
+      border-left: 6px solid #e11d48;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
-    .card.citybus { border-left-color: #0284c7; } /* 城巴藍 */
-    .card.gmb { border-left-color: #059669; } /* 小巴綠 */
+    .card.citybus { border-left-color: #0284c7; }
+    .card.gmb { border-left-color: #059669; }
     
     .route-header { display: flex; align-items: center; gap: 8px; }
     .route-number { font-size: 2rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
@@ -131,13 +130,12 @@
 
     .destination { font-size: 0.95rem; color: #475569; margin-top: 4px; }
     .eta-container { display: flex; flex-direction: column; align-items: flex-end; }
-    .eta-first { font-size: 1.35rem; font-weight: bold; color: #059669; } /* 鮮明清新綠首班 */
+    .eta-first { font-size: 1.35rem; font-weight: bold; color: #059669; }
     .eta-second { font-size: 0.85rem; color: #94a3b8; margin-top: 3px; }
     .eta-arriving { color: #e11d48; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     .loading { text-align: center; color: #94a3b8; font-size: 1rem; padding: 40px 0; }
 
-    /* 💡 底部提示與版本 */
     footer {
       max-width: 500px;
       margin: 24px auto 12px auto;
@@ -165,6 +163,7 @@
     <div class="tab-btn" onclick="switchLocation('home_gmb')">🚐 專線小巴</div>
   </div>
 
+  <!-- 🌿 淺綠色突出捷徑按鈕 -->
   <div class="link-container">
     <a href="795x.html" class="jump-btn">
       前往 795X 專頁 (播道書院 / 美孚) ➔
@@ -178,7 +177,7 @@
 
   <footer>
     <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.0.8</div>
+    <div class="version-tag">版本 v1.0.9</div>
   </footer>
 
   <script>
@@ -254,7 +253,6 @@
         const config = LOCATIONS[currentLocation];
         let allEtaData = [];
 
-        // 1. 九巴 API
         const kmbPromises = (config.kmb_stops || []).map(stopId => 
           fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`)
             .then(res => res.json())
@@ -268,7 +266,6 @@
             .catch(() => [])
         );
 
-        // 2. 城巴 API
         const citybusPromises = (config.citybus_targets || []).map(item =>
           fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${item.stop}/${item.route}`)
             .then(res => res.json())
@@ -285,7 +282,6 @@
             .catch(() => [])
         );
 
-        // 3. 綠色小巴官方 API
         const gmbPromises = (config.gmb_routes || []).map(item =>
           fetch(`https://data.etagmb.gov.hk/eta/route-stop/${item.route_id}/${item.stop_seq}`)
             .then(res => res.json())
@@ -310,7 +306,6 @@
 
         const nowTime = new Date().getTime();
 
-        // 4. 過濾有效且未過期的班次
         let filteredList = allEtaData.filter(item => {
           if (!item.eta) return false;
           const busTime = new Date(item.eta).getTime();
@@ -323,7 +318,6 @@
           return diffMinutes >= -2 && !isToLaiChiKok && !isArrivingOnly && !is32H;
         });
 
-        // 5. 按「公司-路線-目的地」獨立分組
         const groupedByRoute = {};
 
         filteredList.forEach(item => {
@@ -351,7 +345,6 @@
           return;
         }
 
-        // 按首班車時間排序
         routeKeys.sort((a, b) => {
           const etaA = new Date(groupedByRoute[a][0].eta);
           const etaB = new Date(groupedByRoute[b][0].eta);
@@ -360,7 +353,6 @@
 
         container.innerHTML = '';
 
-        // 6. 渲染卡片
         const statusText = config.isTerminus ? '即將開出' : '即將到站';
 
         routeKeys.forEach(key => {
@@ -387,6 +379,7 @@
 
           let companyClass = '';
           let badgeClass = '';
+          let companyName = '';
 
           if (firstBus.company === 'CTB') {
             companyClass = 'citybus';
