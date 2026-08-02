@@ -144,7 +144,7 @@
   <!-- 地點切換 Tab -->
   <div class="tab-container">
     <div class="tab-btn active" onclick="switchLocation('office')">🏢 荔枝角巴士總站</div>
-    <div class="tab-btn" onclick="switchLocation('home')">🚌 巴士總站</div>
+    <div class="tab-btn" onclick="switchLocation('home')">🚌 荔灣花園</div>
   </div>
 
   <div id="bus-container" class="loading">載入數據中...</div>
@@ -166,7 +166,7 @@
         routes: [] 
       },
       home: {
-        title: "🚌 巴士總站",
+        title: "🚌 荔灣花園",
         kmb_stops: ["37A4D07D7179CE76"],
         citybus_stops: [],
         routes: [] 
@@ -214,7 +214,7 @@
             .then(res => (res.data || []).map(item => ({
               company: item.rmk_tc && item.rmk_tc.includes('城巴') ? 'CTB' : 'KMB',
               route: item.route,
-              dest_tc: item.dest_tc,
+              dest_tc: item.dest_tc || '',
               eta: item.eta,
               rmk_tc: item.rmk_tc || ''
             })))
@@ -231,7 +231,7 @@
                 .then(res => (res.data || []).map(bus => ({
                   company: 'CTB',
                   route: bus.route,
-                  dest_tc: bus.dest_tc,
+                  dest_tc: bus.dest_tc || '',
                   eta: bus.eta,
                   rmk_tc: bus.rmk_tc || ''
                 })))
@@ -246,15 +246,18 @@
           allEtaData = allEtaData.concat(data);
         });
 
-        // 3. ✨ 關鍵過濾：只留有有效時間，並且排除純抵達落客的班次
+        // 3. ✨ 關鍵過濾：
+        // a. 有有效 ETA
+        // b. 排除目的地包含「荔枝角」的班次 (即排除開往荔枝角落客的車)
+        // c. 排除備註標示為「到達/落客」的班次
         let filteredList = allEtaData.filter(item => {
           const hasEta = item.eta !== null && item.eta !== "";
           const isTargetRoute = config.routes.length === 0 || config.routes.includes(item.route);
           
-          // 排除明確標示為「到達/落客」的紀錄，只保留預計開出班次
+          const isToLaiChiKok = item.dest_tc.includes('荔枝角'); // 👈 自動過濾往荔枝角班次
           const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
           
-          return hasEta && isTargetRoute && !isArrivingOnly;
+          return hasEta && isTargetRoute && !isToLaiChiKok && !isArrivingOnly;
         });
 
         // 4. 按時間由近至遠排序
@@ -297,7 +300,7 @@
 
         container.innerHTML = '';
 
-        // 6. 渲染卡片 (文字標示改為「開出」)
+        // 6. 渲染卡片
         routeKeys.forEach(key => {
           const busList = groupedByRoute[key];
           const firstBus = busList[0];
