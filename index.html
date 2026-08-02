@@ -25,7 +25,6 @@
     h1 { font-size: 1.4rem; margin: 0 0 4px 0; color: #0f172a; letter-spacing: 0.5px; }
     .update-time { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
 
-    /* 🏷️ 分頁 Tab 樣式 (明亮清新) */
     .tab-container {
       display: flex;
       justify-content: center;
@@ -62,7 +61,6 @@
       box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
     }
 
-    /* 🔗 外部專頁跳轉按鈕 (改為突出但柔和的淺綠色主題) */
     .link-container {
       display: flex;
       flex-direction: column;
@@ -75,9 +73,9 @@
     .jump-btn {
       width: 100%;
       padding: 13px 16px;
-      background: #ecfdf5; /* 🌿 柔和高級淺綠色底色 */
-      color: #047857; /* 深翠綠色文字，清晰易讀 */
-      border: 1px solid #a7f3d0; /* 淺綠邊框 */
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
       border-radius: 12px;
       font-size: 0.95rem;
       font-weight: bold;
@@ -99,6 +97,20 @@
 
     #bus-container { max-width: 500px; margin: 0 auto; }
     
+    .route-notice-panel {
+      max-width: 500px;
+      margin: 0 auto 12px auto;
+      padding: 10px 14px;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      color: #0369a1;
+      text-align: center;
+      font-weight: bold;
+      display: none;
+    }
+
     .card {
       background: #ffffff;
       border-radius: 14px;
@@ -163,7 +175,10 @@
     <div class="tab-btn" onclick="switchLocation('home_gmb')">🚐 專線小巴</div>
   </div>
 
-  <!-- 🌿 淺綠色突出捷徑按鈕 -->
+  <div id="route-notice" class="route-notice-panel">
+    ℹ️ 提示：此站開出的巴士會途經荔景港鐵站
+  </div>
+
   <div class="link-container">
     <a href="795x.html" class="jump-btn">
       前往 795X 專頁 (播道書院 / 美孚) ➔
@@ -177,7 +192,7 @@
 
   <footer>
     <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.0.9</div>
+    <div class="version-tag">版本 v1.1.1</div>
   </footer>
 
   <script>
@@ -203,7 +218,9 @@
         isTerminus: false,
         kmb_stops: ["37A4D07D7179CE76"],
         citybus_targets: [],
-        gmb_routes: []
+        gmb_routes: [],
+        // 荔灣花園行車至荔景站大約需時 5 分鐘
+        travelTimeToLaiKing: 5
       },
       home_gmb: {
         title: "🚐 專線小巴",
@@ -234,6 +251,13 @@
           tab.classList.add('active', 'gmb-active');
         }
       });
+
+      const noticePanel = document.getElementById('route-notice');
+      if (locKey === 'home_bus') {
+        noticePanel.style.display = 'block';
+      } else {
+        noticePanel.style.display = 'none';
+      }
 
       document.getElementById('bus-container').innerHTML = '<p class="loading">載入數據中...</p>';
       fetchETA();
@@ -363,11 +387,22 @@
           const secondBus = busList[1];
 
           const now = new Date();
-          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+          const arrivalTimeAtStop = new Date(firstBus.eta);
+          const diff1 = Math.round((arrivalTimeAtStop - now) / 60000);
           const clockTime1 = formatTime(firstBus.eta);
           
           let etaDisplay1 = diff1 <= 0 ? `${statusText} (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
           let isArriving1 = diff1 <= 0;
+
+          // 🚍 如果在荔灣花園分頁，計算大約 5 分鐘後到達荔景站的時間
+          let laijingNoticeHTML = '';
+          if (currentLocation === 'home_bus') {
+            const laijingTime = new Date(arrivalTimeAtStop.getTime() + (config.travelTimeToLaiKing || 5) * 60000);
+            const laijingClock = formatTime(laijingTime.toISOString());
+            const diffLaijing = Math.round((laijingTime - now) / 60000);
+            const diffLaijingText = diffLaijing <= 0 ? '即將' : `${diffLaijing} 分鐘後`;
+            laijingNoticeHTML = `<div style="font-size: 0.8rem; color: #0284c7; margin-top: 4px; font-weight: bold;">預計約 ${diffLaijingText} (${laijingClock}) 抵達荔景站</div>`;
+          }
 
           let etaDisplay2HTML = '';
           if (secondBus) {
@@ -404,6 +439,7 @@
                 <span class="company-badge ${badgeClass}">${companyName}</span>
               </div>
               <span class="destination">往 ${firstBus.dest_tc || '目的地'}</span>
+              ${laijingNoticeHTML}
             </div>
             <div class="eta-container">
               <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
