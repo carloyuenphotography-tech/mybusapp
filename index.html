@@ -4,50 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- ✨ iOS 主畫面顯示名稱 -->
-  <title>美孚巴士到站</title>
-  <meta name="apple-mobile-web-app-title" content="美孚巴士">
+  <title>荔灣巴士開出資訊</title>
+  <meta name="apple-mobile-web-app-title" content="荔灣巴士開出資訊">
 
-  <!-- 設定為 iOS / Android PWA 全螢幕模式 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
-      background-color: #121212;
-      color: #ffffff;
+      background-color: #f4f6f9; /* ☀️ 清新明亮淺灰白背景 */
+      color: #1e293b; /* 深色清晰字體 */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 16px;
       -webkit-user-select: none;
       user-select: none;
     }
-    header {
-      text-align: center;
-      padding-top: 10px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      font-size: 1.3rem;
-      margin: 0 0 6px 0;
-      color: #ffffff;
-      letter-spacing: 1px;
-    }
-    .update-time {
-      font-size: 0.75rem;
-      color: #666666;
-      margin-top: 6px;
-    }
+    header { text-align: center; padding-top: 10px; margin-bottom: 16px; }
+    h1 { font-size: 1.4rem; margin: 0 0 4px 0; color: #0f172a; letter-spacing: 0.5px; }
+    .update-time { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
 
-    /* 🏷️ 分頁 Tab 樣式 */
+    /* 🏷️ 分頁 Tab 樣式 (明亮清新) */
     .tab-container {
       display: flex;
       justify-content: center;
       gap: 6px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
@@ -55,9 +38,9 @@
     .tab-btn {
       flex: 1;
       padding: 10px 4px;
-      background: #2a2a2a;
-      color: #888888;
-      border: 1px solid #333333;
+      background: #ffffff;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
       border-radius: 20px;
       font-size: 0.85rem;
       font-weight: bold;
@@ -65,23 +48,25 @@
       transition: all 0.2s ease;
       text-align: center;
       white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .tab-btn.active {
-      background: #e60012; /* 九巴紅 */
+      background: #e11d48; /* 清新活力紅 */
       color: #ffffff;
-      border-color: #e60012;
-      box-shadow: 0 2px 8px rgba(230, 0, 18, 0.4);
+      border-color: #e11d48;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
     }
     .tab-btn.gmb-active {
-      background: #009933; /* 小巴綠 */
-      border-color: #009933;
-      box-shadow: 0 2px 8px rgba(0, 153, 51, 0.4);
+      background: #059669; /* 清新綠 */
+      border-color: #059669;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
     }
 
-    /* 🔗 795X 跳轉按鈕樣式 */
+    /* 🔗 外部專頁跳轉按鈕 */
     .link-container {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
       margin-bottom: 20px;
       max-width: 500px;
       margin-left: auto;
@@ -90,173 +75,113 @@
     .jump-btn {
       width: 100%;
       padding: 12px 16px;
-      background: #1b263b; /* 深藍色 */
-      color: #f5ab16; /* 795X 黃色 */
-      border: 1px solid #0055a5;
+      background: #ffffff;
+      color: #0284c7; /* 清新藍 */
+      border: 1px solid #bae6fd;
       border-radius: 12px;
       font-size: 0.95rem;
       font-weight: bold;
       text-align: center;
       text-decoration: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
+      transition: all 0.2s;
     }
-    .jump-btn:active {
-      background: #2a3a5a;
+    .jump-btn:active { background: #f0f9ff; }
+    .jump-btn.tsw {
+      background: #ffffff;
+      color: #0369a1;
+      border-color: #7dd3fc;
     }
 
-    #bus-container {
-      max-width: 500px;
-      margin: 0 auto;
-    }
+    #bus-container { max-width: 500px; margin: 0 auto; }
+    
+    /* 🚌 實時資訊卡片 (純白明亮) */
     .card {
-      background: #1e1e1e;
+      background: #ffffff;
       border-radius: 14px;
       padding: 16px 20px;
       margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-left: 6px solid #e60012;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-left: 6px solid #e11d48; /* 九巴紅 */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
-    .card.citybus {
-      border-left-color: #0055a5; /* 城巴藍 */
-    }
-    .card.gmb {
-      border-left-color: #009933; /* 專線小巴綠 */
-    }
-    .route-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .route-number {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #f5ab16; /* 金黃色 */
-      line-height: 1.1;
-    }
+    .card.citybus { border-left-color: #0284c7; } /* 城巴藍 */
+    .card.gmb { border-left-color: #059669; } /* 小巴綠 */
     
-    /* 🏷️ 巴士/小巴公司標籤樣式 */
+    .route-header { display: flex; align-items: center; gap: 8px; }
+    .route-number { font-size: 2rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+    
     .company-badge {
       font-size: 0.7rem;
       font-weight: bold;
-      padding: 3px 6px;
+      padding: 3px 7px;
       border-radius: 6px;
       line-height: 1;
       display: inline-block;
     }
-    .badge-kmb {
-      background-color: #e60012;
-      color: #ffffff;
-    }
-    .badge-ctb {
-      background-color: #0055a5;
-      color: #ffcc00;
-    }
-    .badge-gmb {
-      background-color: #009933;
-      color: #ffffff;
-    }
+    .badge-kmb { background-color: #ffe4e6; color: #e11d48; }
+    .badge-ctb { background-color: #e0f2fe; color: #0284c7; }
+    .badge-gmb { background-color: #d1fae5; color: #059669; }
 
-    .destination {
-      font-size: 0.95rem;
-      color: #cccccc;
-      margin-top: 4px;
-    }
-    .eta-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-    .eta-first {
-      font-size: 1.35rem;
-      font-weight: bold;
-      color: #00ff66; /* 綠色高亮首班 */
-    }
-    .eta-second {
-      font-size: 0.85rem;
-      color: #888888; /* 灰色次班 */
-      margin-top: 3px;
-    }
-    .eta-arriving {
-      color: #ff3333;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.4; }
-      100% { opacity: 1; }
-    }
-    .loading {
-      text-align: center;
-      color: #888888;
-      font-size: 1rem;
-      padding: 40px 0;
-    }
+    .destination { font-size: 0.95rem; color: #475569; margin-top: 4px; }
+    .eta-container { display: flex; flex-direction: column; align-items: flex-end; }
+    .eta-first { font-size: 1.35rem; font-weight: bold; color: #059669; } /* 鮮明清新綠首班 */
+    .eta-second { font-size: 0.85rem; color: #94a3b8; margin-top: 3px; }
+    .eta-arriving { color: #e11d48; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .loading { text-align: center; color: #94a3b8; font-size: 1rem; padding: 40px 0; }
 
-    /* 💡 使用注意事項提示庫 */
+    /* 💡 底部提示與版本 */
     footer {
       max-width: 500px;
       margin: 24px auto 12px auto;
       padding: 12px 16px;
-      background: #181818;
-      border: 1px solid #2a2a2a;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
       text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
-    .notice-title {
-      font-size: 0.8rem;
-      font-weight: bold;
-      color: #f5ab16;
-      margin-bottom: 4px;
-    }
-    .notice-text {
-      font-size: 0.75rem;
-      color: #888888;
-      line-height: 1.4;
-      margin: 0;
-    }
+    .notice-text { font-size: 0.78rem; color: #64748b; line-height: 1.4; margin: 0; }
+    .version-tag { font-size: 0.68rem; color: #cbd5e1; margin-top: 6px; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>🚌 實時巴士/小巴資訊</h1>
+    <h1>荔灣巴士開出資訊</h1>
     <div id="update-time" class="update-time">更新中...</div>
   </header>
 
-  <!-- 地點/交通工具切換 Tab -->
   <div class="tab-container">
     <div class="tab-btn active" onclick="switchLocation('office')">🏢 荔枝角總站</div>
-    <div class="tab-btn" onclick="switchLocation('home_bus')">🚌 屋企巴士</div>
-    <div class="tab-btn" onclick="switchLocation('home_gmb')">🚐 屋企小巴</div>
+    <div class="tab-btn" onclick="switchLocation('home_bus')">🚌 荔灣花園</div>
+    <div class="tab-btn" onclick="switchLocation('home_gmb')">🚐 專線小巴</div>
   </div>
 
-  <!-- 🔗 795X 跳轉按鈕 -->
   <div class="link-container">
     <a href="795x.html" class="jump-btn">
       前往 795X 專頁 (播道書院 / 美孚) ➔
+    </a>
+    <a href="tinshuiwai.html" class="jump-btn tsw">
+      前往天水圍專頁 (天暉路 / 天恒) ➔
     </a>
   </div>
 
   <div id="bus-container" class="loading">載入數據中...</div>
 
-  <!-- 💡 新增使用注意事項區域 -->
   <footer>
-    <div class="notice-title">💡 使用注意事項</div>
-    <p class="notice-text">
-      數據由各交通公司 API 實時提供，僅供參考並可能存在誤差。<br>
-      請預留足夠時間，提早到達車站/巴士總站等候。
-    </p>
+    <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
+    <div class="version-tag">版本 v1.0.8</div>
   </footer>
 
   <script>
-    // ⚙️ 車站與路線設定檔
     const LOCATIONS = {
       office: {
         title: "🏢 荔枝角巴士總站",
@@ -267,31 +192,30 @@
           "B9F19D629C894FEE",
           "636F6AAF3B891E82"
         ],
-        citybus_stops: [
-          { stop: "001550", routes: ["171", "904", "905"] }
+        citybus_targets: [
+          { stop: "001550", route: "171", dest: "海怡半島" },
+          { stop: "001550", route: "904", dest: "堅尼地城" },
+          { stop: "001550", route: "905", dest: "灣仔 (會展)" }
         ],
-        gmb_routes: [],
-        routes: [] 
+        gmb_routes: []
       },
       home_bus: {
-        title: "🚌 屋企樓下 (巴士)",
+        title: "🚌 荔灣花園",
         isTerminus: false,
         kmb_stops: ["37A4D07D7179CE76"],
-        citybus_stops: [],
-        gmb_routes: [],
-        routes: [] 
+        citybus_targets: [],
+        gmb_routes: []
       },
       home_gmb: {
-        title: "🚐 屋企樓下 (小巴)",
+        title: "🚐 專線小巴",
         isTerminus: false,
         kmb_stops: [],
-        citybus_stops: [],
+        citybus_targets: [],
         gmb_routes: [
-          { route: "90M", route_id: "2004245", seq: 1, stop_seq: 1, defaultDest: "美孚站" },
-          { route: "90P", route_id: "2004246", seq: 1, stop_seq: 1, defaultDest: "美孚站" },
-          { route: "92M", route_id: "2004247", seq: 1, stop_seq: 1, defaultDest: "美孚站" }
-        ],
-        routes: [] 
+          { route: "90M", route_id: "2004245", stop_seq: 1, defaultDest: "美孚站" },
+          { route: "90P", route_id: "2004246", stop_seq: 1, defaultDest: "美孚站" },
+          { route: "92M", route_id: "2004247", stop_seq: 1, defaultDest: "美孚站" }
+        ]
       }
     };
 
@@ -305,10 +229,7 @@
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, index) => {
         tab.classList.remove('active', 'gmb-active');
-        if (
-          (locKey === 'office' && index === 0) || 
-          (locKey === 'home_bus' && index === 1)
-        ) {
+        if ((locKey === 'office' && index === 0) || (locKey === 'home_bus' && index === 1)) {
           tab.classList.add('active');
         } else if (locKey === 'home_gmb' && index === 2) {
           tab.classList.add('active', 'gmb-active');
@@ -333,7 +254,7 @@
         const config = LOCATIONS[currentLocation];
         let allEtaData = [];
 
-        // 1. 發送九巴 API 請求
+        // 1. 九巴 API
         const kmbPromises = (config.kmb_stops || []).map(stopId => 
           fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`)
             .then(res => res.json())
@@ -347,36 +268,37 @@
             .catch(() => [])
         );
 
-        // 2. 發送城巴 API 請求
-        const citybusPromises = [];
-        (config.citybus_stops || []).forEach(item => {
-          item.routes.forEach(route => {
-            citybusPromises.push(
-              fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${item.stop}/${route}`)
-                .then(res => res.json())
-                .then(res => (res.data || []).map(bus => ({
-                  company: 'CTB',
-                  route: bus.route,
-                  dest_tc: bus.dest_tc || '',
-                  eta: bus.eta,
-                  rmk_tc: bus.rmk_tc || ''
-                })))
-                .catch(() => [])
-            );
-          });
-        });
-
-        // 3. 發送綠色小巴 API 請求
-        const gmbPromises = (config.gmb_routes || []).map(item =>
-          fetch(`https://data.eta.gov.hk/v1/transport/gmb/stop-eta/${item.route_id}/${item.seq}/${item.stop_seq}`)
+        // 2. 城巴 API
+        const citybusPromises = (config.citybus_targets || []).map(item =>
+          fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${item.stop}/${item.route}`)
             .then(res => res.json())
-            .then(res => (res.data?.eta || []).map(bus => ({
-              company: 'GMB',
-              route: item.route,
-              dest_tc: bus.dest_tc || item.defaultDest || '目的地',
-              eta: bus.eta_date,
-              rmk_tc: bus.remarks_tc || ''
-            })))
+            .then(res => {
+              const list = res.data || [];
+              return list.map(bus => ({
+                company: 'CTB',
+                route: bus.route,
+                dest_tc: bus.dest_tc || item.dest || '目的地',
+                eta: bus.eta,
+                rmk_tc: bus.rmk_tc || ''
+              }));
+            })
+            .catch(() => [])
+        );
+
+        // 3. 綠色小巴官方 API
+        const gmbPromises = (config.gmb_routes || []).map(item =>
+          fetch(`https://data.etagmb.gov.hk/eta/route-stop/${item.route_id}/${item.stop_seq}`)
+            .then(res => res.json())
+            .then(res => {
+              const etaList = res.data?.eta || [];
+              return etaList.map(bus => ({
+                company: 'GMB',
+                route: item.route,
+                dest_tc: item.defaultDest || '美孚站',
+                eta: bus.eta,
+                rmk_tc: bus.remarks_tc || ''
+              }));
+            })
             .catch(() => [])
         );
 
@@ -386,28 +308,26 @@
           allEtaData = allEtaData.concat(data);
         });
 
-        // 4. 過濾條件
+        const nowTime = new Date().getTime();
+
+        // 4. 過濾有效且未過期的班次
         let filteredList = allEtaData.filter(item => {
-          const hasEta = item.eta !== null && item.eta !== "";
-          const isTargetRoute = config.routes.length === 0 || config.routes.includes(item.route);
-          
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+
           const isToLaiChiKok = item.dest_tc.includes('荔枝角') && currentLocation === 'office';
           const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
-          
-          // 排除 32H 路線
           const is32H = item.route === '32H';
           
-          return hasEta && isTargetRoute && !isToLaiChiKok && !isArrivingOnly && !is32H;
+          return diffMinutes >= -2 && !isToLaiChiKok && !isArrivingOnly && !is32H;
         });
 
-        // 5. 按時間由近至遠排序
-        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
-
-        // 6. 按「路線-目的地」分組，最多保留最近 2 班
+        // 5. 按「公司-路線-目的地」獨立分組
         const groupedByRoute = {};
 
         filteredList.forEach(item => {
-          const routeKey = `${item.route}-${item.dest_tc}`;
+          const routeKey = `${item.company}-${item.route}-${item.dest_tc}`;
           if (!groupedByRoute[routeKey]) {
             groupedByRoute[routeKey] = [];
           }
@@ -426,7 +346,7 @@
         const routeKeys = Object.keys(groupedByRoute);
 
         if (routeKeys.length === 0) {
-          container.innerHTML = '<p class="loading">暫無車輛班次資料或已尾班車</p>';
+          container.innerHTML = '<p class="loading">暫無班次資料或已尾班車</p>';
           updateTimestamp();
           return;
         }
@@ -440,11 +360,13 @@
 
         container.innerHTML = '';
 
-        // 7. 渲染卡片
+        // 6. 渲染卡片
         const statusText = config.isTerminus ? '即將開出' : '即將到站';
 
         routeKeys.forEach(key => {
           const busList = groupedByRoute[key];
+          if (busList.length === 0) return;
+
           const firstBus = busList[0];
           const secondBus = busList[1];
 
@@ -464,16 +386,20 @@
           }
 
           let companyClass = '';
-          let badgeHTML = '';
+          let badgeClass = '';
 
           if (firstBus.company === 'CTB') {
             companyClass = 'citybus';
-            badgeHTML = `<span class="company-badge badge-ctb">城巴</span>`;
+            badgeClass = 'badge-ctb';
+            companyName = '城巴';
           } else if (firstBus.company === 'GMB') {
             companyClass = 'gmb';
-            badgeHTML = `<span class="company-badge badge-gmb">小巴</span>`;
+            badgeClass = 'badge-gmb';
+            companyName = '小巴';
           } else {
-            badgeHTML = `<span class="company-badge badge-kmb">九巴</span>`;
+            companyClass = '';
+            badgeClass = 'badge-kmb';
+            companyName = '九巴';
           }
 
           const card = document.createElement('div');
@@ -482,7 +408,7 @@
             <div class="route-info">
               <div class="route-header">
                 <span class="route-number">${firstBus.route}</span>
-                ${badgeHTML}
+                <span class="company-badge ${badgeClass}">${companyName}</span>
               </div>
               <span class="destination">往 ${firstBus.dest_tc || '目的地'}</span>
             </div>
