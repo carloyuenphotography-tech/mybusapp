@@ -25,7 +25,7 @@
     header {
       text-align: center;
       padding-top: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     h1 {
       font-size: 1.4rem;
@@ -37,6 +37,37 @@
       font-size: 0.75rem;
       color: #666666;
       margin-top: 6px;
+    }
+
+    /* 🔗 返回主頁按鈕樣式 */
+    .link-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .back-btn {
+      width: 100%;
+      padding: 10px 16px;
+      background: #2a2a2a;
+      color: #ffffff;
+      border: 1px solid #444444;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .back-btn:active {
+      background: #3a3a3a;
     }
 
     /* 🏷️ 分頁 Tab 樣式 */
@@ -164,7 +195,14 @@
     <div id="update-time" class="update-time">更新中...</div>
   </header>
 
-  <!-- 地點切換 Tab (新增 🚇 港鐵+小巴) -->
+  <!-- 🔗 返回主頁 (index.html) 的按鈕 -->
+  <div class="link-container">
+    <a href="index.html" class="back-btn">
+      ⬅️ 返回主頁 (巴士 / 小巴)
+    </a>
+  </div>
+
+  <!-- 地點切換 Tab -->
   <div class="tab-container">
     <div class="tab-btn active" onclick="switchLocation('meifoo')">🚉 美孚 (795X)</div>
     <div class="tab-btn" onclick="switchLocation('evangel')">🏫 播道書院</div>
@@ -313,23 +351,20 @@
         const container = document.getElementById('bus-container');
         container.innerHTML = '';
 
-        // a. 港鐵美孚站 (荃灣綫往中環方向) API
         const mtrMeiFooPromise = fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TWL&sta=MEF")
           .then(res => res.json())
           .then(data => {
-            const list = data.data["TWL-MEF"].DOWN || []; // DOWN 往中環/荔枝角方向
+            const list = data.data["TWL-MEF"].DOWN || [];
             return list.map(item => item.time);
           }).catch(() => []);
 
-        // b. 港鐵調景嶺站 (將軍澳綫往寶琳/康城方向) API
         const mtrTiuKengLengPromise = fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TKL&sta=TIK")
           .then(res => res.json())
           .then(data => {
-            const list = data.data["TKL-TIK"].UP || []; // UP 往將軍澳方向
+            const list = data.data["TKL-TIK"].UP || [];
             return list.map(item => item.time);
           }).catch(() => []);
 
-        // c. 綠色小巴 108A (調景嶺站往坑口/播道書院) API
         const gmb108APromise = fetch("https://data.eta.gov.hk/v1/transport/gmb/stop-eta/2002361/1/1")
           .then(res => res.json())
           .then(data => {
@@ -341,15 +376,8 @@
           mtrMeiFooPromise, mtrTiuKengLengPromise, gmb108APromise
         ]);
 
-        const now = new Date();
-
-        // 渲染 1: 港鐵 美孚站
         renderCard(container, "美孚站 (荃灣綫)", "往 荔枝角 / 太子", mefTimes, "MTR", "mtr");
-
-        // 渲染 2: 港鐵 調景嶺站
         renderCard(container, "調景嶺站 (將軍澳綫)", "往 將軍澳 / 康城", tikTimes, "MTR", "mtr");
-
-        // 渲染 3: 專線小巴 108A
         renderCard(container, "108A 小巴 (調景嶺站)", "往 播道書院 / 坑口", gmbTimes, "小巴", "gmb");
 
         updateTimestamp();
@@ -418,7 +446,6 @@
       }
     }
 
-    // 首次執行與自動更新 (每 30 秒)
     refreshData();
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     autoRefreshTimer = setInterval(refreshData, 30000);
