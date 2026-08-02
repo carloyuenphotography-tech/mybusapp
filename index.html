@@ -39,11 +39,11 @@
       margin-top: 6px;
     }
 
-    /* 🏷️ 分頁 Tab 樣式 */
+    /* 🏷️ 分頁 Tab 樣式 (三按鈕並排) */
     .tab-container {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 6px;
       margin-bottom: 20px;
       max-width: 500px;
       margin-left: auto;
@@ -51,22 +51,28 @@
     }
     .tab-btn {
       flex: 1;
-      padding: 10px 16px;
+      padding: 10px 4px;
       background: #2a2a2a;
       color: #888888;
       border: 1px solid #333333;
       border-radius: 20px;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: center;
+      white-space: nowrap;
     }
     .tab-btn.active {
       background: #e60012; /* 九巴紅 */
       color: #ffffff;
       border-color: #e60012;
       box-shadow: 0 2px 8px rgba(230, 0, 18, 0.4);
+    }
+    .tab-btn.gmb-active {
+      background: #009933; /* 小巴綠 */
+      border-color: #009933;
+      box-shadow: 0 2px 8px rgba(0, 153, 51, 0.4);
     }
 
     #bus-container {
@@ -85,11 +91,15 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     .card.citybus {
-      border-left-color: #0055a5;
+      border-left-color: #0055a5; /* 城巴藍 */
     }
-    .route-info {
+    .card.gmb {
+      border-left-color: #009933; /* 專線小巴綠 */
+    }
+    .route-header {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 8px;
     }
     .route-number {
       font-size: 2rem;
@@ -97,6 +107,29 @@
       color: #f5ab16; /* 金黃色 */
       line-height: 1.1;
     }
+    
+    /* 🏷️ 巴士/小巴公司標籤樣式 */
+    .company-badge {
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 3px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      display: inline-block;
+    }
+    .badge-kmb {
+      background-color: #e60012;
+      color: #ffffff;
+    }
+    .badge-ctb {
+      background-color: #0055a5;
+      color: #ffcc00;
+    }
+    .badge-gmb {
+      background-color: #009933;
+      color: #ffffff;
+    }
+
     .destination {
       font-size: 0.95rem;
       color: #cccccc;
@@ -137,20 +170,21 @@
 <body>
 
   <header>
-    <h1>🚌 實時巴士開出資訊</h1>
+    <h1>🚌 實時巴士/小巴到站資訊</h1>
     <div id="update-time" class="update-time">更新中...</div>
   </header>
 
-  <!-- 地點切換 Tab -->
+  <!-- 地點/交通工具切換 Tab (已獨立拆出小巴按鈕) -->
   <div class="tab-container">
-    <div class="tab-btn active" onclick="switchLocation('office')">🏢 荔枝角巴士總站</div>
-    <div class="tab-btn" onclick="switchLocation('home')">🚌 荔灣花園</div>
+    <div class="tab-btn active" onclick="switchLocation('office')">🏢 荔枝角總站</div>
+    <div class="tab-btn" onclick="switchLocation('home_bus')">🚌 屋企巴士</div>
+    <div class="tab-btn" onclick="switchLocation('home_gmb')">🚐 屋企小巴</div>
   </div>
 
   <div id="bus-container" class="loading">載入數據中...</div>
 
   <script>
-    // ⚙️ 車站設定檔
+    // ⚙️ 車站與路線設定檔
     const LOCATIONS = {
       office: {
         title: "🏢 荔枝角巴士總站",
@@ -163,12 +197,26 @@
         citybus_stops: [
           { stop: "001550", routes: ["171", "904", "905"] }
         ],
+        gmb_routes: [],
         routes: [] 
       },
-      home: {
-        title: "🚌 荔灣花園",
+      home_bus: {
+        title: "🚌 屋企樓下 (巴士)",
         kmb_stops: ["37A4D07D7179CE76"],
         citybus_stops: [],
+        gmb_routes: [],
+        routes: [] 
+      },
+      home_gmb: {
+        title: "🚐 屋企樓下 (小巴)",
+        kmb_stops: [],
+        citybus_stops: [],
+        // 🟢 專屬小巴頁面 (90M, 90P, 92M 往美孚站)
+        gmb_routes: [
+          { route: "90M", route_id: "2004245", seq: 1, stop_seq: 1 },
+          { route: "90P", route_id: "2004246", seq: 1, stop_seq: 1 },
+          { route: "92M", route_id: "2004247", seq: 1, stop_seq: 1 }
+        ],
         routes: [] 
       }
     };
@@ -182,10 +230,14 @@
 
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, index) => {
-        if ((locKey === 'office' && index === 0) || (locKey === 'home' && index === 1)) {
+        tab.classList.remove('active', 'gmb-active');
+        if (
+          (locKey === 'office' && index === 0) || 
+          (locKey === 'home_bus' && index === 1)
+        ) {
           tab.classList.add('active');
-        } else {
-          tab.classList.remove('active');
+        } else if (locKey === 'home_gmb' && index === 2) {
+          tab.classList.add('active', 'gmb-active'); // 小巴套用綠色高亮
         }
       });
 
@@ -240,30 +292,41 @@
           });
         });
 
-        const results = await Promise.all([...kmbPromises, ...citybusPromises]);
+        // 3. 發送綠色小巴 API 請求
+        const gmbPromises = (config.gmb_routes || []).map(item =>
+          fetch(`https://data.eta.gov.hk/v1/transport/gmb/stop-eta/${item.route_id}/${item.seq}/${item.stop_seq}`)
+            .then(res => res.json())
+            .then(res => (res.data?.eta || []).map(bus => ({
+              company: 'GMB',
+              route: item.route,
+              dest_tc: '美孚站',
+              eta: bus.eta_date,
+              rmk_tc: ''
+            })))
+            .catch(() => [])
+        );
+
+        const results = await Promise.all([...kmbPromises, ...citybusPromises, ...gmbPromises]);
         
         results.forEach(data => {
           allEtaData = allEtaData.concat(data);
         });
 
-        // 3. ✨ 關鍵過濾：
-        // a. 有有效 ETA
-        // b. 排除目的地包含「荔枝角」的班次 (即排除開往荔枝角落客的車)
-        // c. 排除備註標示為「到達/落客」的班次
+        // 4. 過濾條件
         let filteredList = allEtaData.filter(item => {
           const hasEta = item.eta !== null && item.eta !== "";
           const isTargetRoute = config.routes.length === 0 || config.routes.includes(item.route);
           
-          const isToLaiChiKok = item.dest_tc.includes('荔枝角'); // 👈 自動過濾往荔枝角班次
+          const isToLaiChiKok = item.dest_tc.includes('荔枝角') && currentLocation === 'office';
           const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
           
           return hasEta && isTargetRoute && !isToLaiChiKok && !isArrivingOnly;
         });
 
-        // 4. 按時間由近至遠排序
+        // 5. 按時間由近至遠排序
         filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
 
-        // 5. 按「路線-目的地」分組，最多保留最近 2 班開出班次
+        // 6. 按「路線-目的地」分組，最多保留最近 2 班
         const groupedByRoute = {};
 
         filteredList.forEach(item => {
@@ -286,7 +349,7 @@
         const routeKeys = Object.keys(groupedByRoute);
 
         if (routeKeys.length === 0) {
-          container.innerHTML = '<p class="loading">暫無開出班次資料或已尾班車</p>';
+          container.innerHTML = '<p class="loading">暫無車輛班次資料或已尾班車</p>';
           updateTimestamp();
           return;
         }
@@ -300,7 +363,7 @@
 
         container.innerHTML = '';
 
-        // 6. 渲染卡片
+        // 7. 渲染卡片
         routeKeys.forEach(key => {
           const busList = groupedByRoute[key];
           const firstBus = busList[0];
@@ -310,23 +373,39 @@
           const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
           const clockTime1 = formatTime(firstBus.eta);
           
-          let etaDisplay1 = diff1 <= 0 ? `即將開出 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+          let etaDisplay1 = diff1 <= 0 ? `即將到站 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
           let isArriving1 = diff1 <= 0;
 
           let etaDisplay2HTML = '';
           if (secondBus) {
             const diff2 = Math.round((new Date(secondBus.eta) - now) / 60000);
             const clockTime2 = formatTime(secondBus.eta);
-            const text2 = diff2 <= 0 ? `即將開出 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
+            const text2 = diff2 <= 0 ? `即將到站 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
             etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
           }
 
+          let companyClass = '';
+          let badgeHTML = '';
+
+          if (firstBus.company === 'CTB') {
+            companyClass = 'citybus';
+            badgeHTML = `<span class="company-badge badge-ctb">城巴</span>`;
+          } else if (firstBus.company === 'GMB') {
+            companyClass = 'gmb';
+            badgeHTML = `<span class="company-badge badge-gmb">小巴</span>`;
+          } else {
+            badgeHTML = `<span class="company-badge badge-kmb">九巴</span>`;
+          }
+
           const card = document.createElement('div');
-          card.className = `card ${firstBus.company === 'CTB' ? 'citybus' : ''}`;
+          card.className = `card ${companyClass}`;
           card.innerHTML = `
             <div class="route-info">
-              <span class="route-number">${firstBus.route}</span>
-              <span class="destination">往 ${firstBus.dest_tc || '未知目的地'}</span>
+              <div class="route-header">
+                <span class="route-number">${firstBus.route}</span>
+                ${badgeHTML}
+              </div>
+              <span class="destination">往 ${firstBus.dest_tc || '美孚站'}</span>
             </div>
             <div class="eta-container">
               <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
