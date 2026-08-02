@@ -4,17 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- ✨ 設定 iPhone 主畫面預設顯示名稱 -->
+  <!-- ✨ iOS 主畫面顯示名稱 -->
   <title>美孚巴士到站</title>
   <meta name="apple-mobile-web-app-title" content="美孚巴士">
 
   <!-- 設定為 iOS / Android PWA 全螢幕模式 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>我的專屬巴士站</title>
-  
+
   <style>
     * {
       box-sizing: border-box;
@@ -232,7 +229,7 @@
     const LOCATIONS = {
       office: {
         title: "🏢 荔枝角巴士總站",
-        isTerminus: true, // 標記為總站（顯示「即將開出」）
+        isTerminus: true,
         kmb_stops: [
           "75EF762BDAB6F5C3",
           "2F8E1900654BF56C",
@@ -366,7 +363,10 @@
           const isToLaiChiKok = item.dest_tc.includes('荔枝角') && currentLocation === 'office';
           const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
           
-          return hasEta && isTargetRoute && !isToLaiChiKok && !isArrivingOnly;
+          // ✨ 排除 32H 路線
+          const is32H = item.route === '32H';
+          
+          return hasEta && isTargetRoute && !isToLaiChiKok && !isArrivingOnly && !is32H;
         });
 
         // 5. 按時間由近至遠排序
@@ -409,7 +409,7 @@
 
         container.innerHTML = '';
 
-        // 7. 渲染卡片 (根據是否總站調整「即將開出」或「即將到站」)
+        // 7. 渲染卡片
         const statusText = config.isTerminus ? '即將開出' : '即將到站';
 
         routeKeys.forEach(key => {
