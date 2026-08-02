@@ -108,6 +108,17 @@
       max-width: 500px;
       margin: 0 auto;
     }
+
+    .section-title {
+      font-size: 0.88rem;
+      font-weight: bold;
+      color: #475569;
+      margin: 16px 0 8px 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .card {
       background: #ffffff;
       border-radius: 14px;
@@ -262,17 +273,17 @@
     <div class="panel-title">🚏 795X 詳細沿途主要車站速查</div>
     <ul class="station-list">
       <li><strong>往播道書院 / 清水灣半島方向：</strong><br>
-        蘇屋邨 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 旺角 (彌敦道) ➔ 油麻地 ➔ 將軍澳隧道轉車站 ➔ 調景嶺站 ➔ <strong>播道書院</strong> ➔ 清水灣半島
+        蘇屋邨 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 旺角 ➔ 油麻地 ➔ 將軍澳隧道轉車站 ➔ 調景嶺站 ➔ <strong>播道書院</strong> ➔ 清水灣半島
       </li>
       <li><strong>往美孚 / 蘇屋方向：</strong><br>
-        清水灣半島 ➔ <strong>播道書院</strong> ➔ 調景嶺站 ➔ 將軍澳隧道轉車站 ➔ 旺角 (亞皆老街/彌敦道) ➔ 深水埗 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 蘇屋邨
+        清水灣半島 ➔ <strong>播道書院</strong> ➔ 調景嶺站 ➔ 將軍澳隧道轉車站 ➔ 旺角 ➔ 深水埗 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 蘇屋邨
       </li>
     </ul>
   </div>
 
   <footer>
     <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.1.4 (795X)</div>
+    <div class="version-tag">版本 v1.2.4 (795X)</div>
   </footer>
 
   <script>
@@ -282,7 +293,6 @@
         title: "🚉 美孚",
         defaultDest: "清水灣半島",
         citybus_stops: [{ stop: "001517", route: "795X" }],
-        // 預估由美孚開出後，到達播道書院大約需要 38 分鐘
         travelTimeMin: 38
       },
       evangel: {
@@ -290,7 +300,6 @@
         title: "🏫 播道書院",
         defaultDest: "蘇屋",
         citybus_stops: [{ stop: "003472", route: "795X" }],
-        // 預估由播道書院開出後，到達美孚大約需要 38 分鐘
         travelTimeMin: 38
       },
       mtr_combo: {
@@ -376,13 +385,12 @@
         let etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
         let isArriving1 = diff1 <= 0;
 
-        // ✨ 計算預計到達對面站點的時間 (加上約 38 分鐘車程)
         const arrivalTime = new Date(departureTime.getTime() + config.travelTimeMin * 60000);
         const arrivalClockTime = formatTime(arrivalTime.toISOString());
         const totalDiffToDest = Math.round((arrivalTime - now) / 60000);
         const targetStationName = currentLocation === 'meifoo' ? '播道書院' : '美孚';
         
-        let arrivalNoticeHTML = `<div style="font-size: 0.8rem; color: #0284c7; margin-top: 4px; font-weight: bold;">預計約 ${totalDiffTimeText(totalDiffToDest)} (${arrivalClockTime}) 抵達${targetStationName}</div>`;
+        let arrivalNoticeHTML = `<div style="font-size: 0.8rem; color: #0284c7; margin-top: 4px; font-weight: bold;">預計約 ${totalDiffToDest <= 0 ? '即將' : totalDiffToDest + '分鐘後'} (${arrivalClockTime}) 抵達${targetStationName}</div>`;
 
         let etaDisplay2HTML = '';
         if (secondBus) {
@@ -400,7 +408,7 @@
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <div class="route-info">
+          <div class="route-info" style="flex: 1;">
             <div class="route-header">
               <span class="route-number">795X</span>
               <span class="company-badge">城巴</span>
@@ -422,15 +430,72 @@
       }
     }
 
-    function totalDiffTimeText(min) {
-      if (min <= 0) return '即將';
-      return `${min} 分鐘後`;
-    }
-
     async function fetchComboETA() {
       try {
         const container = document.getElementById('bus-container');
         container.innerHTML = '';
+        const now = new Date();
+
+        let mtrMeiFooToTkoHTML = '';
+        let mtrTkoToMeiFooHTML = '';
+
+        // 1. 由美孚站出發 ➔ 預計到達將軍澳站
+        try {
+          const mtrRes = await fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TWL&sta=MEF");
+          const mtrData = await mtrRes.json();
+          const mefTimes = mtrData.data["TWL-MEF"].DOWN || [];
+          if (mefTimes.length > 0 && mefTimes[0].time) {
+            const mtrDepTime = new Date(mefTimes[0].time);
+            const tkoArrTime = new Date(mtrDepTime.getTime() + 40 * 60000);
+            const diffMtr = Math.round((tkoArrTime - now) / 60000);
+            const mtrText = diffMtr <= 0 ? `即將到達 (${formatTime(tkoArrTime.toISOString())})` : `${diffMtr} 分鐘 (${formatTime(tkoArrTime.toISOString())})`;
+
+            mtrMeiFooToTkoHTML = `
+              <div class="card mtr">
+                <div class="route-info">
+                  <div class="route-header">
+                    <span class="route-number" style="font-size: 1.15rem;">港鐵 (美孚起步 ➔ 將軍澳)</span>
+                    <span class="company-badge badge-mtr">MTR</span>
+                  </div>
+                  <span class="destination">由美孚站上車 (經荔枝角/長沙灣往太子轉綫)</span>
+                </div>
+                <div class="eta-container">
+                  <div class="eta-first">${mtrText}</div>
+                  <div class="eta-second">美孚發車: ${formatTime(mefTimes[0].time)}</div>
+                </div>
+              </div>
+            `;
+          }
+        } catch(e) {}
+
+        // 2. 由將軍澳站出發 ➔ 預計到達美孚站
+        try {
+          const mtrRes = await fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TKL&sta=TKO");
+          const mtrData = await mtrRes.json();
+          const tkoTimes = mtrData.data["TKL-TKO"].UP || [];
+          if (tkoTimes.length > 0 && tkoTimes[0].time) {
+            const mtrDepTime = new Date(tkoTimes[0].time);
+            const mefArrTime = new Date(mtrDepTime.getTime() + 35 * 60000);
+            const diffMtr = Math.round((mefArrTime - now) / 60000);
+            const mtrText = diffMtr <= 0 ? `即將到達 (${formatTime(mefArrTime.toISOString())})` : `${diffMtr} 分鐘 (${formatTime(mefArrTime.toISOString())})`;
+
+            mtrTkoToMeiFooHTML = `
+              <div class="card mtr">
+                <div class="route-info">
+                  <div class="route-header">
+                    <span class="route-number" style="font-size: 1.15rem;">港鐵 (將軍澳起步 ➔ 美孚)</span>
+                    <span class="company-badge badge-mtr">MTR</span>
+                  </div>
+                  <span class="destination">由將軍澳站上車 (實時推算)</span>
+                </div>
+                <div class="eta-container">
+                  <div class="eta-first">${mtrText}</div>
+                  <div class="eta-second">將軍澳發車: ${formatTime(tkoTimes[0].time)}</div>
+                </div>
+              </div>
+            `;
+          }
+        } catch(e) {}
 
         const mtrMeiFooPromise = fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TWL&sta=MEF")
           .then(res => res.json())
@@ -457,8 +522,25 @@
           mtrMeiFooPromise, mtrTiuKengLengPromise, gmb108APromise
         ]);
 
+        let htmlContent = '';
+
+        if (mtrMeiFooToTkoHTML || mtrTkoToMeiFooHTML) {
+          htmlContent += `<div class="section-title">🚀 港鐵跨綫預計到達時間</div>`;
+          if (mtrMeiFooToTkoHTML) htmlContent += mtrMeiFooToTkoHTML;
+          if (mtrTkoToMeiFooHTML) htmlContent += mtrTkoToMeiFooHTML;
+        }
+
+        htmlContent += `<div class="section-title">⏱️ 港鐵實時開出班次</div>`;
+        container.innerHTML = htmlContent;
+
         renderCard(container, "美孚站 (荃灣綫)", "往 荔枝角 / 太子", mefTimes, "MTR", "mtr");
         renderCard(container, "調景嶺站 (將軍澳綫)", "往 將軍澳 / 康城", tikTimes, "MTR", "mtr");
+
+        let gmbHeader = document.createElement('div');
+        gmbHeader.className = 'section-title';
+        gmbHeader.innerHTML = `🚐 接駁專線小巴`;
+        container.appendChild(gmbHeader);
+
         renderCard(container, "108A 小巴 (調景嶺站)", "往 播道書院 / 坑口", gmbTimes, "小巴", "gmb");
 
         updateTimestamp();
@@ -498,7 +580,7 @@
       card.innerHTML = `
         <div class="route-info">
           <div class="route-header">
-            <span class="route-number" style="font-size: 1.3rem;">${title}</span>
+            <span class="route-number" style="font-size: 1.2rem;">${title}</span>
             <span class="company-badge ${badgeClass}">${badgeText}</span>
           </div>
           <span class="destination">${dest}</span>
