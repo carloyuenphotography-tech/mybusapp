@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- 📱 iPhone / PWA Home Screen Icon -->
+	<link rel="apple-touch-icon" sizes="180x180" href="mybusapplogo.png">
+
+	<!-- 🌐 Browser Favicon -->
+	<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lai Chi Kok Bus Real-Time Info</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f4f6f9;
+      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    header {
+      text-align: center;
+      padding-top: 10px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+      letter-spacing: 0.3px;
+    }
+    .update-time {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* 🚏 Location Switcher Tabs */
+    .location-tab-container {
+      display: flex;
+      gap: 8px;
+      max-width: 500px;
+      margin: 0 auto 16px auto;
+    }
+    .location-tab {
+      flex: 1;
+      padding: 12px 8px;
+      background: #ffffff;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+    .location-tab.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    /* 🔗 Containers */
+    .link-container, .section-title, #bus-primary-container, #bus-secondary-container, footer {
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* 🗂️ Section Titles */
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #334155;
+      margin: 20px auto 10px auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    /* 🚌 Bus Cards */
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border-left: 6px solid #cbd5e1;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card[href]:active {
+      transform: scale(0.98);
+      background-color: #f8fafc;
+    }
+    .card.kmb { border-left-color: #e11d48; }
+    .card.ctb { border-left-color: #0284c7; }
+    
+    .route-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .route-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.1;
+    }
+    .company-badge {
+      font-size: 0.65rem;
+      font-weight: bold;
+      padding: 3px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      display: inline-block;
+    }
+    .badge-kmb { background-color: #ffe4e6; color: #e11d48; }
+    .badge-ctb { background-color: #e0f2fe; color: #0284c7; }
+
+    .destination {
+      font-size: 0.88rem;
+      color: #475569;
+      margin-top: 4px;
+      font-weight: bold;
+      max-width: 180px;
+      line-height: 1.3;
+    }
+    
+    .eta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .eta-first {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #059669;
+    }
+    .eta-subsequent {
+      font-size: 0.76rem;
+      color: #64748b;
+      margin-top: 3px;
+      text-align: right;
+      white-space: nowrap;
+      letter-spacing: -0.2px;
+    }
+    .eta-arriving {
+      color: #e11d48;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .loading {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.95rem;
+      padding: 24px 0;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 12px;
+    }
+
+    /* 🔗 Bottom Navigation */
+    .link-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+    .nav-btn {
+      width: 100%;
+      padding: 14px 16px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:active {
+      background: #f1f5f9;
+    }
+
+    footer {
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .notice-text { font-size: 0.78rem; color: #64748b; line-height: 1.4; margin: 0; }
+    .version-tag { font-size: 0.68rem; color: #cbd5e1; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>
+      <svg width="32" height="32" viewBox="0 0 512 512" style="vertical-align: middle; margin-right: 6px; border-radius: 10px;" xmlns="http://www.w3.org/2000/svg">
+        <rect width="512" height="512" rx="110" fill="#0f172a"/>
+        <path d="M130 180 C130 150 155 130 200 130 H312 C357 130 382 150 382 180 V310 C382 340 357 360 312 360 H200 C155 360 130 340 130 310 Z" fill="#ffffff" opacity="0.95"/>
+        <path d="M166 168 H346 V210 H166 Z" fill="#0f172a" opacity="0.8"/>
+        <circle cx="180" cy="335" r="16" fill="#059669"/>
+        <circle cx="332" cy="335" r="16" fill="#059669"/>
+        <rect x="220" y="150" width="72" height="8" rx="4" fill="#e11d48"/>
+      </svg>
+      Lai Chi Kok Bus Live Info
+    </h1>
+    <div id="update-time" class="update-time">Initializing...</div>
+  </header>
+
+  <!-- 🚏 Location Switcher Tabs -->
+  <div class="location-tab-container">
+    <div id="tab-terminus" class="location-tab active" onclick="switchLocation('terminus')">🏢 Terminus</div>
+    <div id="tab-garden" class="location-tab" onclick="switchLocation('garden')">🏡 Lai Chi Kok Bay Garden</div>
+  </div>
+
+  <!-- 🚏 Primary Section -->
+  <div class="section-title" id="title-primary">🚏 Route 6 (From Terminus)</div>
+  <div id="bus-primary-container" class="loading">Loading data...</div>
+
+  <!-- 🚏 Secondary Section -->
+  <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 Joint Routes 171, 904, 905 (From Terminus)</div>
+  <div id="bus-secondary-container" class="loading">Loading data...</div>
+
+  <!-- 🔗 Quick Navigation -->
+  <div class="link-container">
+    <a href="index.html" class="nav-btn" style="background: #0f172a; color: #ffffff;">
+      <span>🌐 切換至中文版 (Traditional Chinese)</span>
+      <span>➔</span>
+    </a>
+    <a href="tinshuiwai.html" class="nav-btn">
+      <span>🚌 Tin Shui Wai Routes (269M/265M/265B/K76)</span>
+      <span>➔</span>
+    </a>
+    <a href="795x.html" class="nav-btn">
+      <span>🚌 Route 795X & MTR Shuttle</span>
+      <span>➔</span>
+    </a>
+    <a href="bus6.html" class="nav-btn">
+      <span>🚌 Route 6 Full Schedule</span>
+      <span>➔</span>
+    </a>
+  </div>
+
+  <footer>
+    <p class="notice-text">💡 Tap the tabs above to switch between "Lai Chi Kok Terminus" and "Lai Chi Kok Bay Garden".</p>
+    <div class="version-tag">Version v1.9.6 (Lai Chi Kok Bay Garden Edition)</div>
+  </footer>
+
+  <script>
+    const JOINT_ROUTES = ["171", "904", "905"];
+    const GARDEN_STOP_ID = "37A4D07D7179CE76";
+    const GARDEN_ROUTES = ["46X", "46", "45", "42", "30", "30X"];
+    
+    let currentLocation = 'terminus'; 
+    let termStopsData = {}; 
+    let isDataReady = false;
+    let autoRefreshTimer = null;
+
+    function formatTime(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    function switchLocation(loc) {
+      if (currentLocation === loc) return;
+      currentLocation = loc;
+
+      document.getElementById('tab-terminus').classList.remove('active');
+      document.getElementById('tab-garden').classList.remove('active');
+      document.getElementById(`tab-${loc}`).classList.add('active');
+
+      const titlePrimary = document.getElementById('title-primary');
+      const titleSecondary = document.getElementById('title-secondary');
+      const containerSecondary = document.getElementById('bus-secondary-container');
+
+      if (loc === 'terminus') {
+        titlePrimary.innerText = "🚏 Route 6 (From Terminus)";
+        titleSecondary.style.display = 'block';
+        containerSecondary.style.display = 'block';
+        titleSecondary.innerText = "🚏 Joint Routes 171, 904, 905 (From Terminus)";
+      } else {
+        titlePrimary.innerText = "🚏 Lai Chi Kok Bay Garden Stop (46X, 46, 45, 42, 30, 30X)";
+        titleSecondary.style.display = 'none'; 
+        containerSecondary.style.display = 'none'; 
+      }
+
+      document.getElementById('bus-primary-container').innerHTML = '<p class="loading" style="margin:0;">Loading...</p>';
+      containerSecondary.innerHTML = '<p class="loading" style="margin:0;">Loading...</p>';
+
+      fetchAllData();
+    }
+
+    async function initData() {
+      try {
+        for (const route of JOINT_ROUTES) {
+          try {
+            const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/inbound`).then(r => r.json());
+            const stops = ctbRes.data || [];
+            if (stops.length > 0) {
+              termStopsData[route] = { ctb_stop: stops[0].stop };
+            }
+          } catch(e) {}
+        }
+        isDataReady = true;
+      } catch (e) {
+        console.error('Initialization failed:', e);
+      }
+
+      fetchAllData();
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      autoRefreshTimer = setInterval(fetchAllData, 30000);
+    }
+
+    function fetchAllData() {
+      if (currentLocation === 'terminus') {
+        fetchBus6TerminusETA();
+        if (isDataReady) fetchTerminusETA();
+      } else {
+        fetchGardenETA();
+      }
+    }
+
+    async function fetchBus6TerminusETA() {
+      try {
+        const container = document.getElementById('bus-primary-container');
+        const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/6/1`).then(r => r.json());
+        const list = kmbRes.data || [];
+        const filteredKmb = list.filter(item => item.dir === 'O' && parseInt(item.seq) === 1);
+        const nowTime = new Date().getTime();
+
+        let filteredList = filteredKmb.filter(item => {
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+          const isArrivingOnly = item.rmk_tc && (item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客'));
+          return diffMinutes >= -2 && !isArrivingOnly;
+        });
+
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+        const uniqueBusList = [];
+        filteredList.forEach(item => {
+          const time = new Date(item.eta).getTime();
+          const isDuplicate = uniqueBusList.some(existing => {
+            const existingTime = new Date(existing.eta).getTime();
+            return Math.abs(existingTime - time) < 60000;
+          });
+          if (!isDuplicate) uniqueBusList.push(item);
+        });
+
+        if (uniqueBusList.length === 0) {
+          container.innerHTML = '<p class="loading" style="color:#64748b; margin:0;">No upcoming departures at terminus</p>';
+          return;
+        }
+
+        container.innerHTML = '';
+        const firstBus = uniqueBusList[0];
+        const now = new Date();
+
+        const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+        const clockTime1 = formatTime(firstBus.eta);
+        let etaDisplay1 = diff1 <= 0 ? `Arriving (${clockTime1})` : `${diff1} min (${clockTime1})`;
+        let isArriving1 = diff1 <= 0;
+
+        let subsequentHTML = '';
+        for (let i = 1; i < uniqueBusList.length; i++) {
+          const nextBus = uniqueBusList[i];
+          const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
+          const clockTimeNext = formatTime(nextBus.eta);
+          const textNext = diffNext <= 0 ? `Arriving (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
+          subsequentHTML += `<div class="eta-subsequent">Next: ${textNext}</div>`;
+        }
+
+        const card = document.createElement('a');
+        card.href = 'bus6.html';
+        card.className = `card kmb`;
+        card.innerHTML = `
+          <div class="route-info">
+            <div class="route-header">
+              <span class="route-number">6</span>
+              <span class="company-badge badge-kmb">KMB</span>
+            </div>
+            <div class="destination">To ${firstBus.dest_en || firstBus.dest_tc || 'Star Ferry'}</div>
+          </div>
+          <div class="eta-container">
+            <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+            ${subsequentHTML}
+          </div>
+        `;
+        container.appendChild(card);
+        updateTimestamp();
+
+      } catch (err) {
+        console.error('Failed to fetch Route 6 data:', err);
+      }
+    }
+
+    async function fetchTerminusETA() {
+      try {
+        const container = document.getElementById('bus-secondary-container');
+        let allEtaData = [];
+
+        const promises = JOINT_ROUTES.map(async route => {
+          let routeEtas = [];
+
+          try {
+            const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${route}/1`).then(r => r.json());
+            const list = kmbRes.data || [];
+            const filteredKmb = list.filter(item => item.dir === 'O' && parseInt(item.seq) === 1);
+            
+            filteredKmb.forEach(item => {
+              routeEtas.push({
+                company: 'KMB',
+                route: route,
+                dest_tc: item.dest_tc || '',
+                dest_en: item.dest_en || item.dest_tc || '',
+                eta: item.eta,
+                rmk_tc: item.rmk_tc || ''
+              });
+            });
+          } catch(err) {}
+
+          const ctbStopId = termStopsData[route] ? termStopsData[route].ctb_stop : null;
+          if (ctbStopId) {
+            try {
+              const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${ctbStopId}/${route}`).then(r => r.json());
+              const list = ctbRes.data || [];
+              list.forEach(bus => {
+                if (bus.eta && bus.dest_tc) {
+                  const isValidDir = (route === '171' && bus.dest_tc.includes('海怡半島')) ||
+                                     (route === '904' && bus.dest_tc.includes('堅尼地城')) ||
+                                     (route === '905' && (bus.dest_tc.includes('灣仔') || bus.dest_tc.includes('會展')));
+                  if (isValidDir) {
+                    routeEtas.push({
+                      company: 'CTB',
+                      route: route,
+                      dest_tc: bus.dest_tc,
+                      dest_en: bus.dest_en || bus.dest_tc,
+                      eta: bus.eta,
+                      rmk_tc: bus.rmk_tc || ''
+                    });
+                  }
+                }
+              });
+            } catch(err) {}
+          }
+
+          return routeEtas;
+        });
+
+        const results = await Promise.all(promises);
+        results.forEach(arr => { allEtaData = allEtaData.concat(arr); });
+
+        const nowTime = new Date().getTime();
+
+        let filteredList = allEtaData.filter(item => {
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+          const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
+          return diffMinutes >= -2 && !isArrivingOnly;
+        });
+
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+        const groupedByRoute = {};
+        filteredList.forEach(item => {
+          if (!groupedByRoute[item.route]) groupedByRoute[item.route] = [];
+          
+          const time = new Date(item.eta).getTime();
+          const isDuplicate = groupedByRoute[item.route].some(existing => {
+            const existingTime = new Date(existing.eta).getTime();
+            return Math.abs(existingTime - time) < 60000;
+          });
+
+          if (!isDuplicate && groupedByRoute[item.route].length < 3) {
+            groupedByRoute[item.route].push(item);
+          }
+        });
+
+        const activeRoutes = Object.keys(groupedByRoute);
+
+        if (activeRoutes.length === 0) {
+          container.innerHTML = '<p class="loading" style="margin:0;">No active departures or service ended</p>';
+          return;
+        }
+
+        activeRoutes.sort((a, b) => {
+          const etaA = new Date(groupedByRoute[a][0].eta);
+          const etaB = new Date(groupedByRoute[b][0].eta);
+          return etaA - etaB;
+        });
+
+        container.innerHTML = '';
+
+        activeRoutes.forEach(route => {
+          const busList = groupedByRoute[route];
+          if (busList.length === 0) return;
+
+          const firstBus = busList[0];
+          const now = new Date();
+
+          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+          const clockTime1 = formatTime(firstBus.eta);
+          let etaDisplay1 = diff1 <= 0 ? `Arriving (${clockTime1})` : `${diff1} min (${clockTime1})`;
+          let isArriving1 = diff1 <= 0;
+
+          const badgeClass = firstBus.company === 'KMB' ? 'badge-kmb' : 'badge-ctb';
+          const companyName = firstBus.company === 'KMB' ? 'KMB' : 'CTB';
+          const cardBorderClass = firstBus.company === 'KMB' ? 'kmb' : 'ctb';
+
+          let subsequentHTML = '';
+          for (let i = 1; i < busList.length; i++) {
+            const nextBus = busList[i];
+            const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
+            const clockTimeNext = formatTime(nextBus.eta);
+            const textNext = diffNext <= 0 ? `Arriving (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
+            
+            const nextCompany = nextBus.company === 'KMB' ? 'KMB' : 'CTB';
+            subsequentHTML += `<div class="eta-subsequent">Next (${nextCompany}): ${textNext}</div>`;
+          }
+
+          let destText = firstBus.dest_en || firstBus.dest_tc;
+          if (route === '171') destText = 'South Horizons';
+          if (route === '904') destText = 'Kennedy Town';
+          if (route === '905') destText = 'Wan Chai (Convention Centre)';
+
+          const card = document.createElement('div');
+          card.className = `card ${cardBorderClass}`;
+          card.innerHTML = `
+            <div class="route-info">
+              <div class="route-header">
+                <span class="route-number">${firstBus.route}</span>
+                <span class="company-badge ${badgeClass}">${companyName}</span>
+              </div>
+              <div class="destination">To ${destText}</div>
+            </div>
+            <div class="eta-container">
+              <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+              ${subsequentHTML}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        updateTimestamp();
+
+      } catch (error) {
+        console.error('Failed to fetch joint routes data:', error);
+        document.getElementById('bus-secondary-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">Failed to load data</p>';
+      }
+    }
+
+    async function fetchGardenETA() {
+      try {
+        const container = document.getElementById('bus-primary-container');
+        let allEtaData = [];
+
+        const etaRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${GARDEN_STOP_ID}`).then(r => r.json());
+        const etaList = etaRes.data || [];
+
+        const filtered = etaList.filter(item => GARDEN_ROUTES.includes(item.route));
+
+        filtered.forEach(item => {
+          allEtaData.push({
+            route: item.route,
+            dest_tc: item.dest_tc || '',
+            dest_en: item.dest_en || item.dest_tc || '',
+            eta: item.eta,
+            rmk_tc: item.rmk_tc || ''
+          });
+        });
+
+        const nowTime = new Date().getTime();
+
+        let filteredList = allEtaData.filter(item => {
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+          const isArrivingOnly = item.rmk_tc && (item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客'));
+          return diffMinutes >= -2 && !isArrivingOnly;
+        });
+
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+        const groupedByRoute = {};
+        filteredList.forEach(item => {
+          if (!groupedByRoute[item.route]) groupedByRoute[item.route] = [];
+          
+          const time = new Date(item.eta).getTime();
+          const isDuplicate = groupedByRoute[item.route].some(existing => {
+            const existingTime = new Date(existing.eta).getTime();
+            return Math.abs(existingTime - time) < 60000;
+          });
+
+          if (!isDuplicate && groupedByRoute[item.route].length < 3) {
+            groupedByRoute[item.route].push(item);
+          }
+        });
+
+        const activeRoutes = Object.keys(groupedByRoute);
+
+        if (activeRoutes.length === 0) {
+          container.innerHTML = '<p class="loading" style="margin:0;">No departures at Lai Chi Kok Bay Garden</p>';
+          return;
+        }
+
+        activeRoutes.sort((a, b) => {
+          const etaA = new Date(groupedByRoute[a][0].eta);
+          const etaB = new Date(groupedByRoute[b][0].eta);
+          return etaA - etaB;
+        });
+
+        container.innerHTML = '';
+
+        activeRoutes.forEach(route => {
+          const busList = groupedByRoute[route];
+          if (busList.length === 0) return;
+
+          const firstBus = busList[0];
+          const now = new Date();
+
+          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+          const clockTime1 = formatTime(firstBus.eta);
+          let etaDisplay1 = diff1 <= 0 ? `Arriving (${clockTime1})` : `${diff1} min (${clockTime1})`;
+          let isArriving1 = diff1 <= 0;
+
+          let subsequentHTML = '';
+          for (let i = 1; i < busList.length; i++) {
+            const nextBus = busList[i];
+            const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
+            const clockTimeNext = formatTime(nextBus.eta);
+            const textNext = diffNext <= 0 ? `Arriving (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
+            subsequentHTML += `<div class="eta-subsequent">Next: ${textNext}</div>`;
+          }
+
+          const card = document.createElement('div');
+          card.className = `card kmb`;
+          card.innerHTML = `
+            <div class="route-info">
+              <div class="route-header">
+                <span class="route-number">${firstBus.route}</span>
+                <span class="company-badge badge-kmb">KMB</span>
+              </div>
+              <div class="destination">To ${firstBus.dest_en || firstBus.dest_tc}</div>
+            </div>
+            <div class="eta-container">
+              <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+              ${subsequentHTML}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        updateTimestamp();
+
+      } catch (error) {
+        console.error('Failed to fetch Lai Chi Kok Bay Garden data:', error);
+        document.getElementById('bus-primary-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">Failed to load data</p>';
+      }
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('update-time').innerText = `Last updated: ${hours}:${minutes}:${seconds}`;
+    }
+
+    initData();
+  </script>
+</body>
+</html>
