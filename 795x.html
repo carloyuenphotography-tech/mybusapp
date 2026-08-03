@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>795X 及港鐵小巴接駁</title>
+  <title>795X 及交通接駁</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -120,11 +120,14 @@
     }
 
     /* 🗺️ Google Maps 捷徑按鈕樣式 */
+    .map-btn-wrapper {
+      max-width: 500px;
+      margin: 16px auto;
+    }
     .map-btn-container {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-bottom: 16px;
     }
     .map-shortcut-btn {
       width: 100%;
@@ -296,7 +299,21 @@
     </div>
   </div>
 
+  <!-- 🚌 動態實時班次區域 -->
   <div id="bus-container" class="loading">載入數據中...</div>
+
+  <!-- 🗺️ Google Maps 路線導航捷徑區塊 (移到班次下方) -->
+  <div class="map-btn-wrapper">
+    <div class="section-title">🗺️ Google Maps 路線導航捷徑</div>
+    <div class="map-btn-container">
+      <a href="https://www.google.com/maps/dir/?api=1&origin=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&destination=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&travelmode=transit" target="_blank" class="map-shortcut-btn">
+        📍 荔灣花園 ➔ 播道書院 (導航)
+      </a>
+      <a href="https://www.google.com/maps/dir/?api=1&origin=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&destination=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&travelmode=transit" target="_blank" class="map-shortcut-btn">
+        📍 播道書院 ➔ 荔灣花園 (導航)
+      </a>
+    </div>
+  </div>
 
   <div class="station-info-panel">
     <div class="panel-title">🚏 795X 詳細沿途主要車站速查</div>
@@ -312,7 +329,7 @@
 
   <footer>
     <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.2.5 (795X)</div>
+    <div class="version-tag">版本 v1.2.7 (捷徑下置版)</div>
   </footer>
 
   <script>
@@ -553,21 +570,8 @@
 
         let htmlContent = '';
 
-        // 🗺️ 加入 Google Maps 路線導航捷徑區塊
-        htmlContent += `<div class="section-title">🗺️ Google Maps 路線導航捷徑</div>`;
-        htmlContent += `
-          <div class="map-btn-container">
-            <a href="https://www.google.com/maps/dir/?api=1&origin=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&destination=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&travelmode=transit" target="_blank" class="map-shortcut-btn">
-              📍 荔灣花園 ➔ 播道書院 (Google Maps 導航)
-            </a>
-            <a href="https://www.google.com/maps/dir/?api=1&origin=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&destination=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&travelmode=transit" target="_blank" class="map-shortcut-btn">
-              📍 播道書院 ➔ 荔灣花園 (Google Maps 導航)
-            </a>
-          </div>
-        `;
-
         if (mtrMeiFooToTkoHTML || mtrTkoToMeiFooHTML) {
-          htmlContent += `<div class="section-title">🚀 港鐵跨綫預計到達時間</div>`;
+          htmlContent += `<div class="section-title" style="margin-top: 0;">🚀 港鐵跨綫預計到達時間</div>`;
           if (mtrMeiFooToTkoHTML) htmlContent += mtrMeiFooToTkoHTML;
           if (mtrTkoToMeiFooHTML) htmlContent += mtrTkoToMeiFooHTML;
         }
