@@ -154,7 +154,6 @@
       font-weight: bold;
       color: #059669;
     }
-    /* 💡 精簡優化：調小灰色字體並防換行 */
     .eta-subsequent {
       font-size: 0.76rem;
       color: #64748b;
@@ -214,12 +213,6 @@
     .nav-btn:active {
       background: #f1f5f9;
     }
-    .external-ref-btn {
-      color: #0284c7;
-      border-color: #bae6fd;
-      background: #f0f9ff;
-      font-size: 0.9rem;
-    }
 
     footer {
       margin-bottom: 12px;
@@ -238,7 +231,6 @@
 
   <header>
     <h1>
-      <!-- 貼上剛剛的 SVG Logo -->
       <svg width="32" height="32" viewBox="0 0 512 512" style="vertical-align: middle; margin-right: 6px; border-radius: 10px;" xmlns="http://www.w3.org/2000/svg">
         <rect width="512" height="512" rx="110" fill="#0f172a"/>
         <path d="M130 180 C130 150 155 130 200 130 H312 C357 130 382 150 382 180 V310 C382 340 357 360 312 360 H200 C155 360 130 340 130 310 Z" fill="#ffffff" opacity="0.95"/>
@@ -255,7 +247,7 @@
   <!-- 🚏 頂部站點切換分頁按鈕 -->
   <div class="location-tab-container">
     <div id="tab-terminus" class="location-tab active" onclick="switchLocation('terminus')">🏢 荔枝角總站</div>
-    <div id="tab-garden" class="location-tab" onclick="switchLocation('garden')">🏡 荔灣花園</div>
+    <div id="tab-garden" class="location-tab" onclick="switchLocation('garden')">🏡 荔枝角灣花園</div>
   </div>
 
   <!-- 🚏 區塊一：主要動態預覽區 -->
@@ -268,6 +260,10 @@
 
   <!-- 🔗 專頁快速跳轉導航 (置於底部) -->
   <div class="link-container">
+    <a href="index_en.html" class="nav-btn" style="background: #0f172a; color: #ffffff;">
+      <span>🌐 Switch to English Version</span>
+      <span>➔</span>
+    </a>
     <a href="tinshuiwai.html" class="nav-btn">
       <span>🚌 天水圍專線 (269M/265M/265B/K76)</span>
       <span>➔</span>
@@ -277,29 +273,14 @@
       <span>➔</span>
     </a>
     <a href="bus6.html" class="nav-btn">
-      <span>🚌 6號巴士全線專頁 (6)</span>
-      <span>➔</span>
-    </a>
-
-    <!-- 🌐 外部參考捷徑 (hkbus.app 參考) -->
-    <div class="section-title" style="margin: 12px 0 4px 0; font-size: 0.88rem; color: #64748b;">🌐 官方/外部參考速查 (hkbus.app)</div>
-    <a href="https://hkbus.app/zh/route/171-1-lai-chi-kok-south-horizons" target="_blank" class="nav-btn external-ref-btn">
-      <span>🔗 hkbus.app 171 專線 (荔枝角 ➔ 海怡半島)</span>
-      <span>➔</span>
-    </a>
-    <a href="https://hkbus.app/zh/route/905-1-lai-chi-kok-exhibition-centre-station" target="_blank" class="nav-btn external-ref-btn">
-      <span>🔗 hkbus.app 905 專線 (荔枝角 ➔ 會展站)</span>
-      <span>➔</span>
-    </a>
-    <a href="https://hkbus.app/zh/route/904-1-lai-chi-kok-kennedy-town-(belcher-bay)" target="_blank" class="nav-btn external-ref-btn">
-      <span>🔗 hkbus.app 904 專線 (荔枝角 ➔ 堅尼地城)</span>
+      <span>🚌 6號巴士全線專頁</span>
       <span>➔</span>
     </a>
   </div>
 
   <footer>
-    <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔灣花園」之即時班次。</p>
-    <div class="version-tag">版本 v1.9.4 (精簡字體與防換行優化版)</div>
+    <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔枝角灣花園」之即時班次。</p>
+    <div class="version-tag">版本 v1.9.6 (荔枝角灣花園更名版)[cite: 1]</div>
   </footer>
 
   <script>
@@ -338,7 +319,7 @@
         containerSecondary.style.display = 'block';
         titleSecondary.innerText = "🚏 171, 904, 905 聯營線 (荔枝角總站開出)";
       } else {
-        titlePrimary.innerText = "🚏 荔灣花園站 (46X, 46, 45, 42, 30, 30X 實時班次)";
+        titlePrimary.innerText = "🚏 荔枝角灣花園站 (46X, 46, 45, 42, 30, 30X 實時班次)";
         titleSecondary.style.display = 'none'; 
         containerSecondary.style.display = 'none'; 
       }
@@ -652,7 +633,7 @@
         const activeRoutes = Object.keys(groupedByRoute);
 
         if (activeRoutes.length === 0) {
-          container.innerHTML = '<p class="loading" style="margin:0;">目前荔灣花園站暫無班次資料</p>';
+          container.innerHTML = '<p class="loading" style="margin:0;">目前荔枝角灣花園站暫無班次資料</p>';
           return;
         }
 
@@ -706,7 +687,7 @@
         updateTimestamp();
 
       } catch (error) {
-        console.error('獲取荔灣花園數據失敗:', error);
+        console.error('獲取荔枝角灣花園數據失敗:', error);
         document.getElementById('bus-primary-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">數據載入失敗</p>';
       }
     }
