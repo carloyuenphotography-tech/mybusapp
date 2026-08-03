@@ -36,8 +36,36 @@
       margin-top: 6px;
     }
 
+    /* 🚏 頂部站點切換分頁按鈕容器 */
+    .location-tab-container {
+      display: flex;
+      gap: 8px;
+      max-width: 500px;
+      margin: 0 auto 16px auto;
+    }
+    .location-tab {
+      flex: 1;
+      padding: 12px 8px;
+      background: #ffffff;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+    .location-tab.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
     /* 🔗 統一的導航與容器闊度上限 (最大 500px) */
-    .link-container, .section-title, #bus6-container, #bus-container, footer {
+    .link-container, .section-title, #bus-primary-container, #bus-secondary-container, footer {
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
@@ -54,7 +82,7 @@
       gap: 6px;
     }
     
-    /* 🚌 實時資訊卡片 (支援超連結樣式) */
+    /* 🚌 實時資訊卡片 */
     .card {
       background: #ffffff;
       border-radius: 14px;
@@ -67,7 +95,7 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      border-left: 6px solid #cbd5e1;
+      border-left: 6px solid #e11d48;
       text-decoration: none;
       color: inherit;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -97,9 +125,9 @@
       border-radius: 6px;
       line-height: 1;
       display: inline-block;
+      background-color: #ffe4e6; 
+      color: #e11d48;
     }
-    .badge-kmb { background-color: #ffe4e6; color: #e11d48; }
-    .badge-ctb { background-color: #e0f2fe; color: #0284c7; }
 
     .destination {
       font-size: 0.95rem;
@@ -196,15 +224,21 @@
     <div id="update-time" class="update-time">初始化中...</div>
   </header>
 
-  <!-- 🚏 區塊一：6號巴士總站預覽 -->
-  <div class="section-title">🚏 6號巴士 (荔枝角總站開出)</div>
-  <div id="bus6-container" class="loading">正在載入 6 號線總站數據...</div>
+  <!-- 🚏 頂部站點切換分頁按鈕 -->
+  <div class="location-tab-container">
+    <div id="tab-terminus" class="location-tab active" onclick="switchLocation('terminus')">🏢 荔枝角總站</div>
+    <div id="tab-garden" class="location-tab" onclick="switchLocation('garden')">🏡 荔灣花園</div>
+  </div>
 
-  <!-- 🚏 區塊二：171, 904, 905 聯營線總站預覽 -->
-  <div class="section-title" style="margin-top: 24px;">🚏 171, 904, 905 聯營線 (荔枝角總站開出)</div>
-  <div id="bus-container" class="loading">正在載入聯營線總站雙引擎數據...</div>
+  <!-- 🚏 區塊一：主要動態預覽區 -->
+  <div class="section-title" id="title-primary">🚏 6號巴士 (荔枝角總站開出)</div>
+  <div id="bus-primary-container" class="loading">正在載入數據...</div>
 
-  <!-- 🔗 專頁快速跳轉導航 -->
+  <!-- 🚏 區塊二：次要動態預覽區 (僅在總站模式顯示) -->
+  <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 171, 904, 905 聯營線 (荔枝角總站開出)</div>
+  <div id="bus-secondary-container" class="loading">正在載入數據...</div>
+
+  <!-- 🔗 專頁快速跳轉導航 (置於底部) -->
   <div class="link-container">
     <a href="tinshuiwai.html" class="nav-btn">
       <span>🚌 天水圍專線 (269M/265M/265B/K76)</span>
@@ -219,20 +253,30 @@
       <span>➔</span>
     </a>
     <a href="bus6.html" class="nav-btn">
-      <span>🚌 6號巴士全線專頁 (九巴)</span>
+      <span>🚌 6號巴士全線專頁 (6)</span>
+      <span>➔</span>
+    </a>
+    <a href="bus905.html" class="nav-btn">
+      <span>🗺️ 905 巴士全線專頁</span>
       <span>➔</span>
     </a>
   </div>
 
   <footer>
-    <p class="notice-text">💡 點擊 6 號或 171 班次卡片可直接查看該路線全線站點。</p>
-    <div class="version-tag">版本 v1.6.0 (卡片超連結互動版)</div>
+    <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔灣花園」之即時班次。</p>
+    <div class="version-tag">版本 v1.8.6 (荔灣花園精準ID鎖定版)</div>
   </footer>
 
   <script>
-    const ROUTES = ["171", "904", "905"];
+    const JOINT_ROUTES = ["171", "904", "905"];
+    
+    // 🔒 使用你提供的荔灣花園官方 Stop ID
+    const GARDEN_STOP_ID = "37A4D07D7179CE76";
+    const GARDEN_ROUTES = ["46X", "46", "45", "42", "30", "30X"];
+    
+    let currentLocation = 'terminus'; 
     let termStopsData = {}; 
-    let isTermDataReady = false;
+    let isDataReady = false;
     let autoRefreshTimer = null;
 
     function formatTime(isoString) {
@@ -243,9 +287,38 @@
       return `${hours}:${minutes}`;
     }
 
+    function switchLocation(loc) {
+      if (currentLocation === loc) return;
+      currentLocation = loc;
+
+      document.getElementById('tab-terminus').classList.remove('active');
+      document.getElementById('tab-garden').classList.remove('active');
+      document.getElementById(`tab-${loc}`).classList.add('active');
+
+      const titlePrimary = document.getElementById('title-primary');
+      const titleSecondary = document.getElementById('title-secondary');
+      const containerSecondary = document.getElementById('bus-secondary-container');
+
+      if (loc === 'terminus') {
+        titlePrimary.innerText = "🚏 6號巴士 (荔枝角總站開出)";
+        titleSecondary.style.display = 'block';
+        containerSecondary.style.display = 'block';
+        titleSecondary.innerText = "🚏 171, 904, 905 聯營線 (荔枝角總站開出)";
+      } else {
+        titlePrimary.innerText = "🚏 荔灣花園站 (46X, 46, 45, 42, 30, 30X 實時班次)";
+        titleSecondary.style.display = 'none'; 
+        containerSecondary.style.display = 'none'; 
+      }
+
+      document.getElementById('bus-primary-container').innerHTML = '<p class="loading" style="margin:0;">載入中...</p>';
+      containerSecondary.innerHTML = '<p class="loading" style="margin:0;">載入中...</p>';
+
+      fetchAllData();
+    }
+
     async function initData() {
       try {
-        for (const route of ROUTES) {
+        for (const route of JOINT_ROUTES) {
           const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${route}/outbound/1`).then(r => r.json());
           const kmbStop = kmbRes.data && kmbRes.data.length > 0 ? kmbRes.data[0].stop : null;
 
@@ -254,9 +327,9 @@
 
           termStopsData[route] = { kmb_stop: kmbStop, ctb_stop: ctbStop };
         }
-        isTermDataReady = true;
+        isDataReady = true;
       } catch (e) {
-        console.error('初始化聯營線總站資料失敗:', e);
+        console.error('初始化資料失敗:', e);
       }
 
       fetchAllData();
@@ -265,13 +338,17 @@
     }
 
     function fetchAllData() {
-      fetchBus6TerminusETA();
-      if (isTermDataReady) fetchTerminusETA();
+      if (currentLocation === 'terminus') {
+        fetchBus6TerminusETA();
+        if (isDataReady) fetchTerminusETA();
+      } else {
+        fetchGardenETA();
+      }
     }
 
     async function fetchBus6TerminusETA() {
       try {
-        const container = document.getElementById('bus6-container');
+        const container = document.getElementById('bus-primary-container');
         const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/6/1`).then(r => r.json());
         const list = kmbRes.data || [];
         const filteredKmb = list.filter(item => item.dir === 'O' && parseInt(item.seq) === 1);
@@ -320,7 +397,6 @@
           subsequentHTML += `<div class="eta-subsequent">下班: ${textNext}</div>`;
         }
 
-        // 🔗 6號卡片加入超連結跳轉至 bus6.html
         const card = document.createElement('a');
         card.href = 'bus6.html';
         card.className = `card kmb`;
@@ -347,10 +423,10 @@
 
     async function fetchTerminusETA() {
       try {
-        const container = document.getElementById('bus-container');
+        const container = document.getElementById('bus-secondary-container');
         let allEtaData = [];
 
-        const promises = ROUTES.map(async route => {
+        const promises = JOINT_ROUTES.map(async route => {
           let routeEtas = [];
 
           try {
@@ -459,7 +535,6 @@
             subsequentHTML += `<div class="eta-subsequent">下班 (${nextCompany}): ${textNext}</div>`;
           }
 
-          // 🔗 如果是 171 路線，卡片自動帶有超連結跳轉至 171.html；904/905 則為普通卡片
           const card = document.createElement(route === '171' ? 'a' : 'div');
           if (route === '171') {
             card.href = '171.html';
@@ -485,7 +560,117 @@
 
       } catch (error) {
         console.error('獲取主頁聯營總站數據失敗:', error);
-        document.getElementById('bus-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">數據載入失敗</p>';
+        document.getElementById('bus-secondary-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">數據載入失敗</p>';
+      }
+    }
+
+    async function fetchGardenETA() {
+      try {
+        const container = document.getElementById('bus-primary-container');
+        let allEtaData = [];
+
+        // 🔒 利用指定的 Stop ID 直接向九巴查詢該站點的所有實時班次
+        const etaRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${GARDEN_STOP_ID}`).then(r => r.json());
+        const etaList = etaRes.data || [];
+
+        // 過濾出我們指定的目標路線 (46X, 46, 45, 42, 30, 30X)
+        const filtered = etaList.filter(item => GARDEN_ROUTES.includes(item.route));
+
+        filtered.forEach(item => {
+          allEtaData.push({
+            route: item.route,
+            dest_tc: item.dest_tc || '',
+            eta: item.eta,
+            rmk_tc: item.rmk_tc || ''
+          });
+        });
+
+        const nowTime = new Date().getTime();
+
+        let filteredList = allEtaData.filter(item => {
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+          const isArrivingOnly = item.rmk_tc && (item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客'));
+          return diffMinutes >= -2 && !isArrivingOnly;
+        });
+
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+        const groupedByRoute = {};
+        filteredList.forEach(item => {
+          if (!groupedByRoute[item.route]) groupedByRoute[item.route] = [];
+          
+          const time = new Date(item.eta).getTime();
+          const isDuplicate = groupedByRoute[item.route].some(existing => {
+            const existingTime = new Date(existing.eta).getTime();
+            return Math.abs(existingTime - time) < 60000;
+          });
+
+          if (!isDuplicate && groupedByRoute[item.route].length < 2) {
+            groupedByRoute[item.route].push(item);
+          }
+        });
+
+        const activeRoutes = Object.keys(groupedByRoute);
+
+        if (activeRoutes.length === 0) {
+          container.innerHTML = '<p class="loading" style="margin:0;">目前荔灣花園站暫無班次資料</p>';
+          return;
+        }
+
+        activeRoutes.sort((a, b) => {
+          const etaA = new Date(groupedByRoute[a][0].eta);
+          const etaB = new Date(groupedByRoute[b][0].eta);
+          return etaA - etaB;
+        });
+
+        container.innerHTML = '';
+
+        activeRoutes.forEach(route => {
+          const busList = groupedByRoute[route];
+          if (busList.length === 0) return;
+
+          const firstBus = busList[0];
+          const now = new Date();
+
+          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+          const clockTime1 = formatTime(firstBus.eta);
+          let etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+          let isArriving1 = diff1 <= 0;
+
+          let subsequentHTML = '';
+          if (busList[1]) {
+            const nextBus = busList[1];
+            const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
+            const clockTimeNext = formatTime(nextBus.eta);
+            const textNext = diffNext <= 0 ? `即將到達 (${clockTimeNext})` : `${diffNext} 分鐘 (${clockTimeNext})`;
+            subsequentHTML += `<div class="eta-subsequent">下班: ${textNext}</div>`;
+          }
+
+          const card = document.createElement('div');
+          card.className = `card kmb`;
+          card.innerHTML = `
+            <div class="route-info">
+              <div class="route-header">
+                <span class="route-number">${firstBus.route}</span>
+                <span class="company-badge">九巴</span>
+              </div>
+              <div class="destination">往 ${firstBus.dest_tc}</div>
+            </div>
+            <div class="eta-container">
+              <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+              ${subsequentHTML}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        updateTimestamp();
+
+      } catch (error) {
+        console.error('獲取荔灣花園數據失敗:', error);
+        document.getElementById('bus-primary-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">數據載入失敗</p>';
       }
     }
 
