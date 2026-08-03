@@ -251,11 +251,11 @@
   </div>
 
   <!-- 🚏 Primary Section -->
-  <div class="section-title" id="title-primary">🚏 Route 6 (From Terminus)</div>
+  <div class="section-title" id="title-primary">🚏 Route 6 (To Star Ferry)</div>
   <div id="bus-primary-container" class="loading">Loading data...</div>
 
   <!-- 🚏 Secondary Section -->
-  <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 Routes 171, 904, 905 (From Terminus) </div>
+  <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 Routes 171, 904, 905 (From Terminus)</div>
   <div id="bus-secondary-container" class="loading">Loading data...</div>
 
   <!-- 🔗 Quick Navigation (Only Chinese Version Button) -->
@@ -267,8 +267,8 @@
   </div>
 
   <footer>
-    <p class="notice-text">💡 Tap the tabs above to switch between "Lai Chi Kok Terminus" and "Lai Chi Kok Bay Garden".</p>
-    <div class="version-tag">Version v1.9.7 (English Clean Edition)</div>
+    <p class="notice-text">💡 Tap the tabs above to switch between "Nob Hill Terminus" and "Lai Chi Kok Bay Garden".</p>
+    <div class="version-tag">Version v1.9.8 (English Route 6 Star Ferry Edition)</div>
   </footer>
 
   <script>
@@ -302,12 +302,12 @@
       const containerSecondary = document.getElementById('bus-secondary-container');
 
       if (loc === 'terminus') {
-        titlePrimary.innerText = "🚏 Route 6 (From Terminus)";
+        titlePrimary.innerText = "🚏 Route 6 (To Star Ferry)";
         titleSecondary.style.display = 'block';
         containerSecondary.style.display = 'block';
         titleSecondary.innerText = "🚏 Joint Routes 171, 904, 905 (From Terminus)";
       } else {
-        titlePrimary.innerText = "🚏 Lai Chi Kok Bay Garden Stop ";
+        titlePrimary.innerText = "🚏 Lai Chi Kok Bay Garden Stop";
         titleSecondary.style.display = 'none'; 
         containerSecondary.style.display = 'none'; 
       }
@@ -408,7 +408,7 @@
               <span class="route-number">6</span>
               <span class="company-badge badge-kmb">KMB</span>
             </div>
-            <div class="destination">To ${firstBus.dest_en || firstBus.dest_tc || 'Star Ferry'}</div>
+            <div class="destination">To Star Ferry</div>
           </div>
           <div class="eta-container">
             <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
