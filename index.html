@@ -203,6 +203,12 @@
     .nav-btn:active {
       background: #f1f5f9;
     }
+    .external-ref-btn {
+      color: #0284c7;
+      border-color: #bae6fd;
+      background: #f0f9ff;
+      font-size: 0.9rem;
+    }
 
     footer {
       margin-bottom: 12px;
@@ -248,23 +254,30 @@
       <span>🚌 795X 及港鐵小巴接駁專頁</span>
       <span>➔</span>
     </a>
-    <a href="171.html" class="nav-btn">
-      <span>🗺️ 171 過海專線 (全線站點查詢)</span>
-      <span>➔</span>
-    </a>
     <a href="bus6.html" class="nav-btn">
       <span>🚌 6號巴士全線專頁 (6)</span>
       <span>➔</span>
     </a>
-    <a href="bus905.html" class="nav-btn">
-      <span>🗺️ 905 巴士全線專頁</span>
+
+    <!-- 🌐 外部參考捷徑 (hkbus.app 參考) -->
+    <div class="section-title" style="margin: 12px 0 4px 0; font-size: 0.88rem; color: #64748b;">🌐 官方/外部參考速查 (hkbus.app)</div>
+    <a href="https://hkbus.app/zh/route/171-1-lai-chi-kok-south-horizons" target="_blank" class="nav-btn external-ref-btn">
+      <span>🔗 hkbus.app 171 專線 (荔枝角 ➔ 海怡半島)</span>
+      <span>➔</span>
+    </a>
+    <a href="https://hkbus.app/zh/route/905-1-lai-chi-kok-exhibition-centre-station" target="_blank" class="nav-btn external-ref-btn">
+      <span>🔗 hkbus.app 905 專線 (荔枝角 ➔ 會展站)</span>
+      <span>➔</span>
+    </a>
+    <a href="https://hkbus.app/zh/route/904-1-lai-chi-kok-kennedy-town-(belcher-bay)" target="_blank" class="nav-btn external-ref-btn">
+      <span>🔗 hkbus.app 904 專線 (荔枝角 ➔ 堅尼地城)</span>
       <span>➔</span>
     </a>
   </div>
 
   <footer>
     <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔灣花園」之即時班次。</p>
-    <div class="version-tag">版本 v1.8.8 (全線多班次完美同步版)</div>
+    <div class="version-tag">版本 v1.9.3 (城巴 Inbound 數據源修正版)</div>
   </footer>
 
   <script>
@@ -317,13 +330,14 @@
     async function initData() {
       try {
         for (const route of JOINT_ROUTES) {
-          const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${route}/outbound/1`).then(r => r.json());
-          const kmbStop = kmbRes.data && kmbRes.data.length > 0 ? kmbRes.data[0].stop : null;
-
-          const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/outbound`).then(r => r.json());
-          const ctbStop = ctbRes.data && ctbRes.data.length > 0 ? ctbRes.data[0].stop : null;
-
-          termStopsData[route] = { kmb_stop: kmbStop, ctb_stop: ctbStop };
+          // 🔒 改為強制抓取 inbound 方向的第一個站點作為城巴數據源
+          try {
+            const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/inbound`).then(r => r.json());
+            const stops = ctbRes.data || [];
+            if (stops.length > 0) {
+              termStopsData[route] = { ctb_stop: stops[0].stop };
+            }
+          } catch(e) {}
         }
         isDataReady = true;
       } catch (e) {
@@ -434,7 +448,7 @@
             
             filteredKmb.forEach(item => {
               routeEtas.push({
-                company: (item.rmk_tc && item.rmk_tc.includes('城巴')) ? 'CTB' : 'KMB',
+                company: 'KMB',
                 route: route,
                 dest_tc: item.dest_tc || '',
                 eta: item.eta,
@@ -449,13 +463,21 @@
               const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${ctbStopId}/${route}`).then(r => r.json());
               const list = ctbRes.data || [];
               list.forEach(bus => {
-                routeEtas.push({
-                  company: 'CTB',
-                  route: route,
-                  dest_tc: bus.dest_tc || (route === '171' ? '海怡半島' : route === '904' ? '堅尼地城' : '灣仔 (會展)'),
-                  eta: bus.eta,
-                  rmk_tc: bus.rmk_tc || ''
-                });
+                if (bus.eta && bus.dest_tc) {
+                  // 🔒 Inbound 過濾：確保只保留正確正向出發的班次
+                  const isValidDir = (route === '171' && bus.dest_tc.includes('海怡半島')) ||
+                                     (route === '904' && bus.dest_tc.includes('堅尼地城')) ||
+                                     (route === '905' && (bus.dest_tc.includes('灣仔') || bus.dest_tc.includes('會展')));
+                  if (isValidDir) {
+                    routeEtas.push({
+                      company: 'CTB',
+                      route: route,
+                      dest_tc: bus.dest_tc,
+                      eta: bus.eta,
+                      rmk_tc: bus.rmk_tc || ''
+                    });
+                  }
+                }
               });
             } catch(err) {}
           }
@@ -488,7 +510,6 @@
             return Math.abs(existingTime - time) < 60000;
           });
 
-          // 🔒 確保每條聯營線收集最多前 3 班車以支援後續預報
           if (!isDuplicate && groupedByRoute[item.route].length < 3) {
             groupedByRoute[item.route].push(item);
           }
@@ -536,10 +557,7 @@
             subsequentHTML += `<div class="eta-subsequent">下班 (${nextCompany}): ${textNext}</div>`;
           }
 
-          const card = document.createElement(route === '171' ? 'a' : 'div');
-          if (route === '171') {
-            card.href = '171.html';
-          }
+          const card = document.createElement('div');
           card.className = `card ${cardBorderClass}`;
           card.innerHTML = `
             <div class="route-info">
@@ -606,7 +624,6 @@
             return Math.abs(existingTime - time) < 60000;
           });
 
-          // 🔒 確保荔灣花園每條路線收集最多前 3 班車
           if (!isDuplicate && groupedByRoute[item.route].length < 3) {
             groupedByRoute[item.route].push(item);
           }
