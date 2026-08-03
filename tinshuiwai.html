@@ -3,18 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>天水圍（天暉路體育館）巴士班次</title>
+  <title>天水圍專線 (269M, 265M, 265B, K76)</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
-      background-color: #f4f6f9; /* ☀️ 清新明亮淺灰白背景 */
-      color: #1e293b; /* 深色清晰字體 */
+      background-color: #f4f6f9;
+      color: #1e293b;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 16px;
@@ -24,7 +22,7 @@
     header {
       text-align: center;
       padding-top: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     h1 {
       font-size: 1.4rem;
@@ -38,56 +36,37 @@
       margin-top: 6px;
     }
 
-    /* 🔗 返回主頁按鈕 */
-    .link-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 16px;
+    /* 統一最大寬度與置中對齊 */
+    .section-title, #bus-container, .link-container, footer {
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
     }
-    .back-btn {
-      width: 100%;
-      padding: 12px 16px;
-      background: #ffffff;
-      color: #0f172a;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
+
+    .section-title {
       font-size: 0.95rem;
       font-weight: bold;
-      text-align: center;
-      text-decoration: none;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      color: #334155;
+      margin: 16px auto 10px auto;
       display: flex;
-      justify-content: center;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s ease;
-    }
-    .back-btn:active {
-      background: #f1f5f9;
     }
 
-    #bus-container {
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    
-    /* 🚌 實時資訊卡片 (純白明亮) */
+    /* 🚌 實時資訊卡片 */
     .card {
       background: #ffffff;
       border-radius: 14px;
       padding: 16px 20px;
       margin-bottom: 12px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-left: 6px solid #e11d48; /* 九巴紅 */
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    }
-    .card.mtrbus {
-      border-left-color: #0284c7; /* 港鐵巴士藍 */
+      border-left: 6px solid #e11d48; /* 九巴紅 */
     }
     
     .route-header {
@@ -108,33 +87,17 @@
       border-radius: 6px;
       line-height: 1;
       display: inline-block;
-    }
-    .badge-kmb {
       background-color: #ffe4e6;
       color: #e11d48;
-    }
-    .badge-mtrbus {
-      background-color: #e0f2fe;
-      color: #0284c7;
     }
 
     .destination {
       font-size: 0.95rem;
       color: #475569;
       margin-top: 4px;
-    }
-    
-    /* 🕒 沿途各站預測時間區塊 */
-    .stations-prediction {
-      margin-top: 8px;
-      padding-top: 6px;
-      border-top: 1px dashed #e2e8f0;
-      font-size: 0.78rem;
-      color: #0284c7;
-      line-height: 1.4;
       font-weight: bold;
     }
-
+    
     .eta-container {
       display: flex;
       flex-direction: column;
@@ -143,12 +106,13 @@
     .eta-first {
       font-size: 1.35rem;
       font-weight: bold;
-      color: #059669; /* 鮮明清新綠首班 */
+      color: #059669;
     }
-    .eta-second {
+    .eta-subsequent {
       font-size: 0.85rem;
-      color: #94a3b8;
-      margin-top: 3px;
+      color: #64748b;
+      margin-top: 4px;
+      text-align: right;
     }
     .eta-arriving {
       color: #e11d48;
@@ -161,45 +125,47 @@
     }
     .loading {
       text-align: center;
-      color: #94a3b8;
-      font-size: 1rem;
-      padding: 40px 0;
+      color: #64748b;
+      font-size: 0.95rem;
+      padding: 24px 0;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 12px;
     }
 
-    /* 🚏 詳細沿途車站資訊面板 */
-    .station-info-panel {
-      max-width: 500px;
-      margin: 20px auto 12px auto;
+    /* 🔗 放在底部的返回主頁按鈕 */
+    .link-container {
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      width: 100%;
       padding: 14px 16px;
       background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    }
-    .panel-title {
-      font-size: 0.85rem;
-      font-weight: bold;
       color: #0f172a;
-      margin-bottom: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       display: flex;
+      justify-content: center;
       align-items: center;
       gap: 6px;
+      transition: all 0.2s ease;
     }
-    .station-list {
-      font-size: 0.78rem;
-      color: #475569;
-      line-height: 1.6;
-      margin: 0;
-      padding-left: 18px;
-    }
-    .station-list li {
-      margin-bottom: 6px;
+    .back-btn:active {
+      background: #f1f5f9;
     }
 
-    /* 💡 底部提示與版本 */
     footer {
-      max-width: 500px;
-      margin: 0 auto 12px auto;
+      margin-bottom: 12px;
       padding: 12px 16px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -214,48 +180,30 @@
 <body>
 
   <header>
-    <h1>🏢 天水圍 實時班次</h1>
-    <div id="update-time" class="update-time">更新中...</div>
+    <h1>🚌 天水圍專線實時班次</h1>
+    <div id="update-time" class="update-time">初始化中...</div>
   </header>
 
-  <!-- 返回主頁連結 -->
+  <!-- 🚏 班次資訊區塊 -->
+  <div class="section-title">🚏 重點路線即時班次</div>
+  <div id="bus-container" class="loading">正在載入天水圍專線數據...</div>
+
+  <!-- 🔗 放在底部的返回主頁按鈕 -->
   <div class="link-container">
     <a href="index.html" class="back-btn">
       ⬅️ 返回荔灣巴士資訊主頁
     </a>
   </div>
 
-  <div id="bus-container" class="loading">載入數據中...</div>
-
-  <!-- 🚏 沿途車站資訊面板 -->
-  <div class="station-info-panel">
-    <div class="panel-title">🚏 天水圍（天暉路）監測路線速查</div>
-    <ul class="station-list">
-      <li><strong>九巴路線：</strong> 
-        <strong>269M (往祖堯，具備愉景新城/荔景站預測)</strong>、
-        <strong>265M (往麗瑤，具備愉景新城/下葵涌分區診所預測)</strong>、
-        <strong>265B (往旺角，具備美孚/弼街/奧運站預測)</strong>
-      </li>
-      <li><strong>港鐵巴士：</strong> K76 (天瑞路/天暉路 ➔ 天水圍站 / 天恒邨)</li>
-    </ul>
-  </div>
-
   <footer>
-    <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.5.0 (天水圍)</div>
+    <p class="notice-text">💡 支援 269M、265M、265B、K76 等實時班次資料。</p>
+    <div class="version-tag">版本 v1.0.0 (天水圍專線版)</div>
   </footer>
 
   <script>
-    const KMB_TARGETS = [
-      { route: "269M", service_type: "1", dest_filter: "祖堯" },
-      { route: "265M", service_type: "1", dest_filter: "麗瑤" },
-      { route: "265B", service_type: "1", dest_filter: "旺角" }
-    ];
-
-    const MTR_BUS_STOPS = [
-      { stop_id: "K76-D010", label: "天瑞路/天暉路", dest: "天水圍站" },
-      { stop_id: "K76-S-101", label: "天水圍站開出", dest: "天恒邨 (循環線)" }
-    ];
+    // 目標路線
+    const ROUTES = ["269M", "265M", "265B", "K76"];
+    let autoRefreshTimer = null;
 
     function formatTime(isoString) {
       if (!isoString) return '';
@@ -265,186 +213,106 @@
       return `${hours}:${minutes}`;
     }
 
-    async function fetchAllETA() {
+    async function fetchTinShuiWaiETA() {
       try {
         const container = document.getElementById('bus-container');
         let allEtaData = [];
 
-        const kmbPromises = KMB_TARGETS.map(target =>
-          fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${target.route}/${target.service_type}`)
-            .then(res => res.json())
-            .then(res => {
-              const list = res.data || [];
-              return list.filter(item => item.dest_tc && item.dest_tc.includes(target.dest_filter))
-                       .map(item => ({
-                         company: 'KMB',
-                         route: item.route,
-                         dest_tc: item.dest_tc,
-                         eta: item.eta
-                       }));
-            })
-            .catch(() => [])
-        );
-
-        const mtrPromises = MTR_BUS_STOPS.map(target =>
-          fetch(`https://data.etabus.gov.hk/v1/transport/mtr/bus/getSchedule/${target.stop_id}`)
-            .then(res => res.json())
-            .then(res => {
-              const busList = res.busStop?.[0]?.busList || res.data || [];
-              return busList.map(b => {
-                const seconds = b.departureTimeInSecond || 0;
-                const etaTime = b.departureTime || new Date(Date.now() + seconds * 1000).toISOString();
-                return {
-                  company: 'MTRBUS',
-                  route: `K76 (${target.label})`,
-                  dest_tc: target.dest,
-                  eta: etaTime
-                };
+        // 由於這些是九巴/港鐵接駁巴士路線，我們直接利用九巴 route-eta 接口查詢各路線
+        const promises = ROUTES.map(async route => {
+          let routeEtas = [];
+          try {
+            const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${route}/1`).then(r => r.json());
+            const list = res.data || [];
+            
+            list.forEach(item => {
+              routeEtas.push({
+                route: route,
+                dest_tc: item.dest_tc || '',
+                eta: item.eta,
+                rmk_tc: item.rmk_tc || ''
               });
-            })
-            .catch(() => [])
-        );
-
-        const results = await Promise.all([...kmbPromises, ...mtrPromises]);
-        
-        results.forEach(data => {
-          allEtaData = allEtaData.concat(data);
+            });
+          } catch(err) {}
+          return routeEtas;
         });
 
-        let filteredList = allEtaData.filter(item => item.eta !== null && item.eta !== "");
+        const results = await Promise.all(promises);
+        results.forEach(arr => { allEtaData = allEtaData.concat(arr); });
+
+        const nowTime = new Date().getTime();
+
+        let filteredList = allEtaData.filter(item => {
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+          const isArrivingOnly = item.rmk_tc && (item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客'));
+          return diffMinutes >= -2 && !isArrivingOnly;
+        });
 
         filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
 
+        // 按路線與目的地分組去重
         const groupedByRoute = {};
-
         filteredList.forEach(item => {
-          const routeKey = `${item.route}-${item.dest_tc}`;
-          if (!groupedByRoute[routeKey]) {
-            groupedByRoute[routeKey] = [];
-          }
+          const key = `${item.route}-${item.dest_tc}`;
+          if (!groupedByRoute[key]) groupedByRoute[key] = [];
           
           const time = new Date(item.eta).getTime();
-          const isDuplicate = groupedByRoute[routeKey].some(existing => {
+          const isDuplicate = groupedByRoute[key].some(existing => {
             const existingTime = new Date(existing.eta).getTime();
             return Math.abs(existingTime - time) < 60000;
           });
 
-          if (!isDuplicate && groupedByRoute[routeKey].length < 2) {
-            groupedByRoute[routeKey].push(item);
+          if (!isDuplicate && groupedByRoute[key].length < 2) {
+            groupedByRoute[key].push(item);
           }
         });
 
-        const routeKeys = Object.keys(groupedByRoute);
+        const keys = Object.keys(groupedByRoute);
 
-        if (routeKeys.length === 0) {
-          container.innerHTML = '<p class="loading">暫無班次資料或已尾班車</p>';
+        if (keys.length === 0) {
+          container.innerHTML = '<p class="loading" style="margin:0;">目前暫無天水圍專線班次資料</p>';
           updateTimestamp();
           return;
         }
 
-        routeKeys.sort((a, b) => {
-          const etaA = new Date(groupedByRoute[a][0].eta);
-          const etaB = new Date(groupedByRoute[b][0].eta);
-          return etaA - etaB;
-        });
-
         container.innerHTML = '';
 
-        routeKeys.forEach(key => {
+        keys.forEach(key => {
           const busList = groupedByRoute[key];
-          const firstBus = busList[0];
-          const secondBus = busList[1];
+          if (busList.length === 0) return;
 
+          const firstBus = busList[0];
           const now = new Date();
-          const arrivalTimeAtStop = new Date(firstBus.eta);
-          const diff1 = Math.round((arrivalTimeAtStop - now) / 60000);
+
+          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
           const clockTime1 = formatTime(firstBus.eta);
-          
-          let etaDisplay1 = diff1 <= 0 ? `即將到站 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+          let etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
           let isArriving1 = diff1 <= 0;
 
-          // 🚍 針對 265B 計算美孚、弼街、奧運站預計到達時間
-          let stationsPredictionHTML = '';
-          if (firstBus.route === '265B') {
-            const timeMeifoo = new Date(arrivalTimeAtStop.getTime() + 25 * 60000);
-            const timeBikWat = new Date(arrivalTimeAtStop.getTime() + 38 * 60000);
-            const timeOlympic = new Date(arrivalTimeAtStop.getTime() + 45 * 60000);
-
-            const diffMeifoo = Math.round((timeMeifoo - now) / 60000);
-            const diffBikWat = Math.round((timeBikWat - now) / 60000);
-            const diffOlympic = Math.round((timeOlympic - now) / 60000);
-
-            stationsPredictionHTML = `
-              <div class="stations-prediction">
-                📍 預計到達：
-                美孚 (${diffMeifoo <= 0 ? '即將' : diffMeifoo + '分鐘'}, ${formatTime(timeMeifoo.toISOString())}) | 
-                弼街 (${diffBikWat <= 0 ? '即將' : diffBikWat + '分鐘'}, ${formatTime(timeBikWat.toISOString())}) | 
-                奧運站 (${diffOlympic <= 0 ? '即將' : diffOlympic + '分鐘'}, ${formatTime(timeOlympic.toISOString())})
-              </div>
-            `;
+          let subsequentHTML = '';
+          if (busList[1]) {
+            const nextBus = busList[1];
+            const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
+            const clockTimeNext = formatTime(nextBus.eta);
+            const textNext = diffNext <= 0 ? `即將到達 (${clockTimeNext})` : `${diffNext} 分鐘 (${clockTimeNext})`;
+            subsequentHTML += `<div class="eta-subsequent">下班: ${textNext}</div>`;
           }
-
-          // 🚍 針對 265M 計算愉景新城、下葵涌分區診所預計到達時間
-          if (firstBus.route === '265M') {
-            const timeDiscoveryPark = new Date(arrivalTimeAtStop.getTime() + 32 * 60000);
-            const timeKwaiChungClinic = new Date(arrivalTimeAtStop.getTime() + 40 * 60000);
-
-            const diffDiscoveryPark = Math.round((timeDiscoveryPark - now) / 60000);
-            const diffKwaiChungClinic = Math.round((timeKwaiChungClinic - now) / 60000);
-
-            stationsPredictionHTML = `
-              <div class="stations-prediction">
-                📍 預計到達：
-                愉景新城 (${diffDiscoveryPark <= 0 ? '即將' : diffDiscoveryPark + '分鐘'}, ${formatTime(timeDiscoveryPark.toISOString())}) | 
-                下葵涌分區診所 (${diffKwaiChungClinic <= 0 ? '即將' : diffKwaiChungClinic + '分鐘'}, ${formatTime(timeKwaiChungClinic.toISOString())})
-              </div>
-            `;
-          }
-
-          // 🚍 針對 269M 計算愉景新城、荔景站預計到達時間
-          if (firstBus.route === '269M') {
-            const timeDiscoveryPark2 = new Date(arrivalTimeAtStop.getTime() + 32 * 60000);
-            const timeLaiKing = new Date(arrivalTimeAtStop.getTime() + 42 * 60000);
-
-            const diffDiscoveryPark2 = Math.round((timeDiscoveryPark2 - now) / 60000);
-            const diffLaiKing = Math.round((timeLaiKing - now) / 60000);
-
-            stationsPredictionHTML = `
-              <div class="stations-prediction">
-                📍 預計到達：
-                愉景新城 (${diffDiscoveryPark2 <= 0 ? '即將' : diffDiscoveryPark2 + '分鐘'}, ${formatTime(timeDiscoveryPark2.toISOString())}) | 
-                荔景站 (${diffLaiKing <= 0 ? '即將' : diffLaiKing + '分鐘'}, ${formatTime(timeLaiKing.toISOString())})
-              </div>
-            `;
-          }
-
-          let etaDisplay2HTML = '';
-          if (secondBus) {
-            const diff2 = Math.round((new Date(secondBus.eta) - now) / 60000);
-            const clockTime2 = formatTime(secondBus.eta);
-            const text2 = diff2 <= 0 ? `即將到站 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
-            etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
-          }
-
-          const isMtrBus = firstBus.company === 'MTRBUS';
-          const badgeHTML = isMtrBus
-            ? `<span class="company-badge badge-mtrbus">港鐵巴士</span>`
-            : `<span class="company-badge badge-kmb">九巴</span>`;
 
           const card = document.createElement('div');
-          card.className = `card ${isMtrBus ? 'mtrbus' : ''}`;
+          card.className = `card`;
           card.innerHTML = `
-            <div class="route-info" style="flex: 1;">
+            <div class="route-info">
               <div class="route-header">
-                <span class="route-number" style="${isMtrBus ? 'font-size: 1.3rem;' : ''}">${firstBus.route}</span>
-                ${badgeHTML}
+                <span class="route-number">${firstBus.route}</span>
+                <span class="company-badge">九巴</span>
               </div>
-              <span class="destination">往 ${firstBus.dest_tc || '目的地'}</span>
-              ${stationsPredictionHTML}
+              <div class="destination">往 ${firstBus.dest_tc}</div>
             </div>
             <div class="eta-container">
               <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
-              ${etaDisplay2HTML}
+              ${subsequentHTML}
             </div>
           `;
           container.appendChild(card);
@@ -453,8 +321,8 @@
         updateTimestamp();
 
       } catch (error) {
-        console.error('獲取 API 數據失敗:', error);
-        document.getElementById('bus-container').innerHTML = '<p class="loading">數據載入失敗，請檢查網絡連接</p>';
+        console.error('獲取天水圍專線數據失敗:', error);
+        document.getElementById('bus-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">數據載入失敗</p>';
       }
     }
 
@@ -466,8 +334,9 @@
       document.getElementById('update-time').innerText = `最後更新時間：${hours}:${minutes}:${seconds}`;
     }
 
-    fetchAllETA();
-    setInterval(fetchAllETA, 30000);
+    fetchTinShuiWaiETA();
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(fetchTinShuiWaiETA, 30000);
   </script>
 </body>
 </html>

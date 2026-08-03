@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>過海聯營線 (171, 904, 905) 實時班次</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #f4f6f9;
+      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    header {
+      text-align: center;
+      padding-top: 10px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+    .update-time {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* 🔗 返回主頁按鈕 */
+    .link-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .back-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .back-btn:active {
+      background: #f1f5f9;
+    }
+
+    #bus-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    /* 🚌 實時資訊卡片 */
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border-left: 6px solid #cbd5e1;
+    }
+    .card.kmb { border-left-color: #e11d48; }
+    .card.ctb { border-left-color: #0284c7; }
+    
+    .route-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .route-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.1;
+    }
+    .company-badge {
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 3px 7px;
+      border-radius: 6px;
+      line-height: 1;
+      display: inline-block;
+    }
+    .badge-kmb { background-color: #ffe4e6; color: #e11d48; }
+    .badge-ctb { background-color: #e0f2fe; color: #0284c7; }
+
+    .destination {
+      font-size: 0.95rem;
+      color: #475569;
+      margin-top: 4px;
+    }
+    
+    .eta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .eta-first {
+      font-size: 1.35rem;
+      font-weight: bold;
+      color: #059669;
+    }
+    .eta-subsequent {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 4px;
+      text-align: right;
+    }
+    .eta-arriving {
+      color: #e11d48;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .loading {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 1rem;
+      padding: 40px 0;
+    }
+
+    /* 🚏 站點資訊面板 */
+    .station-info-panel {
+      max-width: 500px;
+      margin: 20px auto 12px auto;
+      padding: 14px 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .panel-title {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #0f172a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .station-list {
+      font-size: 0.78rem;
+      color: #475569;
+      line-height: 1.6;
+      margin: 0;
+      padding-left: 18px;
+    }
+    .station-list li {
+      margin-bottom: 4px;
+    }
+
+    footer {
+      max-width: 500px;
+      margin: 0 auto 12px auto;
+      padding: 12px 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .notice-text { font-size: 0.78rem; color: #64748b; line-height: 1.4; margin: 0; }
+    .version-tag { font-size: 0.68rem; color: #cbd5e1; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚌 過海聯營線 (171, 904, 905)</h1>
+    <div id="update-time" class="update-time">更新中...</div>
+  </header>
+
+  <!-- 返回主頁連結 -->
+  <div class="link-container">
+    <a href="index.html" class="back-btn">
+      ⬅️ 返回荔灣巴士資訊主頁
+    </a>
+  </div>
+
+  <div id="bus-container" class="loading">載入數據中...</div>
+
+  <!-- 🚏 站點資訊面板 -->
+  <div class="station-info-panel">
+    <div class="panel-title">🚏 監測站點資訊 (荔枝角總站)</div>
+    <ul class="station-list">
+      <li><strong>路線 171：</strong> 往 海怡半島</li>
+      <li><strong>路線 904：</strong> 往 堅尼地城</li>
+      <li><strong>路線 905：</strong> 往 灣仔 (會展)</li>
+      <li style="color:#0284c7; margin-top:6px;"><strong>備註：</strong>此三條路線為聯營線，本頁面已啟用雙引擎，自動整合九巴與城巴之實時班次。</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p class="notice-text">💡 請預留足夠時間，提早到達總站等候開出。</p>
+    <div class="version-tag">版本 v1.1.0 (聯營線雙引擎)</div>
+  </footer>
+
+  <script>
+    const ROUTES = ["171", "904", "905"];
+    
+    // 九巴荔枝角總站代碼
+    const KMB_STOPS = ["75EF762BDAB6F5C3", "2F8E1900654BF56C", "B9F19D629C894FEE", "636F6AAF3B891E82"];
+    
+    // 城巴荔枝角總站代碼
+    const CTB_TARGETS = [
+      { stop: "001550", route: "171", dest: "海怡半島" },
+      { stop: "001550", route: "904", dest: "堅尼地城" },
+      { stop: "001550", route: "905", dest: "灣仔 (會展)" }
+    ];
+
+    function formatTime(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    async function fetchCombinedETA() {
+      try {
+        const container = document.getElementById('bus-container');
+        let allEtaData = [];
+
+        // 1️⃣ 獲取 九巴 (KMB) 數據
+        const kmbPromises = KMB_STOPS.map(stopId => 
+          fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`)
+            .then(res => res.json())
+            .then(res => {
+              return (res.data || [])
+                .filter(item => ROUTES.includes(item.route) && !item.dest_tc.includes('荔枝角'))
+                .map(item => ({
+                  company: (item.rmk_tc && item.rmk_tc.includes('城巴')) ? 'CTB' : 'KMB',
+                  route: item.route,
+                  dest_tc: item.dest_tc || '',
+                  eta: item.eta,
+                  rmk_tc: item.rmk_tc || ''
+                }));
+            })
+            .catch(() => [])
+        );
+
+        // 2️⃣ 獲取 城巴 (CTB) 數據
+        const ctbPromises = CTB_TARGETS.map(item =>
+          fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${item.stop}/${item.route}`)
+            .then(res => res.json())
+            .then(res => {
+              const list = res.data || [];
+              return list.map(bus => ({
+                company: 'CTB',
+                route: bus.route,
+                dest_tc: bus.dest_tc || item.dest,
+                eta: bus.eta,
+                rmk_tc: bus.rmk_tc || ''
+              }));
+            })
+            .catch(() => [])
+        );
+
+        // 執行所有請求並合併
+        const results = await Promise.all([...kmbPromises, ...ctbPromises]);
+        results.forEach(data => { allEtaData = allEtaData.concat(data); });
+
+        const nowTime = new Date().getTime();
+
+        // 3️⃣ 過濾並清洗數據
+        let filteredList = allEtaData.filter(item => {
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+          const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
+          return diffMinutes >= -2 && !isArrivingOnly;
+        });
+
+        // 依據時間排序
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+        // 4️⃣ 按路線分組並去重 (由於是合併數據，必須去除時間相近的重複班次)
+        const groupedByRoute = {};
+        filteredList.forEach(item => {
+          // 因為同在總站，用路線號碼作為 Key 即可
+          const routeKey = item.route;
+          if (!groupedByRoute[routeKey]) groupedByRoute[routeKey] = [];
+          
+          const time = new Date(item.eta).getTime();
+          // 如果 1 分鐘內已有相同班次，視為同一班車（去重）
+          const isDuplicate = groupedByRoute[routeKey].some(existing => {
+            const existingTime = new Date(existing.eta).getTime();
+            return Math.abs(existingTime - time) < 60000;
+          });
+
+          if (!isDuplicate) {
+            groupedByRoute[routeKey].push(item);
+          }
+        });
+
+        const routeKeys = Object.keys(groupedByRoute);
+
+        if (routeKeys.length === 0) {
+          container.innerHTML = '<p class="loading">暫無班次資料或已過營運時間</p>';
+          updateTimestamp();
+          return;
+        }
+
+        // 按首班車時間先後排序路線卡片
+        routeKeys.sort((a, b) => {
+          const etaA = new Date(groupedByRoute[a][0].eta);
+          const etaB = new Date(groupedByRoute[b][0].eta);
+          return etaA - etaB;
+        });
+
+        container.innerHTML = '';
+
+        // 5️⃣ 渲染所有可用班次
+        routeKeys.forEach(key => {
+          const busList = groupedByRoute[key];
+          if (busList.length === 0) return;
+
+          const firstBus = busList[0];
+          const now = new Date();
+          
+          // 計算首班車時間
+          const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+          const clockTime1 = formatTime(firstBus.eta);
+          let etaDisplay1 = diff1 <= 0 ? `即將開出 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+          let isArriving1 = diff1 <= 0;
+
+          // 處理徽章顏色 (KMB / CTB)
+          const badgeClass = firstBus.company === 'KMB' ? 'badge-kmb' : 'badge-ctb';
+          const companyName = firstBus.company === 'KMB' ? '九巴' : '城巴';
+          const cardBorderClass = firstBus.company === 'KMB' ? 'kmb' : 'ctb';
+
+          // 渲染後續班次 (支持無限數量)
+          let subsequentHTML = '';
+          for (let i = 1; i < busList.length; i++) {
+            const nextBus = busList[i];
+            const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
+            const clockTimeNext = formatTime(nextBus.eta);
+            const textNext = diffNext <= 0 ? `即將開出 (${clockTimeNext})` : `${diffNext} 分鐘 (${clockTimeNext})`;
+            
+            // 標註後續班次是九巴還是城巴
+            const nextCompany = nextBus.company === 'KMB' ? '九巴' : '城巴';
+            subsequentHTML += `<div class="eta-subsequent">下班 (${nextCompany}): ${textNext}</div>`;
+          }
+
+          const card = document.createElement('div');
+          card.className = `card ${cardBorderClass}`;
+          card.innerHTML = `
+            <div class="route-info">
+              <div class="route-header">
+                <span class="route-number">${firstBus.route}</span>
+                <span class="company-badge ${badgeClass}">${companyName}</span>
+              </div>
+              <span class="destination">往 ${firstBus.dest_tc}</span>
+            </div>
+            <div class="eta-container">
+              <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+              ${subsequentHTML}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        updateTimestamp();
+
+      } catch (error) {
+        console.error('獲取合併 API 數據失敗:', error);
+        document.getElementById('bus-container').innerHTML = '<p class="loading">數據載入失敗，請檢查網絡連接</p>';
+      }
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('update-time').innerText = `最後更新時間：${hours}:${minutes}:${seconds}`;
+    }
+
+    fetchCombinedETA();
+    setInterval(fetchCombinedETA, 30000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>6號巴士全線實時班次</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f4f6f9;
+      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    header {
+      text-align: center;
+      padding-top: 10px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+    .update-time {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* 🔒 統一限制所有主要區塊的最大闊度為 500px 並置中 */
+    .section-title, .tab-container, .selector-container, .link-container, #bus-container, footer {
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* 🗂️ 區塊標題 */
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #334155;
+      margin: 16px auto 8px auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 🗂️ 方向分頁按鈕 (九巴紅色調) */
+    .tab-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 6px;
+      background: #ffffff;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .tab-btn.active {
+      background: #e11d48; /* 九巴紅 */
+      color: #ffffff;
+      border-color: #e11d48;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+    }
+
+    /* 📍 車站選擇下拉選單 */
+    .selector-container {
+      margin-bottom: 16px;
+      display: none;
+    }
+    .stop-select {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #0f172a;
+      background-color: #ffffff;
+      border: 2px solid #e11d48;
+      border-radius: 12px;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 16px;
+      box-shadow: 0 4px 10px rgba(225, 29, 72, 0.1);
+      outline: none;
+    }
+    
+    /* 🚌 實時資訊卡片 (嚴格限制最大闊度 500px) */
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border-left: 6px solid #e11d48;
+    }
+    
+    .route-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .route-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.1;
+    }
+    .company-badge {
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 3px 7px;
+      border-radius: 6px;
+      line-height: 1;
+      display: inline-block;
+      background-color: #ffe4e6;
+      color: #e11d48;
+    }
+
+    .destination {
+      font-size: 0.95rem;
+      color: #475569;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+    
+    .eta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .eta-first {
+      font-size: 1.35rem;
+      font-weight: bold;
+      color: #059669;
+    }
+    .eta-subsequent {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 4px;
+      text-align: right;
+    }
+    .eta-arriving {
+      color: #e11d48;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .loading {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.95rem;
+      padding: 24px 0;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 12px;
+    }
+
+    /* 🔗 返回主頁按鈕 */
+    .link-container {
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      width: 100%;
+      padding: 14px 16px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .back-btn:active { background: #f1f5f9; }
+
+    footer {
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .notice-text { font-size: 0.78rem; color: #64748b; line-height: 1.4; margin: 0; }
+    .version-tag { font-size: 0.68rem; color: #cbd5e1; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚌 6號巴士全線實時班次</h1>
+    <div id="update-time" class="update-time">初始化中...</div>
+  </header>
+
+  <!-- 🗺️ 全線車站動態查詢 -->
+  <div class="section-title">🗺️ 選擇車站查詢實時班次</div>
+  
+  <div class="tab-container">
+    <div id="btn-outbound" class="tab-btn active" onclick="switchDirection('outbound')">往 尖沙咀碼頭</div>
+    <div id="btn-inbound" class="tab-btn" onclick="switchDirection('inbound')">往 荔枝角</div>
+  </div>
+
+  <div class="selector-container" id="selector-container">
+    <select id="stop-selector" class="stop-select" onchange="onStopChange()">
+      <!-- 選項將由 JS 動態生成 -->
+    </select>
+  </div>
+
+  <div id="bus-container" class="loading">正在載入全線車站資料...</div>
+
+  <!-- 🔗 返回主頁按鈕 (置於底部) -->
+  <div class="link-container">
+    <a href="index.html" class="back-btn">
+      ⬅️ 返回荔灣巴士資訊主頁
+    </a>
+  </div>
+
+  <footer>
+    <p class="notice-text">💡 6號巴士由九龍巴士 (KMB) 獨家營運。</p>
+    <div class="version-tag">版本 v1.2.0 (全線專屬精簡版)</div>
+  </footer>
+
+  <script>
+    const ROUTE = "6";
+    
+    let stopsData = { outbound: [], inbound: [] };
+    let currentDirection = 'outbound';
+    let currentSeq = 1;
+    let isDataReady = false;
+    let autoRefreshTimer = null;
+
+    function formatTime(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    async function initData() {
+      try {
+        const kmbStopsRes = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/stop').then(r => r.json());
+        const kmbStopsMap = {};
+        if (kmbStopsRes.data) {
+          kmbStopsRes.data.forEach(s => { kmbStopsMap[s.stop] = s.name_tc; });
+        }
+
+        const kmbOutRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${ROUTE}/outbound/1`).then(r => r.json());
+        const kmbInRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${ROUTE}/inbound/1`).then(r => r.json());
+        
+        stopsData.outbound = (kmbOutRes.data || []).map(k => ({
+          seq: k.seq,
+          name: kmbStopsMap[k.stop] || `第 ${k.seq} 站`
+        }));
+
+        stopsData.inbound = (kmbInRes.data || []).map(k => ({
+          seq: k.seq,
+          name: kmbStopsMap[k.stop] || `第 ${k.seq} 站`
+        }));
+
+        isDataReady = true;
+        document.getElementById('selector-container').style.display = 'block';
+        
+        populateDropdown();
+        fetchRoute6ETA();
+
+        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+        autoRefreshTimer = setInterval(fetchRoute6ETA, 30000);
+
+      } catch (e) {
+        console.error('初始化 6 號線資料失敗:', e);
+        document.getElementById('bus-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">載入失敗</p>';
+      }
+    }
+
+    async function fetchRoute6ETA() {
+      if (!isDataReady) return;
+      
+      try {
+        const container = document.getElementById('bus-container');
+        const dirCode = currentDirection === 'outbound' ? 'O' : 'I';
+
+        const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${ROUTE}/1`).then(r => r.json());
+        const list = kmbRes.data || [];
+        
+        const filteredKmb = list.filter(item => item.dir === dirCode && parseInt(item.seq) === currentSeq);
+        const nowTime = new Date().getTime();
+
+        let filteredList = filteredKmb.filter(item => {
+          if (!item.eta) return false;
+          const busTime = new Date(item.eta).getTime();
+          const diffMinutes = (busTime - nowTime) / 60000;
+          const isArrivingOnly = item.rmk_tc && (item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客'));
+          
+          const isLastStop = currentSeq === stopsData[currentDirection].length;
+          if (isLastStop && isArrivingOnly && diffMinutes >= -2) return true;
+          
+          return diffMinutes >= -2 && !isArrivingOnly;
+        });
+
+        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+        const uniqueBusList = [];
+        filteredList.forEach(item => {
+          const time = new Date(item.eta).getTime();
+          const isDuplicate = uniqueBusList.some(existing => {
+            const existingTime = new Date(existing.eta).getTime();
+            return Math.abs(existingTime - time) < 60000;
+          });
+          if (!isDuplicate) uniqueBusList.push(item);
+        });
+
+        if (uniqueBusList.length === 0) {
+          container.innerHTML = '<p class="loading" style="color:#64748b; margin:0;">該中途站暫無班次資料</p>';
+          updateTimestamp();
+          return;
+        }
+
+        container.innerHTML = '';
+
+        const firstBus = uniqueBusList[0];
+        const now = new Date();
+        const actionWord = currentSeq === 1 ? '開出' : '到達';
+
+        const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
+        const clockTime1 = formatTime(firstBus.eta);
+        let etaDisplay1 = diff1 <= 0 ? `即將${actionWord} (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
+        let isArriving1 = diff1 <= 0;
+
+        let subsequentHTML = '';
+        for (let i = 1; i < uniqueBusList.length; i++) {
+          const nextBus = uniqueBusList[i];
+          const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
+          const clockTimeNext = formatTime(nextBus.eta);
+          const textNext = diffNext <= 0 ? `即將${actionWord} (${clockTimeNext})` : `${diffNext} 分鐘 (${clockTimeNext})`;
+          subsequentHTML += `<div class="eta-subsequent">下班: ${textNext}</div>`;
+        }
+
+        let destDisplay = firstBus.dest_tc || (currentDirection === 'outbound' ? '尖沙咀碼頭' : '荔枝角');
+
+        const card = document.createElement('div');
+        card.className = `card kmb`;
+        card.innerHTML = `
+          <div class="route-info">
+            <div class="route-header">
+              <span class="route-number">${ROUTE}</span>
+              <span class="company-badge">九巴</span>
+            </div>
+            <div class="destination">往 ${destDisplay}</div>
+          </div>
+          <div class="eta-container">
+            <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+            ${subsequentHTML}
+          </div>
+        `;
+        container.appendChild(card);
+
+        updateTimestamp();
+
+      } catch (error) {
+        console.error('獲取全線 API 數據失敗:', error);
+        document.getElementById('bus-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">數據載入失敗</p>';
+      }
+    }
+
+    function switchDirection(dir) {
+      if (!isDataReady || currentDirection === dir) return;
+      currentDirection = dir;
+      
+      document.getElementById('btn-outbound').classList.remove('active');
+      document.getElementById('btn-inbound').classList.remove('active');
+      document.getElementById(`btn-${dir}`).classList.add('active');
+      
+      populateDropdown();
+      document.getElementById('bus-container').innerHTML = '<p class="loading" style="margin:0;">切換車站中...</p>';
+      fetchRoute6ETA();
+    }
+
+    function populateDropdown() {
+      const select = document.getElementById('stop-selector');
+      select.innerHTML = '';
+      const list = stopsData[currentDirection];
+      
+      list.forEach(stop => {
+        const opt = document.createElement('option');
+        opt.value = stop.seq;
+        opt.textContent = `${stop.seq}. ${stop.name}`;
+        select.appendChild(opt);
+      });
+      
+      currentSeq = 1;
+      select.value = 1;
+    }
+
+    function onStopChange() {
+      const select = document.getElementById('stop-selector');
+      currentSeq = parseInt(select.value);
+      document.getElementById('bus-container').innerHTML = '<p class="loading" style="margin:0;">正在抓取實時班次...</p>';
+      fetchRoute6ETA();
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('update-time').innerText = `最後更新時間：${hours}:${minutes}:${seconds}`;
+    }
+
+    initData();
+  </script>
+</body>
+</html>
