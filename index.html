@@ -86,7 +86,7 @@
     .card {
       background: #ffffff;
       border-radius: 14px;
-      padding: 16px 20px;
+      padding: 16px 18px;
       margin-bottom: 12px;
       max-width: 500px;
       margin-left: auto;
@@ -134,6 +134,8 @@
       color: #475569;
       margin-top: 4px;
       font-weight: bold;
+      max-width: 170px;
+      line-height: 1.3;
     }
     
     .eta-container {
@@ -146,11 +148,14 @@
       font-weight: bold;
       color: #059669;
     }
+    /* 💡 精簡優化：調小灰色字體並防換行 */
     .eta-subsequent {
-      font-size: 0.85rem;
+      font-size: 0.76rem;
       color: #64748b;
-      margin-top: 4px;
+      margin-top: 3px;
       text-align: right;
+      white-space: nowrap;
+      letter-spacing: -0.2px;
     }
     .eta-arriving {
       color: #e11d48;
@@ -277,7 +282,7 @@
 
   <footer>
     <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔灣花園」之即時班次。</p>
-    <div class="version-tag">版本 v1.9.3 (城巴 Inbound 數據源修正版)</div>
+    <div class="version-tag">版本 v1.9.4 (精簡字體與防換行優化版)</div>
   </footer>
 
   <script>
@@ -330,7 +335,6 @@
     async function initData() {
       try {
         for (const route of JOINT_ROUTES) {
-          // 🔒 改為強制抓取 inbound 方向的第一個站點作為城巴數據源
           try {
             const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/inbound`).then(r => r.json());
             const stops = ctbRes.data || [];
@@ -464,7 +468,6 @@
               const list = ctbRes.data || [];
               list.forEach(bus => {
                 if (bus.eta && bus.dest_tc) {
-                  // 🔒 Inbound 過濾：確保只保留正確正向出發的班次
                   const isValidDir = (route === '171' && bus.dest_tc.includes('海怡半島')) ||
                                      (route === '904' && bus.dest_tc.includes('堅尼地城')) ||
                                      (route === '905' && (bus.dest_tc.includes('灣仔') || bus.dest_tc.includes('會展')));
