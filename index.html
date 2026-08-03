@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+	<!-- 📱 iPhone / PWA 主畫面專用圖示 -->
+	<link rel="apple-touch-icon" sizes="180x180" href="mybusapplogo.png">
+
+	<!-- 🌐 瀏覽器分頁 Favicon 小圖示 -->
+	<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>荔灣巴士實時資訊主頁</title>
@@ -231,7 +237,18 @@
 <body>
 
   <header>
-    <h1>🏡 荔灣巴士實時資訊</h1>
+    <h1>
+      <!-- 貼上剛剛的 SVG Logo -->
+      <svg width="32" height="32" viewBox="0 0 512 512" style="vertical-align: middle; margin-right: 6px; border-radius: 10px;" xmlns="http://www.w3.org/2000/svg">
+        <rect width="512" height="512" rx="110" fill="#0f172a"/>
+        <path d="M130 180 C130 150 155 130 200 130 H312 C357 130 382 150 382 180 V310 C382 340 357 360 312 360 H200 C155 360 130 340 130 310 Z" fill="#ffffff" opacity="0.95"/>
+        <path d="M166 168 H346 V210 H166 Z" fill="#0f172a" opacity="0.8"/>
+        <circle cx="180" cy="335" r="16" fill="#059669"/>
+        <circle cx="332" cy="335" r="16" fill="#059669"/>
+        <rect x="220" y="150" width="72" height="8" rx="4" fill="#e11d48"/>
+      </svg>
+      荔灣巴士實時資訊
+    </h1>
     <div id="update-time" class="update-time">初始化中...</div>
   </header>
 
