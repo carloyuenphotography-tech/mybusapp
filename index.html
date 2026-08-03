@@ -95,7 +95,7 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      border-left: 6px solid #e11d48;
+      border-left: 6px solid #cbd5e1;
       text-decoration: none;
       color: inherit;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -125,9 +125,9 @@
       border-radius: 6px;
       line-height: 1;
       display: inline-block;
-      background-color: #ffe4e6; 
-      color: #e11d48;
     }
+    .badge-kmb { background-color: #ffe4e6; color: #e11d48; }
+    .badge-ctb { background-color: #e0f2fe; color: #0284c7; }
 
     .destination {
       font-size: 0.95rem;
@@ -264,13 +264,11 @@
 
   <footer>
     <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔灣花園」之即時班次。</p>
-    <div class="version-tag">版本 v1.8.6 (荔灣花園精準ID鎖定版)</div>
+    <div class="version-tag">版本 v1.8.8 (全線多班次完美同步版)</div>
   </footer>
 
   <script>
     const JOINT_ROUTES = ["171", "904", "905"];
-    
-    // 🔒 使用你提供的荔灣花園官方 Stop ID
     const GARDEN_STOP_ID = "37A4D07D7179CE76";
     const GARDEN_ROUTES = ["46X", "46", "45", "42", "30", "30X"];
     
@@ -490,7 +488,10 @@
             return Math.abs(existingTime - time) < 60000;
           });
 
-          if (!isDuplicate) groupedByRoute[item.route].push(item);
+          // 🔒 確保每條聯營線收集最多前 3 班車以支援後續預報
+          if (!isDuplicate && groupedByRoute[item.route].length < 3) {
+            groupedByRoute[item.route].push(item);
+          }
         });
 
         const activeRoutes = Object.keys(groupedByRoute);
@@ -569,11 +570,9 @@
         const container = document.getElementById('bus-primary-container');
         let allEtaData = [];
 
-        // 🔒 利用指定的 Stop ID 直接向九巴查詢該站點的所有實時班次
         const etaRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${GARDEN_STOP_ID}`).then(r => r.json());
         const etaList = etaRes.data || [];
 
-        // 過濾出我們指定的目標路線 (46X, 46, 45, 42, 30, 30X)
         const filtered = etaList.filter(item => GARDEN_ROUTES.includes(item.route));
 
         filtered.forEach(item => {
@@ -607,7 +606,8 @@
             return Math.abs(existingTime - time) < 60000;
           });
 
-          if (!isDuplicate && groupedByRoute[item.route].length < 2) {
+          // 🔒 確保荔灣花園每條路線收集最多前 3 班車
+          if (!isDuplicate && groupedByRoute[item.route].length < 3) {
             groupedByRoute[item.route].push(item);
           }
         });
@@ -640,8 +640,8 @@
           let isArriving1 = diff1 <= 0;
 
           let subsequentHTML = '';
-          if (busList[1]) {
-            const nextBus = busList[1];
+          for (let i = 1; i < busList.length; i++) {
+            const nextBus = busList[i];
             const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
             const clockTimeNext = formatTime(nextBus.eta);
             const textNext = diffNext <= 0 ? `即將到達 (${clockTimeNext})` : `${diffNext} 分鐘 (${clockTimeNext})`;
