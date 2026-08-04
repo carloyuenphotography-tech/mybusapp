@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <!-- 📱 iPhone / PWA 主畫面專用圖示 -->
+  <link rel="apple-touch-icon" sizes="180x180" href="mybusapplogo.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>九巴 2 號線雙向全站實時資訊</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f4f6f9;
+      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 12px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    header {
+      text-align: center;
+      padding-top: 6px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+    }
+    .update-time {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: bold;
+    }
+
+    /* 📱 雙欄容器設定 */
+    .dual-container {
+      display: flex;
+      gap: 12px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .direction-column {
+      flex: 1;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e8f0;
+    }
+    
+    .direction-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      background-color: #e11d48;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    /* 🚏 站點卡片設計 (長者清晰版) */
+    .stop-card {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      border: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stop-info {
+      max-width: 55%;
+    }
+    .stop-name {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    .stop-seq {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    /* ⏱️ 到站時間顯示 */
+    .eta-box {
+      text-align: right;
+    }
+    .eta-time {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #059669;
+    }
+    .eta-time.arriving {
+      color: #e11d48;
+      animation: pulse 1.5s infinite;
+    }
+    .eta-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    .loading-text {
+      text-align: center;
+      color: #64748b;
+      padding: 20px;
+      font-size: 0.95rem;
+    }
+
+    /* 🔗 底部按鈕 */
+    .link-container {
+      max-width: 900px;
+      margin: 20px auto 10px auto;
+    }
+    .nav-btn {
+      width: 100%;
+      padding: 14px;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* 📱 手機螢幕優化：若螢幕較窄自動轉為上下排列，方便閱讀 */
+    @media (max-width: 768px) {
+      .dual-container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚌 九巴 2 號線全線到站時間</h1>
+    <div id="update-time" class="update-time">正在更新時間...</div>
+  </header>
+
+  <!-- 📱 雙欄方向佈局 -->
+  <div class="dual-container">
+    
+    <!-- 往尖沙咀碼頭方向 -->
+    <div class="direction-column">
+      <div class="direction-title">往 尖沙咀碼頭</div>
+      <div id="col-outbound" class="loading-text">載入站點中...</div>
+    </div>
+
+    <!-- 往深水埗(東京街)方向 -->
+    <div class="direction-column">
+      <div class="direction-title">往 深水埗 (東京街)</div>
+      <div id="col-inbound" class="loading-text">載入站點中...</div>
+    </div>
+
+  </div>
+
+  <!-- 🔗 返回主頁按鈕 -->
+  <div class="link-container">
+    <a href="index.html" class="nav-btn">🏠 返回主頁</a>
+  </div>
+
+  <script>
+    const ROUTE = "2";
+    let stopsOutbound = [];
+    let stopsInbound = [];
+
+    function formatTime(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // 初始化：取得 2 號線兩個方向的沿途站點清單
+    async function initRouteStops() {
+      try {
+        const [resOut, resIn] = await Promise.all([
+          fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${ROUTE}/1/outbound`).then(r => r.json()),
+          fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${ROUTE}/1/inbound`).then(r => r.json())
+        ]);
+
+        stopsOutbound = resOut.data || [];
+        stopsInbound = resIn.data || [];
+
+        // 取得每個站點的中文名稱
+        await enrichStopNames(stopsOutbound);
+        await enrichStopNames(stopsInbound);
+
+        fetchAllETAs();
+        setInterval(fetchAllETAs, 30000); // 每 30 秒自動更新
+      } catch (e) {
+        console.error("初始化站點失敗", e);
+      }
+    }
+
+    // 替換站點 ID 為真實中文站名
+    async function enrichStopNames(stopsArray) {
+      for (let s of stopsArray) {
+        try {
+          const detail = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${s.stop}`).then(r => r.json());
+          if (detail.data) {
+            s.name_tc = detail.data.name_tc;
+          }
+        } catch(e) {
+          s.name_tc = "未知站名";
+        }
+      }
+    }
+
+    // 獲取所有實時 ETA
+    async function fetchAllETAs() {
+      try {
+        const [etaOutRes, etaInRes] = await Promise.all([
+          fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${ROUTE}/1`).then(r => r.json()),
+          fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${ROUTE}/2`).then(r => r.json())
+        ]);
+
+        renderColumn('col-outbound', stopsOutbound, etaOutRes.data || []);
+        renderColumn('col-inbound', stopsInbound, etaInRes.data || []);
+        updateTimestamp();
+      } catch (e) {
+        console.error("更新實時時間失敗", e);
+      }
+    }
+
+    // 渲染單個方向的列表
+    function renderColumn(containerId, stops, etas) {
+      const container = document.getElementById(containerId);
+      if (!stops.length) {
+        container.innerHTML = '<div class="loading-text">暫無資料</div>';
+        return;
+      }
+
+      const nowTime = new Date().getTime();
+      container.innerHTML = '';
+
+      stops.forEach((stop, index) => {
+        // 過濾出該站點的 ETA
+        const stopEtas = etas.filter(e => e.stop === stop.stop && e.eta);
+        
+        let etaText = "暫無班次";
+        let subText = "";
+        let isArriving = false;
+
+        if (stopEtas.length > 0) {
+          const first = stopEtas[0];
+          const diffMin = Math.round((new Date(first.eta).getTime() - nowTime) / 60000);
+          const clock = formatTime(first.eta);
+
+          if (diffMin <= 0) {
+            etaText = `即將到達 (${clock})`;
+            isArriving = true;
+          } else {
+            etaText = `${diffMin} 分鐘`;
+            subText = `到達時間：${clock}`;
+          }
+
+          if (stopEtas.length > 1) {
+            const nextDiff = Math.round((new Date(stopEtas[1].eta).getTime() - nowTime) / 60000);
+            subText += ` | 下班: ${nextDiff > 0 ? nextDiff + '分鐘' : '即將'}`;
+          }
+        }
+
+        const card = document.createElement('div');
+        card.className = 'stop-card';
+        card.innerHTML = `
+          <div class="stop-info">
+            <div class="stop-name">${stop.name_tc || '載入中...'}</div>
+            <div class="stop-seq">第 ${index + 1} 站</div>
+          </div>
+          <div class="eta-box">
+            <div class="eta-time ${isArriving ? 'arriving' : ''}">${etaText}</div>
+            <div class="eta-sub">${subText}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('update-time').innerText = `最後更新：${h}:${m}:${s}`;
+    }
+
+    initRouteStops();
+  </script>
+</body>
+</html>
