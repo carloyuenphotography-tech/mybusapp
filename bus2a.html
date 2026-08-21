@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <!-- 📱 iPhone / PWA 主畫面專用圖示 -->
-	<link rel="apple-touch-icon" sizes="180x180" href="kmb_bus_2A.png">
-
-	<!-- 🌐 瀏覽器分頁 Favicon 小圖示 -->
-	<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>2A號巴士全線實時班次</title>
@@ -60,7 +54,7 @@
       gap: 6px;
     }
 
-    /* 🗂️ 方向分頁按鈕 */
+    /* 🗂️ 方向分頁按鈕 (左邊由美孚開出，右邊由樂華開出) */
     .tab-container {
       display: flex;
       gap: 8px;
@@ -268,9 +262,10 @@
   <!-- 🗺️ 全線車站查詢 -->
   <div class="section-title">🗺️ 選擇車站或使用定位</div>
   
+  <!-- 左右對調：左邊由樂華開出（inbound），右邊由美孚開出（outbound） -->
   <div class="tab-container">
-    <div id="btn-outbound" class="tab-btn active" onclick="switchDirection('outbound')">往 美孚</div>
-    <div id="btn-inbound" class="tab-btn" onclick="switchDirection('inbound')">往 樂華</div>
+    <div id="btn-inbound" class="tab-btn active" onclick="switchDirection('inbound')">由 美孚開出</div>
+    <div id="btn-outbound" class="tab-btn" onclick="switchDirection('outbound')">由 樂華開出</div>
   </div>
 
   <!-- 📍 GPS 定位按鈕 -->
@@ -298,14 +293,14 @@
 
   <footer>
     <p class="notice-text">💡 點擊「自動尋找附近最近的車站」可透過 GPS 自動切換至你身處最近的站點。</p>
-    <div class="version-tag">版本 v1.4.0 (GPS 定位選單版)</div>
+    <div class="version-tag">版本 v1.5.0 (全線車站與方向優化版)</div>
   </footer>
 
   <script>
     const ROUTE = "2A";
     
     let stopsData = { outbound: [], inbound: [] };
-    let currentDirection = 'outbound';
+    let currentDirection = 'inbound'; // 預設由樂華開出
     let currentSeq = 1;
     let isDataReady = false;
     let autoRefreshTimer = null;
@@ -450,7 +445,6 @@
       }
     }
 
-    // 📍 核心：GPS 定位尋找最近車站
     function findNearestStop() {
       if (!navigator.geolocation) {
         alert("您的瀏覽器不支援定位功能");
@@ -465,9 +459,8 @@
 
         let nearestStop = null;
         let minDistance = Infinity;
-        let matchedDirection = 'outbound';
+        let matchedDirection = 'inbound';
 
-        // 同時檢查兩個方向的所有車站
         ['outbound', 'inbound'].forEach(dir => {
           stopsData[dir].forEach(stop => {
             if (stop.coords) {
@@ -482,7 +475,6 @@
         });
 
         if (nearestStop) {
-          // 自動切換至對應方向與車站
           if (currentDirection !== matchedDirection) {
             currentDirection = matchedDirection;
             document.getElementById('btn-outbound').classList.remove('active');
@@ -504,9 +496,8 @@
       }, { timeout: 10000 });
     }
 
-    // 計算兩點經緯度距離 (Haversine formula)
     function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Radius of the earth in km
+      const R = 6371;
       const dLat = deg2rad(lat2 - lat1);
       const dLon = deg2rad(lon2 - lon1);
       const a = 

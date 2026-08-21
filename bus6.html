@@ -237,9 +237,10 @@
   <!-- 🗺️ 全線車站動態查詢 -->
   <div class="section-title">🗺️ 選擇車站查詢實時班次</div>
   
+  <!-- 左右對調：由荔枝角開放在左邊，往尖沙咀碼頭在右邊 -->
   <div class="tab-container">
-    <div id="btn-outbound" class="tab-btn active" onclick="switchDirection('outbound')">往 尖沙咀碼頭</div>
-    <div id="btn-inbound" class="tab-btn" onclick="switchDirection('inbound')">往 荔枝角</div>
+    <div id="btn-inbound" class="tab-btn active" onclick="switchDirection('inbound')">由 荔枝角開出</div>
+    <div id="btn-outbound" class="tab-btn" onclick="switchDirection('outbound')">由 尖沙咀碼頭開出</div>
   </div>
 
   <div class="selector-container" id="selector-container">
@@ -259,14 +260,14 @@
 
   <footer>
     <p class="notice-text">💡 6號巴士由九龍巴士 (KMB) 獨家營運。</p>
-    <div class="version-tag">版本 v1.2.0 (全線專屬精簡版)</div>
+    <div class="version-tag">版本 v1.2.1 (全線方向調整版)</div>
   </footer>
 
   <script>
     const ROUTE = "6";
     
     let stopsData = { outbound: [], inbound: [] };
-    let currentDirection = 'outbound';
+    let currentDirection = 'inbound'; // 預設改為由荔枝角開出
     let currentSeq = 1;
     let isDataReady = false;
     let autoRefreshTimer = null;
