@@ -292,12 +292,11 @@
 
   <footer>
     <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔枝角灣花園」之即時班次。</p>
-    <div class="version-tag">版本 v1.9.10</div>
+    <div class="version-tag">版本 v1.9.12</div>
   </footer>
 
   <script>
     const JOINT_ROUTES = ["171", "904", "905"];
-    const BUS_6_STOP_ID = "SS984";
     const BUS_171_KMB_STOP = "SS980";
     const BUS_171_CTB_STOP = "002847";
     const GARDEN_STOP_ID = "37A4D07D7179CE76";
@@ -379,12 +378,15 @@
       }
     }
 
+    // 改用與 bus6.html 相同的 route-eta 方式來抓取 6 號線總站（seq: 1）資料
     async function fetchBus6TerminusETA() {
       try {
         const container = document.getElementById('bus-primary-container');
-        const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${BUS_6_STOP_ID}`).then(r => r.json());
+        const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/6/1`).then(r => r.json());
         const list = kmbRes.data || [];
-        const filteredKmb = list.filter(item => item.route === '6');
+        
+        // dir 'I' 代表由荔枝角開出方向，seq 1 代表第一站
+        const filteredKmb = list.filter(item => item.dir === 'I' && parseInt(item.seq) === 1);
         const nowTime = new Date().getTime();
 
         let filteredList = filteredKmb.filter(item => {
@@ -451,6 +453,7 @@
 
       } catch (err) {
         console.error('6號總站數據獲取失敗:', err);
+        document.getElementById('bus-primary-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">數據載入失敗</p>';
       }
     }
 
