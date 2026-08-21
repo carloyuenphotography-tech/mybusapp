@@ -31,7 +31,7 @@ def index():
             .dir-tab { flex: 1; text-align: center; padding: 8px; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
             .dir-tab.active { background: white; color: #0f172a; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-            /* 🌟 上方大格即時看板 (參考你提供的高質感截圖) */
+            /* 🌟 上方大格即時看板 */
             .dashboard-card { background: #ffffff; padding: 20px; border-bottom: 1px solid #eee; }
             .current-stop-banner { background: #f0fdf4; border-left: 4px solid #10b981; padding: 12px 15px; border-radius: 6px; font-size: 15px; font-weight: bold; color: #065f46; margin-bottom: 15px; }
             
@@ -53,7 +53,6 @@ def index():
             .station-item.selected { background: #f0fdf4; border: 1px solid #bbf7d0; padding-left: 53px; }
             .station-item:last-child { margin-bottom: 0; }
             
-            /* 重點高亮常搭站 */
             .station-item.highlight-station { background: #fef08a; border: 1px solid #fde047; padding-left: 53px; }
             
             .station-item::before { content: ''; position: absolute; left: 19px; top: 35px; bottom: -25px; width: 2px; background: #e2e8f0; }
@@ -69,6 +68,12 @@ def index():
             .frequent-tag { font-size: 11px; background: #ca8a04; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: normal; }
             .station-id { font-size: 12px; color: #94a3b8; margin-top: 2px; font-family: monospace; }
             .fare-tag { float: right; font-size: 14px; color: #64748b; font-weight: 500; margin-top: -18px; }
+
+            /* 🏷️ 各站下方的藥丸狀時間標籤 */
+            .eta-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+            .eta-pill { background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; border: 1px solid #bae6fd; }
+            .eta-pill.urgent { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+            .no-eta { font-size: 12px; color: #94a3b8; font-style: italic; margin-top: 5px; }
 
             .loading { text-align: center; padding: 40px; color: #666; font-size: 15px; }
         </style>
@@ -128,7 +133,7 @@ def index():
     <script>
         let apiData = null;
         let currentDir = 'th'; // 'th' = 往天恆 (D開頭), 'tsw' = 往天水圍站 (U開頭)
-        let selectedStopId = "K76-D010"; // 預設選中第一站
+        let selectedStopId = "K76-D010"; // 預設往天恆第一站
 
         const stopNames = {
             "K76-D010": "天水圍站 (港鐵天水圍站)",
@@ -162,11 +167,11 @@ def index():
             document.getElementById('tab-th').className = `dir-tab ${dir === 'th' ? 'active' : ''}`;
             document.getElementById('tab-tsw').className = `dir-tab ${dir === 'tsw' ? 'active' : ''}`;
             
-            // 切換方向時自動預設選中該方向的第一個站
+            // 依照要求設定預設選中站點
             if (dir === 'th') {
-                selectedStopId = "K76-D010";
+                selectedStopId = "K76-D010"; // 往天恆預設第一站
             } else {
-                selectedStopId = "K76-U010";
+                selectedStopId = "K76-U030"; // 往天水圍預設為天富苑欣富閣
             }
             render();
         }
@@ -212,6 +217,18 @@ def index():
                 item.className = `station-item ${hasBus ? 'has-bus' : ''} ${isSelected ? 'selected' : ''} ${isHighlight ? 'highlight-station' : ''}`;
                 item.onclick = () => selectStation(stop.busStopId);
 
+                // 各站下方的時間藥丸標籤
+                let pillsHtml = '';
+                if (hasBus) {
+                    stop.bus.forEach(bus => {
+                        let text = bus.arrivalTimeText || bus.departureTimeText || '即將';
+                        let isUrgent = text.includes('即將') || (text.includes('分鐘') && parseInt(text) <= 3);
+                        pillsHtml += `<span class="eta-pill ${isUrgent ? 'urgent' : ''}">${text}</span>`;
+                    });
+                } else {
+                    pillsHtml = `<div class="no-eta">暫無班次</div>`;
+                }
+
                 item.innerHTML = `
                     <div class="station-badge">${index + 1}</div>
                     <div class="station-name">
@@ -219,6 +236,7 @@ def index():
                     </div>
                     <div class="station-id">${stop.busStopId}</div>
                     <div class="fare-tag">$5.1</div>
+                    <div class="eta-pills">${pillsHtml}</div>
                 `;
 
                 timeline.appendChild(item);
