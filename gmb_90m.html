@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>專線小巴實時班次 (90M, 90P, 92M)</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f4f6f9;
+      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    header {
+      text-align: center;
+      padding-top: 10px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 1.3rem;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+    }
+    .update-time {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #334155;
+      margin: 20px 0 10px 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 🚏 站點卡片設計 */
+    .station-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      border-left: 5px solid #059669;
+    }
+    
+    .station-card.terminal {
+      border-left-color: #7c3aed;
+      background: #faf5ff;
+    }
+
+    .station-info {
+      width: 100%;
+    }
+    .station-name {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    
+    .station-card.terminal .station-name {
+      color: #6d28d9;
+    }
+    .terminal-badge {
+      font-size: 0.65rem;
+      background-color: #7c3aed;
+      color: #ffffff;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 6px;
+      font-weight: bold;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .station-id {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    /* 📍 特別提示橫幅（賦予醒目底色以突顯荔灣花園） */
+    .route-divider {
+      background-color: #fef3c7;
+      color: #b45309;
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-align: center;
+      padding: 8px;
+      border-radius: 10px;
+      margin: 8px 0;
+      border: 1px solid #fcd34d;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    /* 🏷️ 藥丸狀時間標籤排版 */
+    .eta-pills-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-start;
+      width: 100%;
+    }
+    .eta-pill {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.82rem;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .eta-pill.arriving {
+      background-color: #ffe4e6;
+      color: #e11d48;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    .no-eta {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    .loading {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      padding: 20px 0;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .link-container {
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .back-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+    .back-btn:active { background: #f1f5f9; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚐 專線小巴實時班次</h1>
+    <div id="update-time" class="update-time">正在載入數據...</div>
+  </header>
+
+  <div class="container">
+    <div class="section-header">90M 專線小巴 (沿途站點)</div>
+    <div id="m90-container"><div class="loading">載入 90M 資料中...</div></div>
+
+    <div class="section-header">90P 專線小巴 (沿途站點)</div>
+    <div id="p90-container"><div class="loading">載入 90P 資料中...</div></div>
+
+    <div class="section-header">92M 專線小巴 (沿途站點)</div>
+    <div id="m92-container"><div class="loading">載入 92M 資料中...</div></div>
+  </div>
+
+  <div class="link-container">
+    <a href="index.html" class="back-btn">⬅️ 返回主頁</a>
+  </div>
+
+  <script>
+    const STOPS_90M = [
+      { id: "20001837", name: "荔景山路，張玉瓊晨輝學校對面" },
+      { type: "divider", text: "📍 荔灣花園" },
+      { id: "20020129", name: "荔灣道，荔枝角公園體育館對面" },
+      { id: "20013663", name: "美荔道（Esso油站）" },
+      { id: "20013693", name: "總站（美孚巴士總站）", isTerminal: true },
+      { id: "20013694", name: "荔灣道，近荔枝角公園體育館" },
+      { type: "divider", text: "📍 荔灣花園" },
+      { id: "20015763", name: "荔景山路，近荔景邨安景樓" },
+      { id: "20001418", name: "荔景山路（荔景站）" }
+    ];
+
+    const STOPS_90P = [
+      { id: "20013695", name: "瑪嘉烈醫院路，近瑪嘉烈醫院G座", isTerminal: true },
+      { type: "divider", text: "📍 荔灣花園" },
+      { id: "20020129", name: "荔灣道，荔枝角公園體育館對面" },
+      { id: "20020130", name: "美荔道（Esso油站）" },
+      { id: "20014386", name: "總站（美孚巴士總站）", isTerminal: true }
+    ];
+
+    const STOPS_92M = [
+      { id: "20015765", name: "華員徑，近華員邨華信閣" },
+      { type: "divider", text: "📍 荔灣花園" },
+      { id: "20020129", name: "荔灣道，荔枝角公園體育館對面" },
+      { id: "20020130", name: "美荔道（Esso油站）" },
+      { id: "20013693", name: "總站（美孚巴士總站）", isTerminal: true },
+      { id: "20020131", name: "美荔道，美孚新邨第6期" },
+      { id: "20013694", name: "荔灣道，近荔枝角公園體育館" },
+      { type: "divider", text: "📍 荔灣花園" }
+    ];
+
+    let isInitialLoaded = false;
+
+    function formatTime(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function formatEtaDisplay(targetTimeStr) {
+      if (!targetTimeStr) return { text: "暫無班次", isArriving: false };
+      
+      const now = new Date();
+      const targetTime = new Date(targetTimeStr);
+      const diffMs = targetTime - now;
+      const diffSec = Math.round(diffMs / 1000);
+      const clock = formatTime(targetTimeStr);
+
+      if (diffSec <= 0) {
+        return { text: `即將 (${clock})`, isArriving: true };
+      } else if (diffSec < 60) {
+        return { text: `${diffSec}秒 (${clock})`, isArriving: true };
+      } else {
+        const diffMin = Math.round(diffSec / 60);
+        return { text: `${diffMin}分鐘 (${clock})`, isArriving: false };
+      }
+    }
+
+    async function fetchAllData() {
+      await updateStops(STOPS_90M, 'm90-container');
+      await updateStops(STOPS_90P, 'p90-container');
+      await updateStops(STOPS_92M, 'm92-container');
+      updateTimestamp();
+      isInitialLoaded = true;
+    }
+
+    async function updateStops(stopsList, containerId) {
+      const container = document.getElementById(containerId);
+
+      if (!isInitialLoaded) {
+        container.innerHTML = '';
+        stopsList.forEach((stop, index) => {
+          if (stop.type === "divider") {
+            const divider = document.createElement('div');
+            divider.className = 'route-divider';
+            divider.innerText = stop.text;
+            container.appendChild(divider);
+            return;
+          }
+
+          const card = document.createElement('div');
+          card.className = `station-card ${stop.isTerminal ? 'terminal' : ''}`;
+          card.id = `${containerId}-stop-${index}`;
+          const badgeHTML = stop.isTerminal ? `<span class="terminal-badge">總站</span>` : "";
+
+          card.innerHTML = `
+            <div class="station-info">
+              <div class="station-name">${stop.name}${badgeHTML}</div>
+              <div class="station-id">ID: ${stop.id}</div>
+            </div>
+            <div class="eta-pills-container" id="${containerId}-eta-${index}">
+              <span class="no-eta">載入中...</span>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      stopsList.forEach(async (stop, index) => {
+        if (stop.type === "divider") return;
+
+        const etaContainer = document.getElementById(`${containerId}-eta-${index}`);
+        if (!etaContainer) return;
+
+        try {
+          const res = await fetch(`https://data.etagmb.gov.hk/eta/stop/${stop.id}`);
+          const result = await res.json();
+          const dataGroups = result.data || [];
+          
+          let allEtas = [];
+          dataGroups.forEach(group => {
+            const etas = group.eta || [];
+            etas.forEach(e => {
+              allEtas.push({ time: e.timestamp });
+            });
+          });
+
+          allEtas.sort((a, b) => new Date(a.time) - new Date(b.time));
+          const topEtas = allEtas.slice(0, 3);
+
+          let pillsHTML = "";
+          if (topEtas.length === 0) {
+            pillsHTML = `<span class="no-eta">暫無班次</span>`;
+          } else {
+            topEtas.forEach(item => {
+              const formatted = formatEtaDisplay(item.time);
+              const arrivingClass = formatted.isArriving ? 'arriving' : '';
+              pillsHTML += `<div class="eta-pill ${arrivingClass}">${formatted.text}</div>`;
+            });
+          }
+
+          if (etaContainer.innerHTML !== pillsHTML) {
+            etaContainer.innerHTML = pillsHTML;
+          }
+        } catch (err) {}
+      });
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      document.getElementById('update-time').innerText = `最後更新時間：${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    }
+
+    fetchAllData();
+    setInterval(fetchAllData, 2000);
+  </script>
+</body>
+</html>
