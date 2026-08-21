@@ -9,9 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       background-color: #f4f6f9;
       color: #1e293b;
@@ -62,11 +60,8 @@
       justify-content: center;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s ease;
     }
-    .back-btn:active {
-      background: #f1f5f9;
-    }
+    .back-btn:active { background: #f1f5f9; }
 
     .tab-container {
       display: flex;
@@ -92,7 +87,6 @@
       font-size: 0.82rem;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.2s ease;
       text-align: center;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -119,7 +113,6 @@
       gap: 6px;
     }
 
-    /* 🗺️ Google Maps 捷徑按鈕樣式 */
     .map-btn-wrapper {
       max-width: 500px;
       margin: 16px auto;
@@ -145,11 +138,8 @@
       justify-content: center;
       align-items: center;
       gap: 8px;
-      transition: all 0.2s ease;
     }
-    .map-shortcut-btn:active {
-      background: #d1fae5;
-    }
+    .map-shortcut-btn:active { background: #d1fae5; }
 
     .card {
       background: #ffffff;
@@ -162,12 +152,9 @@
       border-left: 6px solid #0284c7;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
-    .card.mtr {
-      border-left-color: #e11d48;
-    }
-    .card.gmb {
-      border-left-color: #059669;
-    }
+    .card.mtr { border-left-color: #e11d48; }
+    .card.gmb { border-left-color: #059669; }
+
     .route-header {
       display: flex;
       align-items: center;
@@ -184,19 +171,12 @@
       font-weight: bold;
       padding: 3px 7px;
       border-radius: 6px;
-      line-height: 1;
-      display: inline-block;
       background-color: #e0f2fe;
       color: #0284c7;
     }
-    .badge-mtr {
-      background-color: #ffe4e6;
-      color: #e11d48;
-    }
-    .badge-gmb {
-      background-color: #d1fae5;
-      color: #059669;
-    }
+    .badge-mtr { background-color: #ffe4e6; color: #e11d48; }
+    .badge-gmb { background-color: #d1fae5; color: #059669; }
+
     .destination {
       font-size: 0.95rem;
       color: #475569;
@@ -247,9 +227,6 @@
       font-weight: bold;
       color: #0f172a;
       margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
     .station-list {
       font-size: 0.78rem;
@@ -258,9 +235,7 @@
       margin: 0;
       padding-left: 18px;
     }
-    .station-list li {
-      margin-bottom: 6px;
-    }
+    .station-list li { margin-bottom: 6px; }
 
     footer {
       max-width: 500px;
@@ -270,7 +245,6 @@
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
     .notice-text { font-size: 0.78rem; color: #64748b; line-height: 1.4; margin: 0; }
     .version-tag { font-size: 0.68rem; color: #cbd5e1; margin-top: 6px; }
@@ -284,33 +258,31 @@
   </header>
 
   <div class="link-container">
-    <a href="index.html" class="back-btn">
-      ⬅️ 返回主頁 (荔灣巴士資訊)
-    </a>
+    <a href="index.html" class="back-btn">⬅️ 返回主頁 (荔灣巴士資訊)</a>
   </div>
 
   <div class="tab-container">
     <div class="tab-row">
-      <div class="tab-btn active" onclick="switchLocation('meifoo')">美孚 ➡️ 播道書院</div>
-      <div class="tab-btn" onclick="switchLocation('evangel')">播道書院 ➡️ 美孚</div>
+      <div class="tab-btn active" onclick="switchLocation('meifoo')">美孚 ➔ 播道書院</div>
+      <div class="tab-btn" onclick="switchLocation('evangel')">播道書院 ➔ 美孚</div>
     </div>
     <div class="tab-row">
-      <div class="tab-btn" onclick="switchLocation('mtr_combo')">🚇 港鐵 + 108A 小巴接駁</div>
+      <div class="tab-btn" onclick="switchLocation('tkopaza')">將軍澳廣場 ➔ 美孚</div>
+      <div class="tab-btn" onclick="switchLocation('mtr_combo')">🚇 港鐵 + 108A</div>
     </div>
   </div>
 
-  <!-- 🚌 動態實時班次區域 -->
   <div id="bus-container" class="loading">載入數據中...</div>
 
-  <!-- 🗺️ Google Maps 路線導航捷徑區塊 (移到班次下方) -->
+  <!-- 🗺️ Google Maps 路線導航捷徑 (修復中文地名與 hl=zh-TW) -->
   <div class="map-btn-wrapper">
     <div class="section-title">🗺️ Google Maps 路線導航捷徑</div>
     <div class="map-btn-container">
-      <a href="https://www.google.com/maps/dir/?api=1&origin=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&destination=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&travelmode=transit" target="_blank" class="map-shortcut-btn">
-        📍 荔灣花園 ➔ 播道書院 (導航)
+      <a href="https://www.google.com/maps/dir/?api=1&origin=%E7%BE%8E%E5%AD%98%E7%AB%99&destination=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&travelmode=transit&hl=zh-TW" target="_blank" class="map-shortcut-btn">
+        📍 美孚站 ➔ 播道書院 (導航)
       </a>
-      <a href="https://www.google.com/maps/dir/?api=1&origin=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&destination=%E8%8D%94%E7%81%A3%E8%8A%B1%E5%9C%92&travelmode=transit" target="_blank" class="map-shortcut-btn">
-        📍 播道書院 ➔ 荔灣花園 (導航)
+      <a href="https://www.google.com/maps/dir/?api=1&origin=%E6%92%AD%E9%81%93%E6%9B%B8%E9%99%A2&destination=%E7%BE%8E%E5%AD%98%E7%AB%99&travelmode=transit&hl=zh-TW" target="_blank" class="map-shortcut-btn">
+        📍 播道書院 ➔ 美孚站 (導航)
       </a>
     </div>
   </div>
@@ -318,346 +290,16 @@
   <div class="station-info-panel">
     <div class="panel-title">🚏 795X 詳細沿途主要車站速查</div>
     <ul class="station-list">
-      <li><strong>往播道書院 / 清水灣半島方向：</strong><br>
-        蘇屋邨 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 旺角 ➔ 油麻地 ➔ 將軍澳隧道轉車站 ➔ 調景嶺站 ➔ <strong>播道書院</strong> ➔ 清水灣半島
-      </li>
-      <li><strong>往美孚 / 蘇屋方向：</strong><br>
-        清水灣半島 ➔ <strong>播道書院</strong> ➔ 調景嶺站 ➔ 將軍澳隧道轉車站 ➔ 旺角 ➔ 深水埗 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 蘇屋邨
-      </li>
+      <li><strong>往播道書院 / 清水灣半島方向：</strong> 蘇屋邨 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 旺角 ➔ 油麻地 ➔ 將軍澳隧道轉車站 ➔ 調景嶺站 ➔ <strong>播道書院</strong> ➔ 將軍澳廣場 ➔ 清水灣半島[cite: 2]</li>
+      <li><strong>往美孚 / 蘇屋方向：</strong> 清水灣半島 ➔ <strong>將軍澳廣場</strong> ➔ <strong>播道書院</strong> ➔ 調景嶺站 ➔ 將軍澳隧道轉車站 ➔ 旺角 ➔ 深水埗 ➔ 長沙灣 ➔ <strong>美孚</strong> ➔ 蘇屋邨[cite: 2]</li>
     </ul>
   </div>
 
   <footer>
     <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.2.7 (捷徑下置版)</div>
+    <div class="version-tag">版本 v1.3.1 (修正導航與將軍澳廣場)</div>
   </footer>
 
-  <script>
-    const LOCATIONS = {
-      meifoo: {
-        type: "citybus",
-        title: "🚉 美孚",
-        defaultDest: "清水灣半島",
-        citybus_stops: [{ stop: "001517", route: "795X" }],
-        travelTimeMin: 38
-      },
-      evangel: {
-        type: "citybus",
-        title: "🏫 播道書院",
-        defaultDest: "蘇屋",
-        citybus_stops: [{ stop: "003472", route: "795X" }],
-        travelTimeMin: 38
-      },
-      mtr_combo: {
-        type: "combo",
-        title: "🚇 港鐵 + 108A 小巴接駁"
-      }
-    };
-
-    let currentLocation = 'meifoo';
-    let autoRefreshTimer = null;
-
-    function switchLocation(locKey) {
-      if (currentLocation === locKey) return;
-      currentLocation = locKey;
-
-      const tabs = document.querySelectorAll('.tab-btn');
-      tabs.forEach((tab) => {
-        tab.classList.remove('active');
-      });
-
-      if (locKey === 'meifoo') tabs[0].classList.add('active');
-      else if (locKey === 'evangel') tabs[1].classList.add('active');
-      else if (locKey === 'mtr_combo') tabs[2].classList.add('active');
-
-      document.getElementById('bus-container').innerHTML = '<p class="loading">載入數據中...</p>';
-      
-      if (locKey === 'mtr_combo') {
-        fetchComboETA();
-      } else {
-        fetchCitybusETA();
-      }
-    }
-
-    function formatTime(isoString) {
-      if (!isoString) return '';
-      const date = new Date(isoString);
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}`;
-    }
-
-    async function fetchCitybusETA() {
-      try {
-        const container = document.getElementById('bus-container');
-        const config = LOCATIONS[currentLocation];
-        let allEtaData = [];
-
-        const promises = config.citybus_stops.map(item => 
-          fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${item.stop}/${item.route}`)
-            .then(res => res.json())
-            .then(res => res.data || [])
-            .catch(() => [])
-        );
-
-        const results = await Promise.all(promises);
-        results.forEach(data => { allEtaData = allEtaData.concat(data); });
-
-        let filteredList = allEtaData.filter(item => item.eta !== null && item.eta !== "");
-
-        filteredList = filteredList.filter(item => {
-          if (currentLocation === 'meifoo') return !item.dest_tc.includes('蘇屋');
-          return !item.dest_tc.includes('清水灣');
-        });
-
-        filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
-        const firstTwoBuses = filteredList.slice(0, 2);
-
-        if (firstTwoBuses.length === 0) {
-          container.innerHTML = '<p class="loading">暫無 795X 班次資料或未到營運時間</p>';
-          updateTimestamp();
-          return;
-        }
-
-        container.innerHTML = '';
-        const firstBus = firstTwoBuses[0];
-        const secondBus = firstTwoBuses[1];
-
-        const now = new Date();
-        const departureTime = new Date(firstBus.eta);
-        const diff1 = Math.round((departureTime - now) / 60000);
-        const clockTime1 = formatTime(firstBus.eta);
-        
-        let etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
-        let isArriving1 = diff1 <= 0;
-
-        const arrivalTime = new Date(departureTime.getTime() + config.travelTimeMin * 60000);
-        const arrivalClockTime = formatTime(arrivalTime.toISOString());
-        const totalDiffToDest = Math.round((arrivalTime - now) / 60000);
-        const targetStationName = currentLocation === 'meifoo' ? '播道書院' : '美孚';
-        
-        let arrivalNoticeHTML = `<div style="font-size: 0.8rem; color: #0284c7; margin-top: 4px; font-weight: bold;">預計約 ${totalDiffToDest <= 0 ? '即將' : totalDiffToDest + '分鐘後'} (${arrivalClockTime}) 抵達${targetStationName}</div>`;
-
-        let etaDisplay2HTML = '';
-        if (secondBus) {
-          const diff2 = Math.round((new Date(secondBus.eta) - now) / 60000);
-          const clockTime2 = formatTime(secondBus.eta);
-          const text2 = diff2 <= 0 ? `即將到達 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
-          etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
-        }
-
-        let displayDest = config.defaultDest;
-        if (firstBus.dest_tc && !firstBus.dest_tc.includes('蘇屋') && currentLocation === 'meifoo') {
-          displayDest = firstBus.dest_tc;
-        }
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="route-info" style="flex: 1;">
-            <div class="route-header">
-              <span class="route-number">795X</span>
-              <span class="company-badge">城巴</span>
-            </div>
-            <span class="destination">往 ${displayDest}</span>
-            ${arrivalNoticeHTML}
-          </div>
-          <div class="eta-container">
-            <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
-            ${etaDisplay2HTML}
-          </div>
-        `;
-        container.appendChild(card);
-        updateTimestamp();
-
-      } catch (error) {
-        console.error('獲取 795X API 數據失敗:', error);
-        document.getElementById('bus-container').innerHTML = '<p class="loading">數據載入失敗，請檢查網絡連接</p>';
-      }
-    }
-
-    async function fetchComboETA() {
-      try {
-        const container = document.getElementById('bus-container');
-        container.innerHTML = '';
-        const now = new Date();
-
-        let mtrMeiFooToTkoHTML = '';
-        let mtrTkoToMeiFooHTML = '';
-
-        // 1. 由美孚站出發 ➔ 預計到達將軍澳站
-        try {
-          const mtrRes = await fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TWL&sta=MEF");
-          const mtrData = await mtrRes.json();
-          const mefTimes = mtrData.data["TWL-MEF"].DOWN || [];
-          if (mefTimes.length > 0 && mefTimes[0].time) {
-            const mtrDepTime = new Date(mefTimes[0].time);
-            const tkoArrTime = new Date(mtrDepTime.getTime() + 40 * 60000);
-            const diffMtr = Math.round((tkoArrTime - now) / 60000);
-            const mtrText = diffMtr <= 0 ? `即將到達 (${formatTime(tkoArrTime.toISOString())})` : `${diffMtr} 分鐘 (${formatTime(tkoArrTime.toISOString())})`;
-
-            mtrMeiFooToTkoHTML = `
-              <div class="card mtr">
-                <div class="route-info">
-                  <div class="route-header">
-                    <span class="route-number" style="font-size: 1.15rem;">港鐵 (美孚起步 ➔ 將軍澳)</span>
-                    <span class="company-badge badge-mtr">MTR</span>
-                  </div>
-                  <span class="destination">由美孚站上車 (經荔枝角/長沙灣往太子轉綫)</span>
-                </div>
-                <div class="eta-container">
-                  <div class="eta-first">${mtrText}</div>
-                  <div class="eta-second">美孚發車: ${formatTime(mefTimes[0].time)}</div>
-                </div>
-              </div>
-            `;
-          }
-        } catch(e) {}
-
-        // 2. 由將軍澳站出發 ➔ 預計到達美孚站
-        try {
-          const mtrRes = await fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TKL&sta=TKO");
-          const mtrData = await mtrRes.json();
-          const tkoTimes = mtrData.data["TKL-TKO"].UP || [];
-          if (tkoTimes.length > 0 && tkoTimes[0].time) {
-            const mtrDepTime = new Date(tkoTimes[0].time);
-            const mefArrTime = new Date(mtrDepTime.getTime() + 35 * 60000);
-            const diffMtr = Math.round((mefArrTime - now) / 60000);
-            const mtrText = diffMtr <= 0 ? `即將到達 (${formatTime(mefArrTime.toISOString())})` : `${diffMtr} 分鐘 (${formatTime(mefArrTime.toISOString())})`;
-
-            mtrTkoToMeiFooHTML = `
-              <div class="card mtr">
-                <div class="route-info">
-                  <div class="route-header">
-                    <span class="route-number" style="font-size: 1.15rem;">港鐵 (將軍澳起步 ➔ 美孚)</span>
-                    <span class="company-badge badge-mtr">MTR</span>
-                  </div>
-                  <span class="destination">由將軍澳站上車 (實時推算)</span>
-                </div>
-                <div class="eta-container">
-                  <div class="eta-first">${mtrText}</div>
-                  <div class="eta-second">將軍澳發車: ${formatTime(tkoTimes[0].time)}</div>
-                </div>
-              </div>
-            `;
-          }
-        } catch(e) {}
-
-        const mtrMeiFooPromise = fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TWL&sta=MEF")
-          .then(res => res.json())
-          .then(data => {
-            const list = data.data["TWL-MEF"].DOWN || [];
-            return list.map(item => item.time);
-          }).catch(() => []);
-
-        const mtrTiuKengLengPromise = fetch("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TKL&sta=TIK")
-          .then(res => res.json())
-          .then(data => {
-            const list = data.data["TKL-TIK"].UP || [];
-            return list.map(item => item.time);
-          }).catch(() => []);
-
-        const gmb108APromise = fetch("https://data.eta.gov.hk/v1/transport/gmb/stop-eta/2002361/1/1")
-          .then(res => res.json())
-          .then(data => {
-            const list = data.data?.eta || [];
-            return list.map(item => item.eta_date);
-          }).catch(() => []);
-
-        const [mefTimes, tikTimes, gmbTimes] = await Promise.all([
-          mtrMeiFooPromise, mtrTiuKengLengPromise, gmb108APromise
-        ]);
-
-        let htmlContent = '';
-
-        if (mtrMeiFooToTkoHTML || mtrTkoToMeiFooHTML) {
-          htmlContent += `<div class="section-title" style="margin-top: 0;">🚀 港鐵跨綫預計到達時間</div>`;
-          if (mtrMeiFooToTkoHTML) htmlContent += mtrMeiFooToTkoHTML;
-          if (mtrTkoToMeiFooHTML) htmlContent += mtrTkoToMeiFooHTML;
-        }
-
-        htmlContent += `<div class="section-title">⏱️ 港鐵實時開出班次</div>`;
-        container.innerHTML = htmlContent;
-
-        renderCard(container, "美孚站 (荃灣綫)", "往 荔枝角 / 太子", mefTimes, "MTR", "mtr");
-        renderCard(container, "調景嶺站 (將軍澳綫)", "往 將軍澳 / 康城", tikTimes, "MTR", "mtr");
-
-        let gmbHeader = document.createElement('div');
-        gmbHeader.className = 'section-title';
-        gmbHeader.innerHTML = `🚐 接駁專線小巴`;
-        container.appendChild(gmbHeader);
-
-        renderCard(container, "108A 小巴 (調景嶺站)", "往 播道書院 / 坑口", gmbTimes, "小巴", "gmb");
-
-        updateTimestamp();
-
-      } catch (error) {
-        console.error('獲取港鐵/小巴 API 數據失敗:', error);
-        document.getElementById('bus-container').innerHTML = '<p class="loading">數據載入失敗，請檢查網絡連接</p>';
-      }
-    }
-
-    function renderCard(container, title, dest, timesList, badgeText, cardType) {
-      const validTimes = timesList.filter(t => t).slice(0, 2);
-      const now = new Date();
-
-      let etaDisplay1 = "無班次資料";
-      let etaDisplay2HTML = "";
-      let isArriving1 = false;
-
-      if (validTimes.length > 0) {
-        const diff1 = Math.round((new Date(validTimes[0]) - now) / 60000);
-        const clockTime1 = formatTime(validTimes[0]);
-        etaDisplay1 = diff1 <= 0 ? `即將到達 (${clockTime1})` : `${diff1} 分鐘 (${clockTime1})`;
-        isArriving1 = diff1 <= 0;
-
-        if (validTimes[1]) {
-          const diff2 = Math.round((new Date(validTimes[1]) - now) / 60000);
-          const clockTime2 = formatTime(validTimes[1]);
-          const text2 = diff2 <= 0 ? `即將到達 (${clockTime2})` : `${diff2} 分鐘 (${clockTime2})`;
-          etaDisplay2HTML = `<div class="eta-second">下班: ${text2}</div>`;
-        }
-      }
-
-      const badgeClass = cardType === 'mtr' ? 'badge-mtr' : 'badge-gmb';
-
-      const card = document.createElement('div');
-      card.className = `card ${cardType}`;
-      card.innerHTML = `
-        <div class="route-info">
-          <div class="route-header">
-            <span class="route-number" style="font-size: 1.2rem;">${title}</span>
-            <span class="company-badge ${badgeClass}">${badgeText}</span>
-          </div>
-          <span class="destination">${dest}</span>
-        </div>
-        <div class="eta-container">
-          <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
-          ${etaDisplay2HTML}
-        </div>
-      `;
-      container.appendChild(card);
-    }
-
-    function updateTimestamp() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('update-time').innerText = `最後更新時間：${hours}:${minutes}:${seconds}`;
-    }
-
-    function refreshData() {
-      if (currentLocation === 'mtr_combo') {
-        fetchComboETA();
-      } else {
-        fetchCitybusETA();
-      }
-    }
-
-    refreshData();
-    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-    autoRefreshTimer = setInterval(refreshData, 30000);
-  </script>
+  <script src="795x.js"></script>
 </body>
 </html>
