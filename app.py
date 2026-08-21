@@ -8,190 +8,157 @@ app = Flask(__name__)
 def index():
   html_code = """
     <!DOCTYPE html>
-    <html lang="zh-Hant">
+    html lang="zh-Hant">
     <head>
         <meta charset="UTF-8">
-        <title>K76 港鐵巴士即時到站預報</title>
+        <title>港鐵巴士 K76 即時到站預報</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-            .container { max-width: 650px; margin: 0 auto; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
             
-            .header-title { font-size: 14px; color: #666; margin-bottom: 10px; font-weight: bold; }
+            /* 頂部標題與方向切換 */
+            .header-box { padding: 20px; border-bottom: 1px solid #eee; background: #fff; }
+            .title-row { display: flex; justify-content: space-between; align-items: center; }
+            h2 { margin: 0; font-size: 20px; color: #111; }
+            .sub-info { font-size: 13px; color: #666; margin-top: 5px; }
             
-            /* 上方即時看板 */
-            .dashboard-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-            .current-stop-banner { background: #f0f7f4; border-left: 4px solid #10b981; padding: 12px 15px; border-radius: 6px; font-size: 15px; font-weight: bold; color: #065f46; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-            
-            .eta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-            .eta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px 10px; text-align: center; }
-            .eta-box.active { border-color: #10b981; background: #ecfdf5; }
-            .eta-label { font-size: 12px; color: #64748b; margin-bottom: 5px; }
-            .eta-time { font-size: 20px; font-weight: bold; color: #1e293b; }
-            .eta-time.highlight { color: #059669; }
-            .eta-busid { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+            .dir-tabs { display: flex; background: #f1f5f9; padding: 4px; border-radius: 8px; margin-top: 15px; }
+            .dir-tab { flex: 1; text-align: center; padding: 8px; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+            .dir-tab.active { background: white; color: #0f172a; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-            /* 下方沿途車站列表 (Timeline) */
-            .timeline-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-            .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; font-weight: bold; font-size: 16px; }
+            /* 時間軸列表 */
+            .timeline-container { padding: 20px; }
+            .station-item { position: relative; padding-left: 45px; margin-bottom: 25px; }
+            .station-item:last-child { margin-bottom: 0; }
             
-            .timeline { position: relative; padding-left: 30px; }
-            .timeline::before { content: ''; position: absolute; left: 10px; top: 10px; bottom: 10px; width: 3px; background: #e2e8f0; }
+            /* 連線與圓點 */
+            .station-item::before { content: ''; position: absolute; left: 19px; top: 32px; bottom: -25px; width: 2px; background: #e2e8f0; }
+            .station-item:last-child::before { display: none; }
             
-            .station-item { position: relative; margin-bottom: 20px; cursor: pointer; padding: 10px; border-radius: 8px; transition: background 0.2s; }
-            .station-item:hover { background: #f8fafc; }
-            .station-item.selected { background: #f0fdf4; border: 1px solid #bbf7d0; }
+            .station-badge { position: absolute; left: 0; top: 2px; width: 38px; height: 38px; border-radius: 50%; background: #e2e8f0; color: #475569; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 2; }
+            .station-item.has-bus .station-badge { background: #0284c7; color: white; }
             
-            .station-dot { position: absolute; left: -24px; top: 15px; width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; border: 2px solid white; box-shadow: 0 0 0 2px #cbd5e1; }
-            .station-item.selected .station-dot { background: #10b981; box-shadow: 0 0 0 3px #a7f3d0; }
+            .station-name { font-size: 16px; font-weight: bold; color: #1e293b; display: flex; align-items: center; }
+            .station-id { font-size: 12px; color: #94a3b8; margin-top: 2px; font-family: monospace; }
+
+            /* 倒數時間按鈕群組 */
+            .eta-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+            .eta-pill { background: #e0f2fe; color: #0369a1; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; border: 1px solid #bae6fd; }
+            .eta-pill.urgent { background: #fee2e2; color: #991b1b; border-color: ffc7c7; }
+            .no-eta { font-size: 13px; color: #94a3b8; font-style: italic; margin-top: 5px; }
             
-            .station-name { font-size: 15px; font-weight: bold; color: #1e293b; }
-            .station-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
-            .fare-tag { float: right; font-size: 13px; color: #64748b; font-weight: 500; }
-            
-            .refresh-btn { width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-            .refresh-btn:hover { background: #1d4ed8; }
+            .loading { text-align: center; padding: 40px; color: #666; font-size: 15px; }
         </style>
     </head>
     <body>
 
     <div class="container">
-        <div class="header-title">港鐵巴士 MTRBUS > K76</div>
-
-        <!-- 上方即時看板 -->
-        <div class="dashboard-card">
-            <div class="current-stop-banner" id="banner-text">
-                載入中...
+        <div class="header-box">
+            <div class="title-row">
+                <h2>港鐵巴士 K76</h2>
+                <button onclick="loadBusData()" style="background:none; border:1px solid #cbd5e1; padding:5px 10px; border-radius:6px; cursor:pointer;">重新整理</button>
             </div>
+            <div class="sub-info" id="route-summary">載入中...</div>
             
-            <div class="eta-grid">
-                <div class="eta-box active" id="box-0">
-                    <div class="eta-label">下一班</div>
-                    <div class="eta-time highlight" id="time-0">--</div>
-                    <div class="eta-busid" id="busid-0">請稍候</div>
-                </div>
-                <div class="eta-box" id="box-1">
-                    <div class="eta-label">第二班</div>
-                    <div class="eta-time" id="time-1">--</div>
-                    <div class="eta-busid" id="busid-1">--</div>
-                </div>
-                <div class="eta-box" id="box-2">
-                    <div class="eta-label">第三班</div>
-                    <div class="eta-time" id="time-2">--</div>
-                    <div class="eta-busid" id="busid-2">--</div>
-                </div>
+            <!-- 往返方向切換按鈕 -->
+            <div class="dir-tabs">
+                <div class="dir-tab active" id="tab-th" onclick="switchDirection('th')">往 天恆</div>
+                <div class="dir-tab" id="tab-tsw" onclick="switchDirection('tsw')">往 天水圍站</div>
             </div>
-            
-            <button class="refresh-btn" onclick="loadData()">重新整理班次</button>
         </div>
 
-        <!-- 下方沿途車站列表 (Timeline) -->
-        <div class="timeline-card">
-            <div class="timeline-header">
-                <span>沿途車站列表</span>
-                <span style="font-size: 13px; color: #64748b;">點擊下方車站切換檢視</span>
-            </div>
-            
-            <div class="timeline" id="timeline-container">
-                <!-- 動態載入車站 -->
-            </div>
+        <div class="timeline-container" id="timeline">
+            <div class="loading">正在向港鐵伺服器取得最新班次...</div>
         </div>
     </div>
 
     <script>
-        let globalData = null;
-        // 預設選中的車站 ID (預設為天水圍站 K76-U010)
-        let selectedStopId = "K76-U010";
+        let apiData = null;
+        let currentDir = 'th'; // 'th' = 往天恆 (D開頭), 'tsw' = 往天水圍站 (U開頭)
 
-        // 我們自定義 K76 沿途顯示的關鍵站點與名稱對應
-        // 包含了你特別關注的「天水圍站」與「天富苑欣富閣」
-        const stationNames = {
-            "K76-D010": { name: "天恒", sub: "Tin Heng" },
-            "K76-D020": { name: "天逸邨逸潭樓", sub: "Yat Tam House, Tin Yat Estate" },
-            "K76-D030": { name: "天富苑欣富閣", sub: "Yan Fu House, Tin Fu Court" },
-            "K76-D040": { name: "天恩邨", sub: "Tin Yan Estate" },
-            "K76-U010": { name: "天水圍站 (港鐵天水圍站)", sub: "Tin Shui Wai Station" },
-            "K76-U020": { name: "天澤邨", sub: "Tin Chak Estate" },
-            // 亦可根據 API 實際回傳擴充
+        // 官方真實站點名稱對應表
+        const stopNames = {
+            // 往天恆方向 (D系列)
+            "K76-D010": "天水圍站 (港鐵天水圍站)",
+            "K76-D020": "天恩邨",
+            "K76-D030": "天澤邨",
+            "K76-D040": "天恆 (天恆站)",
+            
+            // 往天水圍站方向 (U系列)
+            "K76-U010": "天恒",
+            "K76-U020": "天逸邨逸潭樓",
+            "K76-U030": "天富苑欣富閣",
+            "K76-U040": "天盛苑 (港鐵天水圍站)",
+            "K76-U050": "天水圍站 (港鐵天水圍站)"
         };
 
-        async function loadData() {
+        async function loadBusData() {
             try {
                 const response = await fetch('/get_bus_data');
-                globalData = await response.json();
-                
-                if (globalData.status === "error") {
-                    alert("取得資料失敗");
-                    return;
-                }
-
-                renderUI();
+                apiData = await response.json();
+                render();
             } catch (err) {
-                console.error(err);
+                document.getElementById('timeline').innerHTML = `<div class="loading">連線錯誤: ${err.message}</div>`;
             }
         }
 
-        function selectStation(stopId) {
-            selectedStopId = stopId;
-            renderUI();
+        function switchDirection(dir) {
+            currentDir = dir;
+            document.getElementById('tab-th').className = `dir-tab ${dir === 'th' ? 'active' : ''}`;
+            document.getElementById('tab-tsw').className = `dir-tab ${dir === 'tsw' ? 'active' : ''}`;
+            render();
         }
 
-        function renderUI() {
-            if (!globalData || !globalData.busStop) return;
+        function render() {
+            if (!apiData || !apiData.busStop) return;
 
-            const timelineContainer = document.getElementById('timeline-container');
-            timelineContainer.innerHTML = "";
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
 
-            let currentStopData = null;
-
-            // 渲染下方時間軸
-            globalData.busStop.forEach(stop => {
-                // 如果該站點不在我們的對應表內，給它一個預設名稱
-                let info = stationNames[stop.busStopId] || { name: "車站代碼: " + stop.busStopId, sub: stop.busStopId };
-                
-                let isSelected = (stop.busStopId === selectedStopId);
-                if (isSelected) {
-                    currentStopData = stop;
+            // 根據選擇的方向篩選站點代碼 (D開頭 或 U開頭)
+            const filteredStops = apiData.busStop.filter(stop => {
+                if (currentDir === 'th') {
+                    return stop.busStopId.startsWith('K76-D');
+                } else {
+                    return stop.busStopId.startsWith('K76-U');
                 }
-
-                let item = document.createElement('div');
-                item.className = `station-item ${isSelected ? 'selected' : ''}`;
-                item.onclick = () => selectStation(stop.busStopId);
-
-                item.innerHTML = `
-                    <div class="station-dot"></div>
-                    <span class="fare-tag">$5.1</span>
-                    <div class="station-name">${info.name}</div>
-                    <div class="station-sub">${info.sub}</div>
-                `;
-                timelineContainer.appendChild(item);
             });
 
-            // 更新上方看板
-            if (currentStopData) {
-                let currentInfo = stationNames[currentStopData.busStopId] || { name: currentStopData.busStopId };
-                document.getElementById('banner-text').innerHTML = `<span>目前顯示車站：${currentInfo.name}</span>`;
+            document.getElementById('route-summary').textContent = `${filteredStops.length} 個巴士站 · 終點站：${currentDir === 'th' ? '天恆' : '天水圍站'}`;
 
-                // 填入前三班次
-                for (let i = 0; i < 3; i++) {
-                    let timeEl = document.getElementById(`time-${i}`);
-                    let busIdEl = document.getElementById(`busid-${i}`);
-                    
-                    if (currentStopData.bus && currentStopData.bus[i]) {
-                        let bus = currentStopData.bus[i];
+            filteredStops.forEach((stop, index) => {
+                let name = stopNames[stop.busStopId] || stop.busStopId;
+                let hasBus = stop.bus && stop.bus.length > 0;
+
+                let item = document.createElement('div');
+                item.className = `station-item ${hasBus ? 'has-bus' : ''}`;
+
+                let pillsHtml = '';
+                if (hasBus) {
+                    stop.bus.forEach(bus => {
                         let text = bus.arrivalTimeText || bus.departureTimeText || '即將到達';
-                        timeEl.textContent = text;
-                        busIdEl.textContent = `車隊編號: ${bus.busId}`;
-                    } else {
-                        timeEl.textContent = "--";
-                        busIdEl.textContent = "暫無班次";
-                    }
+                        let isUrgent = text.includes('即將') || text.includes('分鐘') && parseInt(text) <= 3;
+                        pillsHtml += `<span class="eta-pill ${isUrgent ? 'urgent' : ''}">${text}</span>`;
+                    });
+                } else {
+                    pillsHtml = `<div class="no-eta">暫無近期班次預報</div>`;
                 }
-            }
+
+                item.innerHTML = `
+                    <div class="station-badge">${index + 1}</div>
+                    <div class="station-name">${name}</div>
+                    <div class="station-id">${stop.busStopId}</div>
+                    <div class="eta-pills">${pillsHtml}</div>
+                `;
+
+                timeline.appendChild(item);
+            });
         }
 
-        // 頁面載入時抓取一次
-        loadData();
+        loadBusData();
+        // 每 30 秒自動重新整理一次
+        setInterval(loadBusData, 30000);
     </script>
 
     </body>
