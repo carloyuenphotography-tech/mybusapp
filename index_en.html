@@ -251,14 +251,14 @@
   </div>
 
   <!-- 🚏 Primary Section -->
-  <div class="section-title" id="title-primary">🚏 Route 6 (To Star Ferry)</div>
+  <div class="section-title" id="title-primary">🚏 Route 6 (From Nob Hill Terminus)</div>
   <div id="bus-primary-container" class="loading">Loading data...</div>
 
   <!-- 🚏 Secondary Section -->
   <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 Routes 171, 904, 905 (From Terminus)</div>
   <div id="bus-secondary-container" class="loading">Loading data...</div>
 
-  <!-- 🔗 Quick Navigation (Only Chinese Version Button) -->
+  <!-- 🔗 Quick Navigation -->
   <div class="link-container">
     <a href="index.html" class="nav-btn">
       <span>🌐 切換至中文版 (Traditional Chinese)</span>
@@ -268,11 +268,13 @@
 
   <footer>
     <p class="notice-text">💡 Tap the tabs above to switch between "Nob Hill Terminus" and "Lai Chi Kok Bay Garden".</p>
-    <div class="version-tag">Version v1.9.8 (English Route 6 Star Ferry Edition)</div>
+    <div class="version-tag">Version v1.9.12 (English Edition)</div>
   </footer>
 
   <script>
     const JOINT_ROUTES = ["171", "904", "905"];
+    const BUS_171_KMB_STOP = "SS980";
+    const BUS_171_CTB_STOP = "002847";
     const GARDEN_STOP_ID = "37A4D07D7179CE76";
     const GARDEN_ROUTES = ["46X", "46", "45", "42", "30", "30X"];
     
@@ -302,12 +304,12 @@
       const containerSecondary = document.getElementById('bus-secondary-container');
 
       if (loc === 'terminus') {
-        titlePrimary.innerText = "🚏 Route 6 (To Star Ferry)";
+        titlePrimary.innerText = "🚏 Route 6 (From Nob Hill Terminus)";
         titleSecondary.style.display = 'block';
         containerSecondary.style.display = 'block';
         titleSecondary.innerText = "🚏 Joint Routes 171, 904, 905 (From Terminus)";
       } else {
-        titlePrimary.innerText = "🚏 Lai Chi Kok Bay Garden Stop";
+        titlePrimary.innerText = "🚏 Lai Chi Kok Bay Garden Stop (46X, 46, 45, 42, 30, 30X)";
         titleSecondary.style.display = 'none'; 
         containerSecondary.style.display = 'none'; 
       }
@@ -322,10 +324,14 @@
       try {
         for (const route of JOINT_ROUTES) {
           try {
-            const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/inbound`).then(r => r.json());
-            const stops = ctbRes.data || [];
-            if (stops.length > 0) {
-              termStopsData[route] = { ctb_stop: stops[0].stop };
+            if (route !== '171') {
+              const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/inbound`).then(r => r.json());
+              const stops = ctbRes.data || [];
+              if (stops.length > 0) {
+                termStopsData[route] = { ctb_stop: stops[0].stop };
+              }
+            } else {
+              termStopsData['171'] = { ctb_stop: BUS_171_CTB_STOP };
             }
           } catch(e) {}
         }
@@ -353,7 +359,8 @@
         const container = document.getElementById('bus-primary-container');
         const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/6/1`).then(r => r.json());
         const list = kmbRes.data || [];
-        const filteredKmb = list.filter(item => item.dir === 'O' && parseInt(item.seq) === 1);
+        
+        const filteredKmb = list.filter(item => item.dir === 'I' && parseInt(item.seq) === 1);
         const nowTime = new Date().getTime();
 
         let filteredList = filteredKmb.filter(item => {
@@ -387,7 +394,7 @@
 
         const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
         const clockTime1 = formatTime(firstBus.eta);
-        let etaDisplay1 = diff1 <= 0 ? `Arriving (${clockTime1})` : `${diff1} min (${clockTime1})`;
+        let etaDisplay1 = diff1 <= 0 ? `Departing (${clockTime1})` : `${diff1} min (${clockTime1})`;
         let isArriving1 = diff1 <= 0;
 
         let subsequentHTML = '';
@@ -395,7 +402,7 @@
           const nextBus = uniqueBusList[i];
           const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
           const clockTimeNext = formatTime(nextBus.eta);
-          const textNext = diffNext <= 0 ? `Arriving (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
+          const textNext = diffNext <= 0 ? `Departing (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
           subsequentHTML += `<div class="eta-subsequent">Next: ${textNext}</div>`;
         }
 
@@ -408,7 +415,7 @@
               <span class="route-number">6</span>
               <span class="company-badge badge-kmb">KMB</span>
             </div>
-            <div class="destination">To Star Ferry</div>
+            <div class="destination">To ${firstBus.dest_en || 'Star Ferry'}</div>
           </div>
           <div class="eta-container">
             <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
@@ -420,6 +427,7 @@
 
       } catch (err) {
         console.error('Failed to fetch Route 6 data:', err);
+        document.getElementById('bus-primary-container').innerHTML = '<p class="loading" style="color:#e11d48; margin:0;">Failed to load data</p>';
       }
     }
 
@@ -432,9 +440,15 @@
           let routeEtas = [];
 
           try {
-            const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${route}/1`).then(r => r.json());
+            const kmbUrl = route === '171' 
+              ? `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${BUS_171_KMB_STOP}`
+              : `https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${route}/1`;
+              
+            const kmbRes = await fetch(kmbUrl).then(r => r.json());
             const list = kmbRes.data || [];
-            const filteredKmb = list.filter(item => item.dir === 'O' && parseInt(item.seq) === 1);
+            const filteredKmb = route === '171' 
+              ? list.filter(item => item.route === '171')
+              : list.filter(item => item.dir === 'O' && parseInt(item.seq) === 1);
             
             filteredKmb.forEach(item => {
               routeEtas.push({
@@ -530,7 +544,7 @@
 
           const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
           const clockTime1 = formatTime(firstBus.eta);
-          let etaDisplay1 = diff1 <= 0 ? `Arriving (${clockTime1})` : `${diff1} min (${clockTime1})`;
+          let etaDisplay1 = diff1 <= 0 ? `Departing (${clockTime1})` : `${diff1} min (${clockTime1})`;
           let isArriving1 = diff1 <= 0;
 
           const badgeClass = firstBus.company === 'KMB' ? 'badge-kmb' : 'badge-ctb';
@@ -542,7 +556,7 @@
             const nextBus = busList[i];
             const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
             const clockTimeNext = formatTime(nextBus.eta);
-            const textNext = diffNext <= 0 ? `Arriving (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
+            const textNext = diffNext <= 0 ? `Departing (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
             
             const nextCompany = nextBus.company === 'KMB' ? 'KMB' : 'CTB';
             subsequentHTML += `<div class="eta-subsequent">Next (${nextCompany}): ${textNext}</div>`;
