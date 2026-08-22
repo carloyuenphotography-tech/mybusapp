@@ -42,7 +42,7 @@
       margin-right: auto;
     }
 
-    /* 🗂️ 方向大按鈕 (左邊由美孚開出，右邊由樂華開出) */
+    /* 🗂️ 方向大按鈕 */
     .tab-container {
       display: flex;
       gap: 12px;
@@ -88,36 +88,6 @@
       margin-bottom: 16px;
     }
     .gps-btn:active { transform: scale(0.98); }
-
-    /* 📍 車站選擇超大下拉選單 */
-    .selector-container {
-      margin-bottom: 20px;
-    }
-    .select-label {
-      font-size: 1.05rem;
-      font-weight: bold;
-      color: #334155;
-      margin-bottom: 8px;
-      display: block;
-    }
-    .stop-select {
-      width: 100%;
-      padding: 16px;
-      font-size: 1.15rem;
-      font-weight: bold;
-      color: #0f172a;
-      background-color: #ffffff;
-      border: 3px solid #e11d48;
-      border-radius: 16px;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      background-size: 20px;
-      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
-      outline: none;
-    }
     
     /* 🚌 超大清晰實時資訊卡片 */
     .card {
@@ -129,82 +99,64 @@
       border-left: 10px solid #e11d48;
       text-align: center;
     }
-    
-    .route-number {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #0f172a;
-      margin-bottom: 4px;
-    }
+    .route-number { font-size: 2.2rem; font-weight: 900; color: #0f172a; margin-bottom: 4px; }
+    .destination { font-size: 1.2rem; color: #475569; font-weight: bold; margin-bottom: 16px; }
+    .eta-first { font-size: 2.2rem; font-weight: 900; color: #059669; margin: 10px 0; }
+    .eta-subsequent { font-size: 1.1rem; color: #475569; margin-top: 8px; font-weight: bold; }
+    .eta-arriving { color: #e11d48; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    .loading { text-align: center; color: #475569; font-size: 1.1rem; font-weight: bold; padding: 30px 0; background: #ffffff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-    .destination {
-      font-size: 1.2rem;
-      color: #475569;
-      font-weight: bold;
-      margin-bottom: 16px;
-    }
+    /* ⏳ 時間軸列表樣式 */
+    .select-label { font-size: 1.05rem; font-weight: bold; color: #334155; margin-bottom: 12px; display: block; }
+    .timeline-container { padding: 10px 0; }
+    .station-item { position: relative; padding-left: 48px; margin-bottom: 28px; padding-top: 8px; padding-bottom: 8px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .station-item:hover { background: #f8fafc; }
+    .station-item.selected { background: #fff1f2; border: 1px solid #fecdd3; padding-left: 56px; }
+    .station-item:last-child { margin-bottom: 0; }
     
-    .eta-first {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #059669;
-      margin: 10px 0;
+    /* 垂直線 */
+    .station-item::before { content: ''; position: absolute; left: 19px; top: 38px; bottom: -30px; width: 2px; background: #cbd5e1; }
+    .station-item.selected::before { left: 27px; }
+    .station-item:last-child::before { display: none; }
+    
+    /* 車站圓點數字 */
+    .station-badge { position: absolute; left: 0; top: 10px; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; color: #475569; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 2; }
+    .station-item.selected .station-badge { left: 8px; background: #e11d48; color: white; border-color: #fff1f2; }
+    
+    /* 🚌 巴士小圖示 (在垂直線上) */
+    .bus-icon-indicator {
+        position: absolute;
+        left: 8px; 
+        top: 55px; 
+        width: 24px;
+        height: 24px;
+        background: white;
+        border: 2px solid #0284c7;
+        border-radius: 50%;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
-    .eta-subsequent {
-      font-size: 1.1rem;
-      color: #475569;
-      margin-top: 8px;
-      font-weight: bold;
-    }
-    .eta-arriving {
-      color: #e11d48;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.4; }
-      100% { opacity: 1; }
-    }
-    .loading {
-      text-align: center;
-      color: #475569;
-      font-size: 1.1rem;
-      font-weight: bold;
-      padding: 30px 0;
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+    .station-item.selected .bus-icon-indicator { left: 16px; }
+
+    .station-name { font-size: 1.15rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; }
+    .station-id { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; font-family: monospace; }
+    
+    .eta-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .eta-pill { background: #f1f5f9; color: #334155; padding: 4px 12px; border-radius: 12px; font-size: 0.9rem; font-weight: bold; border: 1px solid #e2e8f0; }
+    .eta-pill.urgent { background: #ffe4e6; color: #e11d48; border-color: #fecdd3; }
+    .no-eta { font-size: 0.9rem; color: #94a3b8; font-style: italic; margin-top: 5px; }
 
     /* 🔗 返回主頁按鈕 */
-    .link-container {
-      margin-top: 30px;
-      margin-bottom: 20px;
-    }
-    .back-btn {
-      width: 100%;
-      padding: 16px;
-      background: #ffffff;
-      color: #0f172a;
-      border: 2px solid #cbd5e1;
-      border-radius: 16px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      text-align: center;
-      text-decoration: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      display: block;
-    }
+    .link-container { margin-top: 30px; margin-bottom: 20px; }
+    .back-btn { width: 100%; padding: 16px; background: #ffffff; color: #0f172a; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 1.1rem; font-weight: bold; text-align: center; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: block; }
     .back-btn:active { background: #f1f5f9; }
 
-    footer {
-      text-align: center;
-      padding: 12px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    }
+    footer { text-align: center; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
     .notice-text { font-size: 0.95rem; color: #475569; line-height: 1.5; margin: 0; font-weight: bold; }
   </style>
 </head>
@@ -216,7 +168,7 @@
       <div id="update-time" class="update-time">正在更新時間...</div>
     </header>
 
-    <!-- 🗂️ 方向選擇：左邊由樂華開出（預設 active），右邊由美孚開出 -->
+    <!-- 🗂️ 方向選擇 -->
     <div class="tab-container">
       <div id="btn-meifoo" class="tab-btn active" onclick="switchDirection('meifoo')">🏡 由 樂華開出</div>
       <div id="btn-lokwah" class="tab-btn" onclick="switchDirection('lokwah')">🏢 由 美孚開出</div>
@@ -224,26 +176,17 @@
 
     <!-- 📍 GPS 定位按鈕 -->
     <div>
-      <button class="gps-btn" onclick="findNearestStop()">
-        📍 幫我找出附近的車站
-      </button>
-    </div>
-
-    <!-- 下拉選單 -->
-    <div class="selector-container" id="selector-container">
-      <label class="select-label" for="stop-selector">👇 或直接在這裡點選您的車站：</label>
-      <select id="stop-selector" class="stop-select" onchange="onStopChange()">
-        <!-- 選項將由 JS 動態生成 -->
-      </select>
+      <button class="gps-btn" onclick="findNearestStop()">📍 幫我找出附近的車站</button>
     </div>
 
     <div id="bus-container" class="loading">正在載入車次資料...</div>
 
-    <!-- 🔗 返回主頁按鈕 -->
+    <!-- 👇 時間軸 -->
+    <div class="select-label" style="margin-top: 24px;">🚏 沿途車站 (點擊可快速查看)：</div>
+    <div id="timeline" class="timeline-container"></div>
+
     <div class="link-container">
-      <a href="index.html" class="back-btn">
-        ⬅️ 返回主畫面
-      </a>
+      <a href="index.html" class="back-btn">⬅️ 返回主畫面</a>
     </div>
 
     <footer>
@@ -253,9 +196,8 @@
 
   <script>
     const ROUTE = "2A";
-    
     let stopsData = { lokwah: [], meifoo: [] };
-    let currentDirection = 'meifoo'; // 預設以美孚開出
+    let currentDirection = 'meifoo'; 
     let currentSeq = 1;
     let isDataReady = false;
     let autoRefreshTimer = null;
@@ -268,44 +210,54 @@
 
     async function initData() {
       try {
-        const kmbStopsRes = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/stop').then(r => r.json());
-        const kmbStopsMap = {};
-        const kmbCoordsMap = {};
-        if (kmbStopsRes.data) {
-          kmbStopsRes.data.forEach(s => { 
-            kmbStopsMap[s.stop] = s.name_tc; 
-            kmbCoordsMap[s.stop] = { lat: parseFloat(s.lat), long: parseFloat(s.long) };
-          });
-        }
-
+        // 1. 先取得 2A 路線的兩個方向的車站清單 (純 ID)
         const kmbInRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${ROUTE}/inbound/1`).then(r => r.json());
         const kmbOutRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${ROUTE}/outbound/1`).then(r => r.json());
         
-        stopsData.lokwah = (kmbInRes.data || []).map(k => ({
-          seq: k.seq,
+        const inStops = kmbInRes.data || [];
+        const outStops = kmbOutRes.data || [];
+
+        // 2. 過濾出所有不重複的車站 ID
+        const uniqueStopIds = [...new Set([...inStops, ...outStops].map(s => s.stop))];
+
+        // 3. ⭐️ 核心優化：只針對 2A 路線有經過的車站抓取詳細名稱，放棄下載 10MB 的全港車站檔
+        const stopDetailsPromises = uniqueStopIds.map(id => 
+          fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${id}`).then(r => r.json()).catch(() => null)
+        );
+        const stopDetailsRes = await Promise.all(stopDetailsPromises);
+
+        const kmbStopsMap = {};
+        const kmbCoordsMap = {};
+        stopDetailsRes.forEach(res => {
+          if (res && res.data) {
+             kmbStopsMap[res.data.stop] = res.data.name_tc;
+             kmbCoordsMap[res.data.stop] = { lat: parseFloat(res.data.lat), long: parseFloat(res.data.long) };
+          }
+        });
+
+        // 4. 將資料寫入系統
+        stopsData.lokwah = inStops.map(k => ({
+          seq: parseInt(k.seq),
           stopId: k.stop,
           name: kmbStopsMap[k.stop] || `第 ${k.seq} 站`,
           coords: kmbCoordsMap[k.stop] || null
         }));
 
-        stopsData.meifoo = (kmbOutRes.data || []).map(k => ({
-          seq: k.seq,
+        stopsData.meifoo = outStops.map(k => ({
+          seq: parseInt(k.seq),
           stopId: k.stop,
           name: kmbStopsMap[k.stop] || `第 ${k.seq} 站`,
           coords: kmbCoordsMap[k.stop] || null
         }));
 
         isDataReady = true;
-        
-        populateDropdown(true);
         fetchRoute2AETA();
-
         if (autoRefreshTimer) clearInterval(autoRefreshTimer);
         autoRefreshTimer = setInterval(fetchRoute2AETA, 30000);
 
       } catch (e) {
         console.error('初始化失敗:', e);
-        document.getElementById('bus-container').innerHTML = '<p class="loading" style="color:#e11d48;">網絡連線有點問題，請稍候再試</p>';
+        document.getElementById('bus-container').innerHTML = '<p class="loading" style="color:#e11d48;">網路不穩定，請重新整理頁面</p>';
       }
     }
 
@@ -318,105 +270,153 @@
 
         const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${ROUTE}/1`).then(r => r.json());
         const list = kmbRes.data || [];
-        
-        const filteredKmb = list.filter(item => item.dir === dirCode && parseInt(item.seq) === currentSeq);
         const nowTime = new Date().getTime();
-
+        
+        // --- 1. 渲染上方大卡片 (目前選取的車站) ---
+        const filteredKmb = list.filter(item => item.dir === dirCode && parseInt(item.seq) === currentSeq);
         let filteredList = filteredKmb.filter(item => {
           if (!item.eta) return false;
           const busTime = new Date(item.eta).getTime();
           const diffMinutes = (busTime - nowTime) / 60000;
           const isArrivingOnly = item.rmk_tc && (item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客'));
-          
           const isLastStop = currentSeq === stopsData[currentDirection].length;
           if (isLastStop && isArrivingOnly && diffMinutes >= -2) return true;
-          
           return diffMinutes >= -2 && !isArrivingOnly;
         });
 
         filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
-
         const uniqueBusList = [];
         filteredList.forEach(item => {
           const time = new Date(item.eta).getTime();
-          const isDuplicate = uniqueBusList.some(existing => {
-            const existingTime = new Date(existing.eta).getTime();
-            return Math.abs(existingTime - time) < 60000;
-          });
+          const isDuplicate = uniqueBusList.some(existing => Math.abs(new Date(existing.eta).getTime() - time) < 60000);
           if (!isDuplicate) uniqueBusList.push(item);
         });
 
         if (uniqueBusList.length === 0) {
-          container.innerHTML = '<p class="loading" style="color:#475569;">目前這個站暫時沒有班次資料</p>';
-          updateTimestamp();
-          return;
+          container.innerHTML = '<p class="loading" style="color:#475569;">目前選取的車站暫時沒有班次資料</p>';
+        } else {
+          const firstBus = uniqueBusList[0];
+          const actionWord = currentSeq === 1 ? '開出' : '到達';
+          const diff1 = Math.round((new Date(firstBus.eta) - nowTime) / 60000);
+          const clockTime1 = formatTime(firstBus.eta);
+          let etaDisplay1 = diff1 <= 0 ? `即將${actionWord} (${clockTime1})` : `${diff1} 分鐘後 (${clockTime1})`;
+          let isArriving1 = diff1 <= 0;
+
+          let subsequentHTML = '';
+          if (uniqueBusList.length > 1) {
+            const nextBus = uniqueBusList[1];
+            const diffNext = Math.round((new Date(nextBus.eta) - nowTime) / 60000);
+            const clockTimeNext = formatTime(nextBus.eta);
+            const textNext = diffNext <= 0 ? `即將${actionWord} (${clockTimeNext})` : `${diffNext} 分鐘 (${clockTimeNext})`;
+            subsequentHTML = `<div class="eta-subsequent">下一班：${textNext}</div>`;
+          }
+
+          let destDisplay = firstBus.dest_tc || (currentDirection === 'lokwah' ? '美孚' : '樂華');
+          let currentStopName = stopsData[currentDirection].find(s => s.seq === currentSeq)?.name || '';
+
+          container.innerHTML = `
+            <div class="card">
+              <div style="font-size:1.1rem; color:#475569; font-weight:bold; margin-bottom:10px;">📍 ${currentStopName}</div>
+              <div class="route-number">2A 號巴士</div>
+              <div class="destination">往：${destDisplay}</div>
+              <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
+              ${subsequentHTML}
+            </div>
+          `;
         }
 
-        container.innerHTML = '';
+        // --- 2. 渲染下方時間軸與巴士小圖示 ---
+        const timeline = document.getElementById('timeline');
+        timeline.innerHTML = '';
+        
+        const etaBySeq = {};
+        list.forEach(item => {
+            if (item.dir === dirCode) {
+                const seqKey = parseInt(item.seq);
+                if (!etaBySeq[seqKey]) etaBySeq[seqKey] = [];
+                etaBySeq[seqKey].push(item);
+            }
+        });
 
-        const firstBus = uniqueBusList[0];
-        const now = new Date();
-        const actionWord = currentSeq === 1 ? '開出' : '到達';
+        stopsData[currentDirection].forEach((stop, index) => {
+             const etas = etaBySeq[stop.seq] || [];
+             let validEtas = etas.filter(item => {
+                 if (!item.eta) return false;
+                 const diff = (new Date(item.eta).getTime() - nowTime) / 60000;
+                 const isArrivingOnly = item.rmk_tc && (item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客'));
+                 const isLastStop = stop.seq === stopsData[currentDirection].length;
+                 if (isLastStop && isArrivingOnly && diff >= -2) return true;
+                 return diff >= -2 && !isArrivingOnly;
+             }).sort((a,b) => new Date(a.eta) - new Date(b.eta));
 
-        const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
-        const clockTime1 = formatTime(firstBus.eta);
-        let etaDisplay1 = diff1 <= 0 ? `即將${actionWord} (${clockTime1})` : `${diff1} 分鐘後 (${clockTime1})`;
-        let isArriving1 = diff1 <= 0;
+             const uniqueEtas = [];
+             validEtas.forEach(item => {
+                 const time = new Date(item.eta).getTime();
+                 const isDup = uniqueEtas.some(ex => Math.abs(new Date(ex.eta).getTime() - time) < 60000);
+                 if (!isDup) uniqueEtas.push(item);
+             });
 
-        let subsequentHTML = '';
-        if (uniqueBusList.length > 1) {
-          const nextBus = uniqueBusList[1];
-          const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
-          const clockTimeNext = formatTime(nextBus.eta);
-          const textNext = diffNext <= 0 ? `即將${actionWord} (${clockTimeNext})` : `${diffNext} 分鐘 (${clockTimeNext})`;
-          subsequentHTML = `<div class="eta-subsequent">下一班：${textNext}</div>`;
-        }
+             let pillsHtml = '';
+             let hasArrivingBus = false;
 
-        let destDisplay = firstBus.dest_tc || (currentDirection === 'lokwah' ? '美孚' : '樂華');
+             if (uniqueEtas.length > 0) {
+                 uniqueEtas.slice(0, 3).forEach(bus => {
+                     const seconds = Math.floor((new Date(bus.eta).getTime() - nowTime) / 1000);
+                     let text = '';
+                     if (seconds <= 60) {
+                         text = '即將到站';
+                         hasArrivingBus = true;
+                     } else {
+                         text = `${Math.floor(seconds / 60)} 分鐘`;
+                     }
+                     let isUrgent = seconds <= 180;
+                     pillsHtml += `<span class="eta-pill ${isUrgent ? 'urgent' : ''}">${text}</span>`;
+                 });
+             } else {
+                 pillsHtml = `<div class="no-eta">暫無班次</div>`;
+             }
 
-        const card = document.createElement('div');
-        card.className = `card`;
-        card.innerHTML = `
-          <div class="route-number">2A 號巴士</div>
-          <div class="destination">往：${destDisplay}</div>
-          <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
-          ${subsequentHTML}
-        `;
-        container.appendChild(card);
+             let item = document.createElement('div');
+             let isSelected = (stop.seq === currentSeq);
+             
+             item.className = `station-item ${isSelected ? 'selected' : ''}`;
+             item.onclick = () => {
+                 currentSeq = stop.seq;
+                 fetchRoute2AETA();
+                 window.scrollTo({ top: 0, behavior: 'smooth' });
+             };
+
+             item.innerHTML = `
+                <div class="station-badge">${index + 1}</div>
+                ${hasArrivingBus ? `<div class="bus-icon-indicator">🚌</div>` : ''}
+                <div class="station-name">${stop.name}</div>
+                <div class="station-id">${stop.stopId}</div>
+                <div class="eta-pills">${pillsHtml}</div>
+             `;
+             timeline.appendChild(item);
+        });
 
         updateTimestamp();
 
       } catch (error) {
         console.error('獲取數據失敗:', error);
-        document.getElementById('bus-container').innerHTML = '<p class="loading" style="color:#e11d48;">暫時無法讀取資料，請稍後再試</p>';
       }
     }
 
     function findNearestStop() {
-      if (!navigator.geolocation) {
-        alert("您的手機不支援定位功能");
-        return;
-      }
-
+      if (!navigator.geolocation) { alert("您的手機不支援定位功能"); return; }
       document.getElementById('bus-container').innerHTML = '<p class="loading">正在尋找您附近的車站...</p>';
 
       navigator.geolocation.getCurrentPosition(position => {
         const userLat = position.coords.latitude;
         const userLon = position.coords.longitude;
-
-        let nearestStop = null;
-        let minDistance = Infinity;
-        let matchedDirection = 'meifoo';
+        let nearestStop = null, minDistance = Infinity, matchedDirection = 'meifoo';
 
         ['meifoo', 'lokwah'].forEach(dir => {
           stopsData[dir].forEach(stop => {
             if (stop.coords) {
               const dist = getDistanceFromLatLonInKm(userLat, userLon, stop.coords.lat, stop.coords.long);
-              if (dist < minDistance) {
-                minDistance = dist;
-                nearestStop = stop;
-                matchedDirection = dir;
-              }
+              if (dist < minDistance) { minDistance = dist; nearestStop = stop; matchedDirection = dir; }
             }
           });
         });
@@ -427,18 +427,12 @@
             document.getElementById('btn-meifoo').classList.remove('active');
             document.getElementById('btn-lokwah').classList.remove('active');
             document.getElementById(`btn-${matchedDirection}`).classList.add('active');
-            populateDropdown(false);
           }
-
           currentSeq = nearestStop.seq;
-          document.getElementById('stop-selector').value = currentSeq;
           fetchRoute2AETA();
-        } else {
-          alert("找不到附近的車站");
-        }
-
+        } else { alert("找不到附近的車站"); }
       }, error => {
-        alert("無法取得您的位置，請檢查手機定位權限是否開啟。");
+        alert("無法取得您的位置，請檢查手機定位權限。");
         fetchRoute2AETA();
       }, { timeout: 10000 });
     }
@@ -447,50 +441,18 @@
       const R = 6371;
       const dLat = (lat2 - lat1) * (Math.PI/180);
       const dLon = (lon2 - lon1) * (Math.PI/180);
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
       return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
     function switchDirection(dir) {
       if (!isDataReady || currentDirection === dir) return;
       currentDirection = dir;
-      
       document.getElementById('btn-meifoo').classList.remove('active');
       document.getElementById('btn-lokwah').classList.remove('active');
       document.getElementById(`btn-${dir}`).classList.add('active');
-      
-      populateDropdown(true);
-      document.getElementById('bus-container').innerHTML = '<p class="loading">正在切換...</p>';
-      fetchRoute2AETA();
-    }
-
-    function populateDropdown(resetToFirst = true) {
-      const select = document.getElementById('stop-selector');
-      select.innerHTML = '';
-      const list = stopsData[currentDirection];
-      
-      list.forEach(stop => {
-        const opt = document.createElement('option');
-        opt.value = stop.seq;
-        opt.textContent = `${stop.seq}. ${stop.name}`;
-        select.appendChild(opt);
-      });
-      
-      if (resetToFirst) {
-        currentSeq = 1;
-        select.value = 1;
-      } else {
-        select.value = currentSeq;
-      }
-    }
-
-    function onStopChange() {
-      const select = document.getElementById('stop-selector');
-      currentSeq = parseInt(select.value);
-      document.getElementById('bus-container').innerHTML = '<p class="loading">正在查詢車次...</p>';
+      currentSeq = 1;
+      document.getElementById('timeline').innerHTML = '<p class="loading">正在切換...</p>';
       fetchRoute2AETA();
     }
 
