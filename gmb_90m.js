@@ -50,6 +50,9 @@ function switchMainView(viewName) {
     document.getElementById('view-full').classList.add('active');
     switchRoute('90M');
   }
+  updateDirectionOverviews();
+  renderTimeline();
+  updateDashboard();
 }
 
 function switchRoute(routeName) {
@@ -76,36 +79,42 @@ function formatTime(isoString) {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
-function formatEtaDisplay(targetTimeStr, isMini = false) {
+function formatEtaDisplay(targetTimeStr, showSeconds = false) {
   if (!targetTimeStr) return "--";
   const now = new Date();
   const targetTime = new Date(targetTimeStr);
   const diffSec = Math.round((targetTime - now) / 1000);
   const clock = formatTime(targetTimeStr);
 
-  if (diffSec <= 0) return isMini ? `即將` : `即將 (${clock})`;
-  if (diffSec < 60) return isMini ? `${diffSec}秒` : `${diffSec}秒 (${clock})`;
-  const min = Math.round(diffSec / 60);
-  return isMini ? `${min}分` : `${min}分鐘 (${clock})`;
+  if (diffSec <= 0) return showSeconds ? `即將` : `即將 (${clock})`;
+  
+  const minutes = Math.floor(diffSec / 60);
+  const seconds = diffSec % 60;
+
+  if (showSeconds) {
+    if (minutes === 0) return `${seconds}秒`;
+    return `${minutes}分${seconds}秒`;
+  }
+
+  if (diffSec < 60) return `${diffSec}秒 (${clock})`;
+  return `${minutes}分鐘 (${clock})`;
 }
 
 async function fetchAllData() {
-  renderTimeline();
-
+  // 1. 針對完整查詢分頁中的一般站點，維持以車站 ID 查詢
   const allStopIds = new Set([
-    "20020129", // 荔灣道(體育館對面) 往美孚
-    "20013693", // 美孚 90M/92M 總站
-    "20014386", // 美孚 90P 總站
-    "20013694", // 荔灣道(體育館對面) 往荔景[cite: 2]
-    "20001418", // 賢麗苑 往荔景[cite: 2]
-    "20001428"  // 賢麗苑 往美孚[cite: 2]
+    "20013693", 
+    "20014386", 
+    "20013694", 
+    "20001418", 
+    "20001428"  
   ]);
 
   [...STOPS_90M, ...STOPS_90P, ...STOPS_92M].forEach(s => {
     if (s.id) allStopIds.add(s.id);
   });
 
-  for (const stopId of allStopIds) {
+  let fetchPromises = [...allStopIds].map(async (stopId) => {
     try {
       const res = await fetch(`https://data.etagmb.gov.hk/eta/stop/${stopId}`);
       const result = await res.json();
@@ -114,30 +123,69 @@ async function fetchAllData() {
       allEtas.sort((a, b) => new Date(a.time) - new Date(b.time));
       cacheData[stopId] = allEtas;
     } catch (e) {}
-  }
+  });
 
+  // 2. 🌟 針對「往荔景方向」分頁中最關鍵的美孚總站與回程站，改以 90M、90P、92M 「完全獨立的三條路線 API」來分開抓取！
+  // 格式：https://data.etagmb.gov.hk/eta/route-stop/{route_id}/{route_seq}/{stop_seq}
+  const separateRequests = [
+    // 90M 美孚總站 (假設對應 route_seq=1, stop_seq=1)
+    fetch("https://data.etagmb.gov.hk/eta/route-stop/90M/1/1")
+      .then(res => res.json())
+      .then(result => {
+        let etas = [];
+        (result.data?.eta || []).forEach(e => etas.push({ time: e.timestamp }));
+        return { key: "laiking-90m-20013693", etas };
+      }).catch(() => ({ key: "laiking-90m-20013693", etas: [] })),
+
+    // 90P 美孚總站
+    fetch("https://data.etagmb.gov.hk/eta/route-stop/90P/1/1")
+      .then(res => res.json())
+      .then(result => {
+        let etas = [];
+        (result.data?.eta || []).forEach(e => etas.push({ time: e.timestamp }));
+        return { key: "laiking-90p-20014386", etas };
+      }).catch(() => ({ key: "laiking-90p-20014386", etas: [] })),
+
+    // 92M 美孚總站
+    fetch("https://data.etagmb.gov.hk/eta/route-stop/92M/1/1")
+      .then(res => res.json())
+      .then(result => {
+        let etas = [];
+        (result.data?.eta || []).forEach(e => etas.push({ time: e.timestamp }));
+        return { key: "laiking-92m-20013693", etas };
+      }).catch(() => ({ key: "laiking-92m-20013693", etas: [] }))
+  ];
+
+  await Promise.all([
+    ...fetchPromises,
+    Promise.all(separateRequests).then(results => {
+      results.forEach(r => {
+        r.etas.sort((a, b) => new Date(a.time) - new Date(b.time));
+        cacheData[r.key] = r.etas; // 獨立存入各自的 Key 裡面，不再共用
+      });
+    })
+  ]);
+
+  renderTimeline();
   updateDirectionOverviews();
   updateDashboard();
   updateTimestamp();
 }
 
 function updateDirectionOverviews() {
-  // 1. 往美孚方向卡片
   updateFrequentRow('safu-90m-20020129', '20020129');
   updateFrequentRow('safu-90p-20020129', '20020129');
   updateFrequentRow('safu-92m-20020129', '20020129');
+  updateFrequentRow('safu-90m-20001428', '20001428'); 
 
-  updateFrequentRow('safu-90m-20001428', '20001428'); // 賢麗苑往美孚
+  // 🌟 這裡直接讀取剛剛獨立抓取回來的資料 Key
+  updateFrequentCustomRow('laiking-90m-20013693', 'laiking-90m-20013693'); 
+  updateFrequentCustomRow('laiking-90p-20014386', 'laiking-90p-20014386'); 
+  updateFrequentCustomRow('laiking-92m-20013693', 'laiking-92m-20013693'); 
 
-  // 2. 往荔景方向卡片
-  updateFrequentRow('laiking-90m-20013693', '20013693'); // 美孚總站 90M
-  updateFrequentRow('laiking-90p-20014386', '20014386'); // 美孚總站 90P
-  updateFrequentRow('laiking-92m-20013693', '20013693'); // 美孚總站 92M
-
-  updateFrequentRow('laiking-90m-20013694', '20013694'); // 荔灣道回程 90M
-  updateFrequentRow('laiking-92m-20013694', '20013694'); // 荔灣道回程 92M
-
-  updateFrequentRow('laiking-90m-20001418', '20001418'); // 賢麗苑往荔景
+  updateFrequentRow('laiking-90m-20013694', '20013694'); 
+  updateFrequentRow('laiking-92m-20013694', '20013694'); 
+  updateFrequentRow('laiking-90m-20001418', '20001418'); 
 }
 
 function updateFrequentRow(elementId, stopId) {
@@ -161,11 +209,36 @@ function updateFrequentRow(elementId, stopId) {
   container.innerHTML = html;
 }
 
+// 專門用來讀取獨立請求 Key 的渲染函式
+function updateFrequentCustomRow(elementId, cacheKey) {
+  const container = document.getElementById(elementId);
+  if (!container) return;
+
+  const etas = cacheData[cacheKey] || [];
+  const topEtas = etas.slice(0, 3);
+
+  if (topEtas.length === 0) {
+    container.innerHTML = `<span class="no-eta-text">暫無班次</span>`;
+    return;
+  }
+
+  let html = '';
+  topEtas.forEach(item => {
+    const text = formatEtaDisplay(item.time, true);
+    const isArriving = text.includes('即將') || text.includes('秒');
+    html += `<span class="mini-pill ${isArriving ? 'arriving' : ''}">${text}</span>`;
+  });
+  container.innerHTML = html;
+}
+
 function renderTimeline() {
   const container = document.getElementById('timeline-container');
+  if (!container) return;
+  
   container.innerHTML = '';
   let stopsList = currentRoute === '90M' ? STOPS_90M : currentRoute === '90P' ? STOPS_90P : STOPS_92M;
   let validIndex = 0;
+  const now = new Date();
 
   stopsList.forEach((stop) => {
     if (stop.type === "divider") {
@@ -192,12 +265,22 @@ function renderTimeline() {
       updateDashboard();
     };
 
+    let hasApproachingBus = false;
+    const etas = cacheData[stop.id] || [];
+    if (etas.length > 0 && etas[0].time) {
+        const diffSec = Math.round((new Date(etas[0].time) - now) / 1000);
+        if (diffSec <= 60) {
+            hasApproachingBus = true;
+        }
+    }
+
     const terminalBadge = stop.isTerminal ? `<span style="font-size:0.6rem; background:#7c3aed; color:white; padding:1px 4px; border-radius:3px; margin-left:4px;">總站</span>` : '';
     item.innerHTML = `
       <div class="station-badge">${validIndex}</div>
       <div class="station-info">
         <div class="station-name">${stop.name}${terminalBadge}</div>
         <div class="station-id">ID: ${stop.id}</div>
+        ${hasApproachingBus ? `<div class="bus-approaching-badge">🚐 小巴接近中</div>` : ''}
       </div>
       <div class="direction-arrow">${stop.dirArrow || "⬆️"}</div>
     `;
@@ -220,18 +303,24 @@ function updateDashboard() {
   const etas = cacheData[selectedStopId] || [];
   for (let i = 0; i < 3; i++) {
     const timeEl = document.getElementById(`time-${i}`);
-    if (etas[i]) {
-      timeEl.textContent = formatEtaDisplay(etas[i].time);
-    } else {
-      timeEl.textContent = "暫無班次";
+    if (timeEl) {
+      if (etas[i]) {
+        timeEl.textContent = formatEtaDisplay(etas[i].time);
+      } else {
+        timeEl.textContent = "暫無班次";
+      }
     }
   }
 }
 
 function updateTimestamp() {
   const now = new Date();
-  document.getElementById('update-time').innerText = `最後更新時間：${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  const timeEl = document.getElementById('update-time');
+  if (timeEl) {
+    timeEl.innerText = `最後更新時間：${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  }
 }
 
+renderTimeline();
 fetchAllData();
 setInterval(fetchAllData, 3000);
