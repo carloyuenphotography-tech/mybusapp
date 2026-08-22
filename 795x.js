@@ -221,9 +221,17 @@ async function fetchComboETA() {
       .then(res => res.json())
       .then(data => data.data["TKL-TIK"].UP?.map(i => i.time) || []).catch(() => []);
 
-    const gmb108APromise = fetch("https://data.eta.gov.hk/v1/transport/gmb/stop-eta/2002361/1/1")
+    // 已經將小巴來源 ID 更新為截圖中的「彩明公共運輸交匯處」 (20006977)
+    const gmb108APromise = fetch("https://data.eta.gov.hk/v1/transport/gmb/stop-eta/20006977")
       .then(res => res.json())
-      .then(data => data.data?.eta?.map(i => i.eta_date) || []).catch(() => []);
+      .then(data => {
+        // 小巴站點 API 通常會回傳一個陣列，我們需要解析裡面的 eta_date
+        if (Array.isArray(data.data) && data.data.length > 0) {
+          return data.data[0]?.eta?.map(i => i.eta_date) || [];
+        } else {
+          return data.data?.eta?.map(i => i.eta_date) || [];
+        }
+      }).catch(() => []);
 
     const [mefTimes, tikTimes, gmbTimes] = await Promise.all([
       mtrMeiFooPromise, mtrTiuKengLengPromise, gmb108APromise
