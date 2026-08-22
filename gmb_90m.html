@@ -270,23 +270,6 @@
     }
     .station-item.selected .station-badge { background: #10b981; }
 
-    .bus-icon-indicator {
-      position: absolute;
-      left: -27px;
-      top: 48px;
-      width: 24px;
-      height: 24px;
-      background: white;
-      border: 2px solid #0284c7;
-      border-radius: 50%;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 3;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    }
-
     .station-info {
       flex: 1;
       padding-left: 5px;
@@ -348,7 +331,7 @@
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001837"><span class="no-eta-text">載入中...</span></div></div>
       </div>
 
-      <!-- 中間無 API 來源站點的文字提示區塊 -->
+      <!-- 往美孚方向：中間沿途經過提示 -->
       <div class="via-stations-box">
         <div class="via-title">⬇️ 沿途經過（無獨立班次站點）⬇️</div>
         <div class="via-names">清麗苑 ➔ 荔灣花園 ➔ 華豐園 ➔ 荔欣苑</div>
@@ -364,7 +347,7 @@
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="safu-92m-20020129"><span class="no-eta-text">載入中...</span></div></div>
       </div>
 
-      <!-- 🌟 美孚巴士總站 (已包含 90M, 90P, 92M 三線) -->
+      <!-- 往美孚方向：美孚巴士總站（含 90M / 90P / 92M） -->
       <div class="frequent-station-card" style="border-left-color: #7c3aed;">
         <div class="frequent-title">
           <span>🔄 美孚巴士總站 (終點站)</span>
@@ -391,11 +374,17 @@
 
       <div class="frequent-station-card lai-king">
         <div class="frequent-title">
-          <span>📍 荔灣道(體育館對面) [回程]</span>
+          <span>📍 荔灣道(體育館外)</span>
           <span style="font-size: 0.7rem; background: #059669; color: white; padding: 2px 6px; border-radius: 4px;">往荔景</span>
         </div>
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="laiking-90m-20013694"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="laiking-92m-20013694"><span class="no-eta-text">載入中...</span></div></div>
+      </div>
+
+      <!-- 往荔景方向：中間沿途經過提示 -->
+      <div class="via-stations-box">
+        <div class="via-title" style="color: #059669;">⬆️ 沿途經過（無獨立班次站點）⬆️</div>
+        <div class="via-names">清麗苑 ➔ 荔灣花園 ➔ 華豐園 ➔ 荔欣苑</div>
       </div>
 
       <div class="frequent-station-card lai-king">
