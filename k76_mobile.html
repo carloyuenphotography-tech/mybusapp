@@ -58,7 +58,9 @@
         .station-name { font-size: 16px; font-weight: bold; color: #1e293b; display: flex; align-items: center; }
         .frequent-tag { font-size: 11px; background: #ca8a04; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: normal; }
         .station-id { font-size: 12px; color: #94a3b8; margin-top: 2px; font-family: monospace; }
-        .fare-tag { float: right; font-size: 14px; color: #64748b; font-weight: 500; margin-top: -18px; }
+        
+        /* 調整了這裡：加入 margin-right 讓 $5.1 向左移 */
+        .fare-tag { float: right; font-size: 14px; color: #64748b; font-weight: 500; margin-top: -18px; margin-right: 15px; }
 
         /* 🏷️ 各站下方的藥丸狀時間標籤 */
         .eta-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -175,7 +177,7 @@
         if (dir === 'th') {
             selectedStopId = "K76-D010"; // 往天恆預設第一站
         } else {
-            selectedStopId = "K76-U030"; // 【已修改】往天水圍預設為天富苑欣富閣
+            selectedStopId = "K76-U030"; // 往天水圍預設為天富苑欣富閣
         }
         render();
     }
@@ -214,7 +216,6 @@
 
             let isHighlight = false;
             if (currentDir === 'th' && stop.busStopId === 'K76-D010') isHighlight = true;
-            // 【已修改】將往天水圍站的常搭站設為天富苑欣富閣 (K76-U030)
             if (currentDir === 'tsw' && stop.busStopId === 'K76-U030') isHighlight = true;
 
             let item = document.createElement('div');
