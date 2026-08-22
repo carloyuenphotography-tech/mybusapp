@@ -1,7 +1,8 @@
 const STOPS_90M = [
   { type: "section", text: "🚝 往美孚方向" },
+  { id: "20001428", name: "賢麗苑購物中心外（荔景站）", dirArrow: "⬇️" },
   { id: "20001837", name: "荔景山路，張玉瓊晨輝學校對面", dirArrow: "⬇️" },
-  { type: "divider", text: "📍 荔灣花園" },
+  { type: "note", text: "⬇️ 經：清麗苑 ➔ 荔灣花園 ➔ 華豐園 ➔ 荔欣苑" },
   { id: "20020129", name: "荔灣道(體育館對面)", dirArrow: "⬇️" },
   { id: "20013663", name: "美荔道（Esso油站）", dirArrow: "⬇️" },
   { id: "20013693", name: "總站（美孚巴士總站）", isTerminal: true, dirArrow: "🔄" },
@@ -32,7 +33,7 @@ const STOPS_92M = [
 ];
 
 let currentRoute = '90M';
-let selectedStopId = "20001837";
+let selectedStopId = "20001428";
 let cacheData = {};
 
 function switchMainView(viewName) {
@@ -101,7 +102,6 @@ function formatEtaDisplay(targetTimeStr, showSeconds = false) {
 }
 
 async function fetchAllData() {
-  // 1. 針對完整查詢分頁中的一般站點，維持以車站 ID 查詢
   const allStopIds = new Set([
     "20013693", 
     "20014386", 
@@ -125,10 +125,7 @@ async function fetchAllData() {
     } catch (e) {}
   });
 
-  // 2. 🌟 針對「往荔景方向」分頁中最關鍵的美孚總站與回程站，改以 90M、90P、92M 「完全獨立的三條路線 API」來分開抓取！
-  // 格式：https://data.etagmb.gov.hk/eta/route-stop/{route_id}/{route_seq}/{stop_seq}
   const separateRequests = [
-    // 90M 美孚總站 (假設對應 route_seq=1, stop_seq=1)
     fetch("https://data.etagmb.gov.hk/eta/route-stop/90M/1/1")
       .then(res => res.json())
       .then(result => {
@@ -137,7 +134,6 @@ async function fetchAllData() {
         return { key: "laiking-90m-20013693", etas };
       }).catch(() => ({ key: "laiking-90m-20013693", etas: [] })),
 
-    // 90P 美孚總站
     fetch("https://data.etagmb.gov.hk/eta/route-stop/90P/1/1")
       .then(res => res.json())
       .then(result => {
@@ -146,7 +142,6 @@ async function fetchAllData() {
         return { key: "laiking-90p-20014386", etas };
       }).catch(() => ({ key: "laiking-90p-20014386", etas: [] })),
 
-    // 92M 美孚總站
     fetch("https://data.etagmb.gov.hk/eta/route-stop/92M/1/1")
       .then(res => res.json())
       .then(result => {
@@ -161,7 +156,7 @@ async function fetchAllData() {
     Promise.all(separateRequests).then(results => {
       results.forEach(r => {
         r.etas.sort((a, b) => new Date(a.time) - new Date(b.time));
-        cacheData[r.key] = r.etas; // 獨立存入各自的 Key 裡面，不再共用
+        cacheData[r.key] = r.etas;
       });
     })
   ]);
@@ -173,12 +168,19 @@ async function fetchAllData() {
 }
 
 function updateDirectionOverviews() {
-  updateFrequentRow('safu-90m-20020129', '20020129');
-  updateFrequentRow('safu-90p-20020129', '20020129');
-  updateFrequentRow('safu-92m-20020129', '20020129');
+  // 往美孚方向
   updateFrequentRow('safu-90m-20001428', '20001428'); 
+  updateFrequentRow('safu-90m-20001837', '20001837'); 
+  updateFrequentRow('safu-90m-20020129', '20020129'); 
+  updateFrequentRow('safu-90p-20020129', '20020129'); 
+  updateFrequentRow('safu-92m-20020129', '20020129'); 
 
-  // 🌟 這裡直接讀取剛剛獨立抓取回來的資料 Key
+  // 往美孚方向 - 美孚總站 (終點站)
+  updateFrequentRow('safu-90m-20013693', '20013693'); 
+  updateFrequentRow('safu-90p-20014386', '20014386'); 
+  updateFrequentRow('safu-92m-20013693', '20013693'); 
+
+  // 往荔景方向
   updateFrequentCustomRow('laiking-90m-20013693', 'laiking-90m-20013693'); 
   updateFrequentCustomRow('laiking-90p-20014386', 'laiking-90p-20014386'); 
   updateFrequentCustomRow('laiking-92m-20013693', 'laiking-92m-20013693'); 
@@ -209,7 +211,6 @@ function updateFrequentRow(elementId, stopId) {
   container.innerHTML = html;
 }
 
-// 專門用來讀取獨立請求 Key 的渲染函式
 function updateFrequentCustomRow(elementId, cacheKey) {
   const container = document.getElementById(elementId);
   if (!container) return;
@@ -253,6 +254,13 @@ function renderTimeline() {
       sec.className = 'route-section-header';
       sec.innerText = stop.text;
       container.appendChild(sec);
+      return;
+    }
+    if (stop.type === "note") {
+      const noteDiv = document.createElement('div');
+      noteDiv.style.cssText = "font-size: 0.78rem; color: #64748b; background: #f1f5f9; padding: 6px 10px; border-radius: 6px; margin: 8px 0 14px 20px; font-weight: bold;";
+      noteDiv.innerText = stop.text;
+      container.appendChild(noteDiv);
       return;
     }
 

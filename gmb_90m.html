@@ -317,7 +317,7 @@
 <body>
 
   <header>
-    <h1>🚐 专線小巴實時班次</h1>
+    <h1>🚐 專線小巴實時班次</h1>
     <div id="update-time" class="update-time">正在載入數據...</div>
   </header>
 
@@ -329,12 +329,12 @@
       <div class="mode-tab" onclick="switchMainView('full')">🗺️ 完整各站查詢</div>
     </div>
 
-    <!-- 1️⃣ 分頁一：往美孚方向 (已加入中間站點文字提示) -->
+    <!-- 1️⃣ 分頁一：往美孚方向 -->
     <div id="view-to-safu" class="view-section active">
       
       <div class="frequent-station-card">
         <div class="frequent-title">
-          <span>📍 賢麗苑購物中心（荔景站）對面</span>
+          <span>📍 賢麗苑購物中心外（荔景站）</span>
           <span style="font-size: 0.7rem; background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px;">往美孚</span>
         </div>
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001428"><span class="no-eta-text">載入中...</span></div></div>
@@ -348,7 +348,7 @@
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001837"><span class="no-eta-text">載入中...</span></div></div>
       </div>
 
-      <!-- 🌟 中間無 API 來源站點的文字提示區塊 -->
+      <!-- 中間無 API 來源站點的文字提示區塊 -->
       <div class="via-stations-box">
         <div class="via-title">⬇️ 沿途經過（無獨立班次站點）⬇️</div>
         <div class="via-names">清麗苑 ➔ 荔灣花園 ➔ 華豐園 ➔ 荔欣苑</div>
@@ -362,6 +362,17 @@
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20020129"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="safu-90p-20020129"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="safu-92m-20020129"><span class="no-eta-text">載入中...</span></div></div>
+      </div>
+
+      <!-- 🌟 美孚巴士總站 (已包含 90M, 90P, 92M 三線) -->
+      <div class="frequent-station-card" style="border-left-color: #7c3aed;">
+        <div class="frequent-title">
+          <span>🔄 美孚巴士總站 (終點站)</span>
+          <span style="font-size: 0.7rem; background: #7c3aed; color: white; padding: 2px 6px; border-radius: 4px;">往美孚</span>
+        </div>
+        <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20013693"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="safu-90p-20014386"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="safu-92m-20013693"><span class="no-eta-text">載入中...</span></div></div>
       </div>
 
     </div>
