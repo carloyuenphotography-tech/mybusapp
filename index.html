@@ -185,7 +185,7 @@
       margin-bottom: 12px;
     }
 
-    /* 🔗 放在底部的導航按鈕容器 */
+    /* 🔗 簡化後的底部導航按鈕容器 */
     .link-container {
       display: flex;
       flex-direction: column;
@@ -200,7 +200,7 @@
       color: #0f172a;
       border: 1px solid #cbd5e1;
       border-radius: 12px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: bold;
       text-align: center;
       text-decoration: none;
@@ -258,30 +258,30 @@
   <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 171, 904, 905 (盈暉臺總站開出)</div>
   <div id="bus-secondary-container" class="loading">正在載入數據...</div>
 
-  <!-- 🔗 專頁快速跳轉導航 (置於底部) -->
+  <!-- 🔗 簡化後的專頁快速跳轉導航 (置於底部) -->
   <div class="link-container">
     <a href="index_en.html" class="nav-btn" style="background: #0f172a; color: #ffffff;">
       <span>🌐 Switch to English Version</span>
       <span>➔</span>
     </a>
-    <a href="tinshuiwai.html" class="nav-btn">
-      <span>🚌 天水圍專線 (269M/265M/265B/K76)</span>
-      <span>➔</span>
-    </a>
     <a href="795x.html" class="nav-btn">
-      <span>🚌 795X 及港鐵小巴接駁專頁</span>
+      <span>🚌 795X號巴士及其他專線專頁</span>
       <span>➔</span>
     </a>
     <a href="bus6.html" class="nav-btn">
       <span>🚌 6號巴士全線專頁</span>
       <span>➔</span>
     </a>
-    <a href="bus2a.html" class="nav-btn" style="border-left: 5px solid #059669;">
+    <a href="bus2a.html" class="nav-btn">
       <span>🚌 2A號巴士全線專頁</span>
       <span>➔</span>
     </a>
+    <a href="bus_171_905_904.html" class="nav-btn" style="border-left: 5px solid #2563eb;">
+      <span>🚌 171, 905, 904 過海線全線專頁</span>
+      <span>➔</span>
+    </a>
     <a href="gmb_90m.html" class="nav-btn" style="border-left: 5px solid #059669;">
-      <span>🚐 90M, 90P, 92M 綠色專線小巴（測試中）</span>
+      <span>🚐 90M, 90P, 92M 綠色專線小巴</span>
       <span>➔</span>
     </a>
     <a href="k76_mobile.html" class="nav-btn" style="border-left: 5px solid #059669;">
@@ -292,7 +292,7 @@
 
   <footer>
     <p class="notice-text">💡 點擊頂部按鈕可切換顯示「荔枝角總站」或「荔枝角灣花園」之即時班次。</p>
-    <div class="version-tag">版本 v1.9.12</div>
+    <div class="version-tag">版本 v1.9.13</div>
   </footer>
 
   <script>
@@ -378,14 +378,12 @@
       }
     }
 
-    // 改用與 bus6.html 相同的 route-eta 方式來抓取 6 號線總站（seq: 1）資料
     async function fetchBus6TerminusETA() {
       try {
         const container = document.getElementById('bus-primary-container');
         const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/6/1`).then(r => r.json());
         const list = kmbRes.data || [];
         
-        // dir 'I' 代表由荔枝角開出方向，seq 1 代表第一站
         const filteredKmb = list.filter(item => item.dir === 'I' && parseInt(item.seq) === 1);
         const nowTime = new Date().getTime();
 
