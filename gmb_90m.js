@@ -7,7 +7,7 @@ const STOPS_90M = [
   { id: "20013663", name: "美荔道（Esso油站）", dirArrow: "⬇️" },
   { id: "20013693", name: "總站（美孚巴士總站）", isTerminal: true, dirArrow: "🔄" },
   { type: "section", text: "↩️ 往荔景方向" },
-  { id: "20013694", name: "荔灣道(體育館對面) [回程]", dirArrow: "⬆️" },
+  { id: "20013694", name: "荔灣道(體育館外)", dirArrow: "⬆️" },
   { type: "note", text: "⬆️ 沿途經過（無獨立班次站點）：清麗苑 ➔ 荔灣花園 ➔ 華豐園 ➔ 荔欣苑" },
   { type: "divider", text: "📍 荔灣花園" },
   { id: "20015763", name: "荔景山路，近荔景邨安景樓", dirArrow: "⬆️" },
@@ -30,7 +30,7 @@ const STOPS_92M = [
   { id: "20020130", name: "美荔道（Esso油站）", dirArrow: "⬇️" },
   { id: "20013693", name: "總站（美孚巴士總站）", isTerminal: true, dirArrow: "🔄" },
   { id: "20020131", name: "美荔道，美孚新邨第6期", dirArrow: "⬆️" },
-  { id: "20013694", name: "荔灣道(體育館對面) [回程]", dirArrow: "⬆️" }
+  { id: "20013694", name: "荔灣道(體育館外)", dirArrow: "⬆️" }
 ];
 
 let currentRoute = '90M';
@@ -168,7 +168,6 @@ async function fetchAllData() {
   updateDashboard();
   updateTimestamp();
 }
-
 function updateDirectionOverviews() {
   // 🚝 往美孚方向
   updateFrequentRow('safu-90m-20001428', '20001428'); 
@@ -182,14 +181,17 @@ function updateDirectionOverviews() {
   updateFrequentRow('safu-90p-20014386', '20014386'); 
   updateFrequentRow('safu-92m-20013693', '20013693'); 
 
-  // ↩️ 往荔景方向 - 美孚總站 (直接採用與「各站查詢」相同、最穩定的車站 API 數據)
+  // ↩️ 往荔景方向 - 美孚總站 (讀取穩定車站數據)
   updateFrequentRow('laiking-90m-20013693', '20013693'); 
   updateFrequentRow('laiking-90p-20014386', '20014386'); 
   updateFrequentRow('laiking-92m-20013693', '20013693'); 
 
-  // ↩️ 往荔景方向 - 其餘車站
+  // ↩️ 往荔景方向 - 荔灣道(體育館外) (含 90M, 90P, 92M)
   updateFrequentRow('laiking-90m-20013694', '20013694'); 
+  updateFrequentRow('laiking-90p-20013694', '20013694'); 
   updateFrequentRow('laiking-92m-20013694', '20013694'); 
+
+  // ↩️ 往荔景方向 - 賢麗苑
   updateFrequentRow('laiking-90m-20001418', '20001418'); 
 }
 
