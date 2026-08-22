@@ -74,7 +74,6 @@ async function fetchCitybusETA() {
 
     let filteredList = allEtaData.filter(item => item.eta !== null && item.eta !== "");
 
-    // 針對不同分頁精準過濾方向
     filteredList = filteredList.filter(item => {
       if (currentLocation === 'meifoo') return !item.dest_tc.includes('蘇屋');
       if (currentLocation === 'tkopaza') return item.dest_tc.includes('蘇屋') || item.dest_tc.includes('美孚');
@@ -148,7 +147,6 @@ async function fetchCitybusETA() {
 }
 
 async function fetchComboETA() {
-  // 港鐵與小巴接駁邏輯維持不變
   try {
     const container = document.getElementById('bus-container');
     container.innerHTML = '';
@@ -221,17 +219,23 @@ async function fetchComboETA() {
       .then(res => res.json())
       .then(data => data.data["TKL-TIK"].UP?.map(i => i.time) || []).catch(() => []);
 
-    // 已經將小巴來源 ID 更新為截圖中的「彩明公共運輸交匯處」 (20006977)
-    const gmb108APromise = fetch("https://data.eta.gov.hk/v1/transport/gmb/stop-eta/20006977")
+    // 🌟 已修正小巴時間的解析邏輯：欄位名稱改為 timestamp 
+    const gmb108APromise = fetch("https://data.etagmb.gov.hk/eta/stop/20006977")
       .then(res => res.json())
       .then(data => {
-        // 小巴站點 API 通常會回傳一個陣列，我們需要解析裡面的 eta_date
-        if (Array.isArray(data.data) && data.data.length > 0) {
-          return data.data[0]?.eta?.map(i => i.eta_date) || [];
-        } else {
-          return data.data?.eta?.map(i => i.eta_date) || [];
+        if (!data || !data.data) return [];
+        // 尋找陣列中第一筆包含 eta 資料的路線
+        let targetRoute = Array.isArray(data.data) ? data.data.find(item => item.eta && item.eta.length > 0) : data.data;
+        
+        if (targetRoute && targetRoute.eta) {
+           // GMB 小巴 API 的時間欄位是 timestamp
+           return targetRoute.eta.map(i => i.timestamp || i.time).filter(t => t);
         }
-      }).catch(() => []);
+        return [];
+      }).catch(err => {
+        console.error("小巴 API 解析失敗:", err);
+        return [];
+      });
 
     const [mefTimes, tikTimes, gmbTimes] = await Promise.all([
       mtrMeiFooPromise, mtrTiuKengLengPromise, gmb108APromise
