@@ -170,19 +170,24 @@ async function fetchAllData() {
 }
 
 function updateDirectionOverviews() {
-  // 往美孚方向
+  // 🚝 往美孚方向
   updateFrequentRow('safu-90m-20001428', '20001428'); 
   updateFrequentRow('safu-90m-20001837', '20001837'); 
   updateFrequentRow('safu-90m-20020129', '20020129'); 
   updateFrequentRow('safu-90p-20020129', '20020129'); 
   updateFrequentRow('safu-92m-20020129', '20020129'); 
 
-  // 🌟 往荔景方向：最上方美孚總站（精確讀取路線發車數據 Key）
-  updateFrequentCustomRow('laiking-90m-20013693', 'laiking-90m-20013693'); 
-  updateFrequentCustomRow('laiking-90p-20014386', 'laiking-90p-20014386'); 
-  updateFrequentCustomRow('laiking-92m-20013693', 'laiking-92m-20013693'); 
+  // 🚝 往美孚方向 - 美孚總站 (到達)
+  updateFrequentRow('safu-90m-20013693', '20013693'); 
+  updateFrequentRow('safu-90p-20014386', '20014386'); 
+  updateFrequentRow('safu-92m-20013693', '20013693'); 
 
-  // 往荔景方向其餘車站
+  // ↩️ 往荔景方向 - 美孚總站 (直接採用與「各站查詢」相同、最穩定的車站 API 數據)
+  updateFrequentRow('laiking-90m-20013693', '20013693'); 
+  updateFrequentRow('laiking-90p-20014386', '20014386'); 
+  updateFrequentRow('laiking-92m-20013693', '20013693'); 
+
+  // ↩️ 往荔景方向 - 其餘車站
   updateFrequentRow('laiking-90m-20013694', '20013694'); 
   updateFrequentRow('laiking-92m-20013694', '20013694'); 
   updateFrequentRow('laiking-90m-20001418', '20001418'); 
