@@ -134,6 +134,27 @@
       font-style: italic;
     }
 
+    /* 🚏 經過站點提示文字區塊 */
+    .via-stations-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .via-title {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .via-names {
+      font-size: 0.85rem;
+      color: #0f172a;
+      font-weight: bold;
+    }
+
     /* 🗂️ 完整路線內的子分頁 (90M / 90P / 92M) */
     .route-sub-tabs {
       display: flex;
@@ -218,12 +239,13 @@
       background: #ffffff;
       border-radius: 10px;
       padding: 12px 14px;
-      margin-bottom: 10px;
+      margin-bottom: 18px;
       border: 1px solid #e2e8f0;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      min-height: 60px;
     }
     .station-item.selected { 
       background: #f0fdf4; 
@@ -233,8 +255,7 @@
     .station-badge {
       position: absolute;
       left: -28px;
-      top: 50%;
-      transform: translateY(-50%);
+      top: 20px;
       width: 26px;
       height: 26px;
       border-radius: 50%;
@@ -249,8 +270,30 @@
     }
     .station-item.selected .station-badge { background: #10b981; }
 
+    .bus-icon-indicator {
+      position: absolute;
+      left: -27px;
+      top: 48px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border: 2px solid #0284c7;
+      border-radius: 50%;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .station-info {
+      flex: 1;
+      padding-left: 5px;
+    }
     .station-name { font-size: 0.9rem; font-weight: bold; color: #0f172a; }
-    .station-id { font-size: 0.65rem; color: #94a3b8; font-family: monospace; }
+    .station-id { font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 4px; }
+    .bus-approaching-badge { font-size: 0.7rem; color: #e11d48; font-weight: bold; margin-top: 2px; }
     .direction-arrow { font-size: 1rem; font-weight: bold; color: #059669; }
 
     .route-section-header {
@@ -274,7 +317,7 @@
 <body>
 
   <header>
-    <h1>🚐 專線小巴實時班次</h1>
+    <h1>🚐 专線小巴實時班次</h1>
     <div id="update-time" class="update-time">正在載入數據...</div>
   </header>
 
@@ -286,9 +329,31 @@
       <div class="mode-tab" onclick="switchMainView('full')">🗺️ 完整各站查詢</div>
     </div>
 
-    <!-- 1️⃣ 分頁一：往美孚方向 (聚合總覽) -->
+    <!-- 1️⃣ 分頁一：往美孚方向 (已加入中間站點文字提示) -->
     <div id="view-to-safu" class="view-section active">
       
+      <div class="frequent-station-card">
+        <div class="frequent-title">
+          <span>📍 賢麗苑購物中心（荔景站）對面</span>
+          <span style="font-size: 0.7rem; background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px;">往美孚</span>
+        </div>
+        <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001428"><span class="no-eta-text">載入中...</span></div></div>
+      </div>
+
+      <div class="frequent-station-card">
+        <div class="frequent-title">
+          <span>📍 荔景山路，張玉瓊晨輝學校對面</span>
+          <span style="font-size: 0.7rem; background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px;">往美孚</span>
+        </div>
+        <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001837"><span class="no-eta-text">載入中...</span></div></div>
+      </div>
+
+      <!-- 🌟 中間無 API 來源站點的文字提示區塊 -->
+      <div class="via-stations-box">
+        <div class="via-title">⬇️ 沿途經過（無獨立班次站點）⬇️</div>
+        <div class="via-names">清麗苑 ➔ 荔灣花園 ➔ 華豐園 ➔ 荔欣苑</div>
+      </div>
+
       <div class="frequent-station-card">
         <div class="frequent-title">
           <span>📍 荔灣道(體育館對面)</span>
@@ -299,19 +364,10 @@
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="safu-92m-20020129"><span class="no-eta-text">載入中...</span></div></div>
       </div>
 
-      <div class="frequent-station-card">
-        <div class="frequent-title">
-          <span>📍 賢麗苑購物中心外（荔景站）</span>
-          <span style="font-size: 0.7rem; background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px;">往美孚</span>
-        </div>
-        <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001428"><span class="no-eta-text">載入中...</span></div></div>
-      </div>
-
     </div>
 
-    <!-- 2️⃣ 分頁二：往荔景方向 (聚合總覽，已加入美孚總站與荔灣道站) -->
+    <!-- 2️⃣ 分頁二：往荔景方向 -->
     <div id="view-to-laiking" class="view-section">
-      
       <div class="frequent-station-card lai-king">
         <div class="frequent-title">
           <span>🏢 美孚巴士總站</span>
@@ -338,7 +394,6 @@
         </div>
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="laiking-90m-20001418"><span class="no-eta-text">載入中...</span></div></div>
       </div>
-
     </div>
 
     <!-- 3️⃣ 分頁三：完整各站查詢 -->
