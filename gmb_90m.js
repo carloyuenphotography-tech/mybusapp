@@ -172,6 +172,7 @@ function updateDirectionOverviews() {
   // 🚝 往美孚方向
   updateFrequentRow('safu-90m-20001428', '20001428'); 
   updateFrequentRow('safu-90m-20001837', '20001837'); 
+  updateFrequentRow('safu-90p-20013695', '20013695'); // 🌟 瑪嘉烈醫院 90P
   updateFrequentRow('safu-90m-20020129', '20020129'); 
   updateFrequentRow('safu-90p-20020129', '20020129'); 
   updateFrequentRow('safu-92m-20020129', '20020129'); 
