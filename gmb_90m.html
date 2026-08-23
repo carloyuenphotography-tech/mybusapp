@@ -134,6 +134,19 @@
       font-style: italic;
     }
 
+    /* 💡 站點注意事項備註樣式 */
+    .station-remark {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed #e2e8f0;
+      font-size: 0.73rem;
+      color: #64748b;
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      line-height: 1.35;
+    }
+
     /* 🎨 美化版：沿途經過（無獨立班次站點）風格 */
     .via-container {
       background: #ffffff;
@@ -319,7 +332,7 @@
 <body>
 
   <header>
-    <h1>🚐 專線小巴實時班次</h1>
+    <h1>🚐 專線小巴實時班次 (90M, 90P, 92M)</h1>
     <div id="update-time" class="update-time">正在載入數據...</div>
   </header>
 
@@ -336,12 +349,14 @@
       <div class="via-container" style="background: #f0fdf4; border-color: #bbf7d0; text-align: center;">
         <div style="font-size: 0.85rem; font-weight: bold; color: #166534;">🚏 起點站：浩景臺/華員邨</div>
       </div>
+      
       <div class="frequent-station-card">
         <div class="frequent-title">
           <span>📍 【荔景站】對面巴士站</span>
           <span style="font-size: 0.7rem; background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px;">往美孚</span>
         </div>
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001428"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>🚇【荔景站】前往【荔灣花園】，在此站上車</div>
       </div>
 
       <div class="frequent-station-card">
@@ -350,15 +365,7 @@
           <span style="font-size: 0.7rem; background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px;">往美孚</span>
         </div>
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20001837"><span class="no-eta-text">載入中...</span></div></div>
-      </div>
-
-      <!-- 🌟 新增：90P 瑪嘉烈醫院站點卡片 -->
-      <div class="frequent-station-card" style="border-left-color: #7c3aed;">
-        <div class="frequent-title">
-          <span>📍 瑪嘉烈醫院 K座</span>
-          <span style="font-size: 0.7rem; background: #7c3aed; color: white; padding: 2px 6px; border-radius: 4px;">預計開出</span>
-        </div>
-        <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="safu-90p-20013695"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>路經此站的班次，約於<b> 1-2 分鐘後</b>到達【荔灣花園】。</div>
       </div>
 
       <!-- 美化版沿途經過 -->
@@ -375,6 +382,16 @@
         </div>
       </div>
 
+      <!-- 90P 瑪嘉烈醫院站點卡片 -->
+      <div class="frequent-station-card" style="border-left-color: #7c3aed;">
+        <div class="frequent-title">
+          <span>🚏 【起點站】瑪嘉烈醫院 K座</span>
+          <span style="font-size: 0.7rem; background: #7c3aed; color: white; padding: 2px 6px; border-radius: 4px;">預計開出</span>
+        </div>
+        <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="safu-90p-20013695"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>此為 90P 起點站，約於<b> 1-2 分鐘後</b>到達【荔灣花園】。</div>
+      </div>
+
       <div class="frequent-station-card">
         <div class="frequent-title">
           <span>📍 荔灣道(體育館對面)</span>
@@ -383,10 +400,11 @@
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20020129"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="safu-90p-20020129"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="safu-92m-20020129"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>此站報時，約於<b> 1-2 分鐘前</b>途經【荔灣花園】。</div>
       </div>
 
       <!-- 往美孚方向最底部的美孚總站 -->
-      <div class="frequent-station-card">
+      <div class="frequent-station-card" style="border-left-color: #7c3aed;">
         <div class="frequent-title">
           <span>🏢 美孚巴士總站 (終點站)</span>
           <span style="font-size: 0.7rem; background: #7c3aed; color: white; padding: 2px 6px; border-radius: 4px;">到達時間</span>
@@ -394,9 +412,9 @@
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="safu-90m-20013693"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="safu-90p-20014386"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="safu-92m-20013693"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>顯示為預計美孚總站（終點）班次開出時間。</div>
       </div>
 
-      <!-- 往荔景方向最底部：純文字顯示浩景臺 -->
       <div class="via-container" style="background: #f0fdf4; border-color: #bbf7d0; text-align: center;">
         <div style="font-size: 0.85rem; font-weight: bold; color: #166534;">🏁 終點站：美孚巴士總站</div>
       </div>
@@ -404,10 +422,10 @@
 
     <!-- 2️⃣ 分頁二：往荔景方向 -->
     <div id="view-to-laiking" class="view-section">
-      <!-- 往荔景方向最底部：純文字顯示浩景臺 -->
       <div class="via-container" style="background: #f0fdf4; border-color: #bbf7d0; text-align: center;">
         <div style="font-size: 0.85rem; font-weight: bold; color: #166534;">🚏 起點站：美孚巴士總站</div>
       </div>
+
       <!-- 往荔景方向最上方：美孚巴士總站 -->
       <div class="frequent-station-card lai-king">
         <div class="frequent-title">
@@ -417,6 +435,7 @@
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="laiking-90m-20013693"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="laiking-90p-20014386"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="laiking-92m-20013693"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>循環線落客後會即時上客上山，請留意現場車頭牌方向標示。</div>
       </div>
 
       <div class="frequent-station-card lai-king">
@@ -427,6 +446,7 @@
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="laiking-90m-20013694"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-90p">90P</span><div class="route-etas" id="laiking-90p-20013694"><span class="no-eta-text">載入中...</span></div></div>
         <div class="route-row"><span class="route-badge badge-92m">92M</span><div class="route-etas" id="laiking-92m-20013694"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>美孚總站開出後首個上山站，時間通常於美孚開出後 1 分鐘抵達。</div>
       </div>
 
       <!-- 美化版沿途經過 -->
@@ -451,9 +471,9 @@
           <span style="font-size: 0.7rem; background: #059669; color: white; padding: 2px 6px; border-radius: 4px;">往荔景</span>
         </div>
         <div class="route-row"><span class="route-badge badge-90m">90M</span><div class="route-etas" id="laiking-90m-20001418"><span class="no-eta-text">載入中...</span></div></div>
+        <div class="station-remark">💡 <b>備註：</b>上山主要落客/轉乘站（近荔景港鐵站 A 出口）。</div>
       </div>
 
-      <!-- 往荔景方向最底部：純文字顯示浩景臺 -->
       <div class="via-container" style="background: #f0fdf4; border-color: #bbf7d0; text-align: center;">
         <div style="font-size: 0.85rem; font-weight: bold; color: #166534;">🏁 終點站：浩景臺/華員邨</div>
       </div>
