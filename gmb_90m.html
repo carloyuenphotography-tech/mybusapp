@@ -147,7 +147,7 @@
       line-height: 1.35;
     }
 
-    /* 🎨 美化版：沿途經過（無獨立班次站點）風格 */
+    /* 🎨 美化版：沿途經過風格 */
     .via-container {
       background: #ffffff;
       border-radius: 12px;
@@ -210,41 +210,7 @@
       color: #0f172a;
     }
 
-    /* 🌟 上方即時看板 (完整查詢用) */
-    .dashboard-card { 
-      background: white; 
-      padding: 16px; 
-      border-radius: 14px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-      margin-bottom: 14px; 
-      border: 1px solid #e2e8f0;
-    }
-    .current-stop-banner { 
-      background: #f0fdf4; 
-      border-left: 4px solid #10b981; 
-      padding: 10px 12px; 
-      border-radius: 6px; 
-      font-size: 0.9rem; 
-      font-weight: bold; 
-      color: #065f46; 
-      margin-bottom: 12px; 
-    }
-    .eta-grid { 
-      display: grid; 
-      grid-template-columns: repeat(3, 1fr); 
-      gap: 8px; 
-    }
-    .eta-box { 
-      background: #f8fafc; 
-      border: 1px solid #e2e8f0; 
-      border-radius: 8px; 
-      padding: 10px 6px; 
-      text-align: center; 
-    }
-    .eta-label { font-size: 0.65rem; color: #64748b; margin-bottom: 3px; }
-    .eta-time { font-size: 1rem; font-weight: bold; color: #1e293b; }
-
-    /* 🚏 時間軸與車站列表 */
+    /* 🚏 全站圖標列表樣式 (仿圖像化設計) */
     .timeline-card { 
       background: white; 
       padding: 16px; 
@@ -254,71 +220,86 @@
     }
     .timeline {
       position: relative;
-      padding-left: 35px;
+      padding-left: 42px;
     }
     .timeline::before {
       content: '';
       position: absolute;
-      left: 15px;
-      top: 15px;
-      bottom: 15px;
+      left: 17px;
+      top: 20px;
+      bottom: 20px;
       width: 2px;
       background: #cbd5e1;
     }
 
-    .station-item {
+    .station-node {
       position: relative;
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 18px;
-      border: 1px solid #e2e8f0;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      min-height: 60px;
+      margin-bottom: 22px;
+      padding: 2px 0;
     }
-    .station-item.selected { 
-      background: #f0fdf4; 
-      border-color: #bbf7d0; 
+    .station-node:last-child {
+      margin-bottom: 0;
     }
 
-    .station-badge {
+    .node-badge {
       position: absolute;
-      left: -28px;
-      top: 20px;
-      width: 26px;
-      height: 26px;
+      left: -42px;
+      top: 2px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: #059669;
-      color: white;
+      background: #cbd5e1;
+      color: #475569;
       font-weight: bold;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid #f4f6f9;
+      border: 3px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      z-index: 2;
     }
-    .station-item.selected .station-badge { background: #10b981; }
-
-    .station-info {
-      flex: 1;
-      padding-left: 5px;
+    
+    .node-badge.has-bus {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      font-size: 1.1rem;
     }
-    .station-name { font-size: 0.9rem; font-weight: bold; color: #0f172a; }
-    .station-id { font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 4px; }
-    .bus-approaching-badge { font-size: 0.7rem; color: #e11d48; font-weight: bold; margin-top: 2px; }
-    .direction-arrow { font-size: 1rem; font-weight: bold; color: #059669; }
 
-    .route-section-header {
-      background: #0f172a;
-      color: #ffffff;
-      font-size: 0.8rem;
+    .node-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .node-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    .node-id {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-family: monospace;
+      margin-top: -2px;
+    }
+
+    .node-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .eta-pill {
+      background: #e0f2fe;
+      color: #0284c7;
+      font-size: 0.76rem;
       font-weight: bold;
-      padding: 6px 10px;
-      border-radius: 6px;
-      margin: 12px 0 8px -20px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+    .eta-pill.arriving {
+      background: #fee2e2;
+      color: #dc2626;
     }
 
     .link-container { max-width: 550px; margin: 20px auto; }
@@ -480,25 +461,18 @@
 
     </div>
 
-    <!-- 3️⃣ 分頁三：完整各站查詢 -->
+    <!-- 3️⃣ 分頁三：完整各站查詢 (圖表化全站顯示) -->
     <div id="view-full" class="view-section">
       <div class="route-sub-tabs">
-        <div class="route-sub-tab active" onclick="switchRoute('90M')">90M 路線</div>
-        <div class="route-sub-tab" onclick="switchRoute('90P')">90P 路線</div>
-        <div class="route-sub-tab" onclick="switchRoute('92M')">92M 路線</div>
-      </div>
-
-      <div class="dashboard-card">
-        <div class="current-stop-banner" id="banner-text">請選擇下方車站</div>
-        <div class="eta-grid">
-          <div class="eta-box"><div class="eta-label">下一班</div><div class="eta-time" id="time-0">--</div></div>
-          <div class="eta-box"><div class="eta-label">第二班</div><div class="eta-time" id="time-1">--</div></div>
-          <div class="eta-box"><div class="eta-label">第三班</div><div class="eta-time" id="time-2">--</div></div>
-        </div>
+        <div class="route-sub-tab active" onclick="switchRoute('90M')">90M 路線 (16站)</div>
+        <div class="route-sub-tab" onclick="switchRoute('90P')">90P 路線 (6站)</div>
+        <div class="route-sub-tab" onclick="switchRoute('92M')">92M 路線 (7站)</div>
       </div>
 
       <div class="timeline-card">
-        <div class="timeline" id="timeline-container"><div class="loading">載入中...</div></div>
+        <div class="timeline" id="timeline-container">
+          <div class="no-eta-text" style="text-align: center; padding: 20px;">正在讀取全線數據...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -507,6 +481,6 @@
     <a href="index.html" class="back-btn">⬅️ 返回主頁</a>
   </div>
 
-  <script src="gmb_90m.js"></script>
+  <script src="gmb_90m.js?v=2.0"></script>
 </body>
 </html>
