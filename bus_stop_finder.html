@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>九巴與城巴 Stop ID 快速查詢工具</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f4f6f9;
+      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    p {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin: 0;
+    }
+    /* 營運商切換分頁 */
+    .company-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #64748b;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .tab-btn.active.kmb {
+      background: #e11d48;
+      color: #ffffff;
+      border-color: #e11d48;
+    }
+    .tab-btn.active.ctb {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+    .search-box {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 1rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      outline: none;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus {
+      border-color: #0f172a;
+    }
+    .status-msg {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      padding: 20px 0;
+    }
+    .stop-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border-left: 5px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stop-card.kmb { border-left-color: #e11d48; }
+    .stop-card.ctb { border-left-color: #0284c7; }
+    
+    .stop-info {
+      flex: 1;
+    }
+    .stop-name {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    .stop-id {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-family: monospace;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .copy-btn {
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .copy-btn.kmb { background: #e11d48; }
+    .copy-btn.ctb { background: #0284c7; }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      text-decoration: none;
+      color: #0284c7;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🔍 巴士 Stop ID 快速查詢工具</h1>
+      <p>支援九巴與城巴全港站點及內部代碼查詢</p>
+    </header>
+
+    <!-- 切換九巴 / 城巴 -->
+    <div class="company-tabs">
+      <button id="tabKmb" class="tab-btn active kmb" onclick="switchCompany('kmb')">🔴 九巴 (KMB)</button>
+      <button id="tabCtb" class="tab-btn ctb" onclick="switchCompany('ctb')">🔵 城巴 (CTB)</button>
+    </div>
+
+    <input type="text" id="searchInput" class="search-box" placeholder="輸入關鍵字搜尋（例如：盈暉臺、美孚、總站）..." oninput="filterStops()">
+
+    <div id="resultContainer">
+      <div class="status-msg">正在載入數據...</div>
+    </div>
+
+    <a href="index.html" class="back-link">⬅️ 返回主頁</a>
+  </div>
+
+  <script>
+    let currentCompany = 'kmb';
+    let kmbStopsData = [];
+    let ctbStopsData = [];
+    let isKmbLoaded = false;
+    let isCtbLoaded = false;
+
+    // 切換九巴或城巴
+    function switchCompany(company) {
+      if (currentCompany === company) return;
+      currentCompany = company;
+
+      document.getElementById('tabKmb').className = company === 'kmb' ? 'tab-btn active kmb' : 'tab-btn kmb';
+      document.getElementById('tabCtb').className = company === 'ctb' ? 'tab-btn active ctb' : 'tab-btn ctb';
+
+      const searchInput = document.getElementById('searchInput');
+      searchInput.placeholder = company === 'kmb' ? "搜尋九巴站點..." : "搜尋城巴站點...";
+
+      if (company === 'kmb' && !isKmbLoaded) {
+        loadKmbStops();
+      } else if (company === 'ctb' && !isCtbLoaded) {
+        loadCtbStops();
+      } else {
+        filterStops();
+      }
+    }
+
+    // 載入九巴資料
+    async function loadKmbStops() {
+      document.getElementById('resultContainer').innerHTML = `<div class="status-msg">正在下載九巴站點數據庫...</div>`;
+      try {
+        const res = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/stop');
+        const json = await res.json();
+        kmbStopsData = json.data || [];
+        isKmbLoaded = true;
+        document.getElementById('resultContainer').innerHTML = `<div class="status-msg" style="color: #059669;">✅ 九巴數據庫載入完成（共 ${kmbStopsData.length} 個站點），請輸入關鍵字搜尋。</div>`;
+        filterStops();
+      } catch (err) {
+        document.getElementById('resultContainer').innerHTML = `<div class="status-msg" style="color: #e11d48;">❌ 九巴數據載入失敗</div>`;
+      }
+    }
+
+    // 載入城巴資料 (對應 https://rt.data.gov.hk/v1/transport/citybus-nwfb/stop/CTB)
+    async function loadCtbStops() {
+      document.getElementById('resultContainer').innerHTML = `<div class="status-msg">正在下載城巴站點數據庫...</div>`;
+      try {
+        const res = await fetch('https://rt.data.gov.hk/v1/transport/citybus-nwfb/stop/CTB');
+        const json = await res.json();
+        ctbStopsData = json.data || [];
+        isCtbLoaded = true;
+        document.getElementById('resultContainer').innerHTML = `<div class="status-msg" style="color: #059669;">✅ 城巴數據庫載入完成（共 ${ctbStopsData.length} 個站點），請輸入關鍵字搜尋。</div>`;
+        filterStops();
+      } catch (err) {
+        document.getElementById('resultContainer').innerHTML = `<div class="status-msg" style="color: #e11d48;">❌ 城巴數據載入失敗</div>`;
+      }
+    }
+
+    // 即時過濾站點
+    function filterStops() {
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      const container = document.getElementById('resultContainer');
+      const dataSet = currentCompany === 'kmb' ? kmbStopsData : ctbStopsData;
+      const isLoaded = currentCompany === 'kmb' ? isKmbLoaded : isCtbLoaded;
+
+      if (!isLoaded) return;
+
+      if (!keyword) {
+        container.innerHTML = `<div class="status-msg">請輸入關鍵字以顯示符合的站點</div>`;
+        return;
+      }
+
+      // 篩選中文名 (name_tc) 或英文名 (name_en)
+      const matched = dataSet.filter(item => {
+        const nameTc = item.name_tc || item.name || ''; // 兼容不同欄位命名
+        const nameEn = item.name_en || '';
+        return nameTc.toLowerCase().includes(keyword) || nameEn.toLowerCase().includes(keyword);
+      }).slice(0, 50);
+
+      if (matched.length === 0) {
+        container.innerHTML = `<div class="status-msg">找不到包含「${keyword}」的站點</div>`;
+        return;
+      }
+
+      let html = '';
+      matched.forEach(stop => {
+        const stopId = stop.stop || stop.stop_id;
+        const stopName = stop.name_tc || stop.name;
+        const cardClass = currentCompany;
+        const btnClass = currentCompany;
+
+        html += `
+          <div class="stop-card ${cardClass}">
+            <div class="stop-info">
+              <div class="stop-name">${stopName}</div>
+              <div class="stop-id">ID: ${stopId}</div>
+            </div>
+            <button class="copy-btn ${btnClass}" onclick="copyStopId('${stopId}', this)">複製 ID</button>
+          </div>
+        `;
+      });
+
+      if (matched.length === 50) {
+        html += `<div style="text-align: center; color: #94a3b8; font-size: 0.8rem; padding: 10px;">只顯示前 50 筆結果，請輸入更精確的關鍵字</div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // 複製 ID 到剪貼簿
+    function copyStopId(stopId, btnElement) {
+      navigator.clipboard.writeText(stopId).then(() => {
+        const originalText = btnElement.innerText;
+        btnElement.innerText = "已複製！";
+        const oldBg = btnElement.style.background;
+        btnElement.style.background = "#059669";
+        setTimeout(() => {
+          btnElement.innerText = originalText;
+          btnElement.style.background = oldBg;
+        }, 1500);
+      });
+    }
+
+    // 初始預設載入九巴
+    loadKmbStops();
+  </script>
+</body>
+</html>

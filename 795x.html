@@ -152,6 +152,7 @@
       border-left: 6px solid #0284c7;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
+    .card.kmb { border-left-color: #e11d48; }
     .card.mtr { border-left-color: #e11d48; }
     .card.gmb { border-left-color: #059669; }
 
@@ -176,6 +177,7 @@
     }
     .badge-mtr { background-color: #ffe4e6; color: #e11d48; }
     .badge-gmb { background-color: #d1fae5; color: #059669; }
+    .badge-kmb { background-color: #ffe4e6; color: #e11d48; }
 
     .destination {
       font-size: 0.95rem;
@@ -268,13 +270,16 @@
     </div>
     <div class="tab-row">
       <div class="tab-btn" onclick="switchLocation('tkopaza')">將軍澳廣場 ➔ 美孚</div>
-      <div class="tab-btn" onclick="switchLocation('mtr_combo')">🚇 港鐵 + 108A</div>
+      <div class="tab-btn" onclick="switchLocation('phase4')">🏢 美孚第四期對開</div>
+    </div>
+    <div class="tab-row">
+      <div class="tab-btn" style="flex:1;" onclick="switchLocation('mtr_combo')">🚇 港鐵 + 108A</div>
     </div>
   </div>
 
   <div id="bus-container" class="loading">載入數據中...</div>
 
-  <!-- 🗺️ Google Maps 路線導航捷徑 (修復中文地名與 hl=zh-TW) -->
+  <!-- 🗺️ Google Maps 路線導航捷徑 -->
   <div class="map-btn-wrapper">
     <div class="section-title">🗺️ Google Maps 路線導航捷徑</div>
     <div class="map-btn-container">
@@ -297,7 +302,7 @@
 
   <footer>
     <p class="notice-text">💡 請預留足夠時間，提早到達車站/巴士總站等候。</p>
-    <div class="version-tag">版本 v1.3.1 (修正導航與將軍澳廣場)</div>
+    <div class="version-tag">版本 v1.6.0 (秒數倒數與無跳動平滑更新)</div>
   </footer>
 
   <script src="795x.js"></script>
