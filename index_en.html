@@ -255,7 +255,7 @@
   <div id="bus-primary-container" class="loading">Loading data...</div>
 
   <!-- 🚏 Secondary Section -->
-  <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 Routes 171, 904, 905 (From Terminus)</div>
+  <div class="section-title" id="title-secondary" style="margin-top: 24px;">🚏 Routes 905, 904, 171 Real-Time ETA</div>
   <div id="bus-secondary-container" class="loading">Loading data...</div>
 
   <!-- 🔗 Quick Navigation -->
@@ -268,27 +268,20 @@
 
   <footer>
     <p class="notice-text">💡 Tap the tabs above to switch between "Nob Hill Terminus" and "Lai Chi Kok Bay Garden".</p>
-    <div class="version-tag">Version v1.9.12 (English Edition)</div>
+    <div class="version-tag">Version v2.0.0 (English Edition)</div>
   </footer>
 
   <script>
-    const JOINT_ROUTES = ["171", "904", "905"];
-    const BUS_171_KMB_STOP = "SS980";
-    const BUS_171_CTB_STOP = "002847";
     const GARDEN_STOP_ID = "37A4D07D7179CE76";
     const GARDEN_ROUTES = ["46X", "46", "45", "42", "30", "30X"];
     
     let currentLocation = 'terminus'; 
-    let termStopsData = {}; 
-    let isDataReady = false;
     let autoRefreshTimer = null;
 
     function formatTime(isoString) {
       if (!isoString) return '';
       const date = new Date(isoString);
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}`;
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
 
     function switchLocation(loc) {
@@ -307,7 +300,7 @@
         titlePrimary.innerText = "🚏 Route 6 (From Nob Hill Terminus)";
         titleSecondary.style.display = 'block';
         containerSecondary.style.display = 'block';
-        titleSecondary.innerText = "🚏 Joint Routes 171, 904, 905 (From Terminus)";
+        titleSecondary.innerText = "🚏 Routes 905, 904, 171 Real-Time ETA";
       } else {
         titlePrimary.innerText = "🚏 Lai Chi Kok Bay Garden Stop (46X, 46, 45, 42, 30, 30X)";
         titleSecondary.style.display = 'none'; 
@@ -320,50 +313,24 @@
       fetchAllData();
     }
 
-    async function initData() {
-      try {
-        for (const route of JOINT_ROUTES) {
-          try {
-            if (route !== '171') {
-              const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/inbound`).then(r => r.json());
-              const stops = ctbRes.data || [];
-              if (stops.length > 0) {
-                termStopsData[route] = { ctb_stop: stops[0].stop };
-              }
-            } else {
-              termStopsData['171'] = { ctb_stop: BUS_171_CTB_STOP };
-            }
-          } catch(e) {}
-        }
-        isDataReady = true;
-      } catch (e) {
-        console.error('Initialization failed:', e);
-      }
-
-      fetchAllData();
-      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-      autoRefreshTimer = setInterval(fetchAllData, 30000);
-    }
-
     function fetchAllData() {
       if (currentLocation === 'terminus') {
         fetchBus6TerminusETA();
-        if (isDataReady) fetchTerminusETA();
+        fetchTerminusETA();
       } else {
         fetchGardenETA();
       }
     }
 
+    // 1. Route 6 (Using precise KMB API)[cite: 7]
     async function fetchBus6TerminusETA() {
       try {
         const container = document.getElementById('bus-primary-container');
-        const kmbRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-eta/6/1`).then(r => r.json());
-        const list = kmbRes.data || [];
-        
-        const filteredKmb = list.filter(item => item.dir === 'I' && parseInt(item.seq) === 1);
+        const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/75EF762BDAB6F5C3/6/1`).then(r => r.json());
+        const list = res.data || [];
         const nowTime = new Date().getTime();
 
-        let filteredList = filteredKmb.filter(item => {
+        let filteredList = list.filter(item => {
           if (!item.eta) return false;
           const busTime = new Date(item.eta).getTime();
           const diffMinutes = (busTime - nowTime) / 60000;
@@ -373,23 +340,13 @@
 
         filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
 
-        const uniqueBusList = [];
-        filteredList.forEach(item => {
-          const time = new Date(item.eta).getTime();
-          const isDuplicate = uniqueBusList.some(existing => {
-            const existingTime = new Date(existing.eta).getTime();
-            return Math.abs(existingTime - time) < 60000;
-          });
-          if (!isDuplicate) uniqueBusList.push(item);
-        });
-
-        if (uniqueBusList.length === 0) {
+        if (filteredList.length === 0) {
           container.innerHTML = '<p class="loading" style="color:#64748b; margin:0;">No upcoming departures at terminus</p>';
           return;
         }
 
         container.innerHTML = '';
-        const firstBus = uniqueBusList[0];
+        const firstBus = filteredList[0];
         const now = new Date();
 
         const diff1 = Math.round((new Date(firstBus.eta) - now) / 60000);
@@ -398,8 +355,8 @@
         let isArriving1 = diff1 <= 0;
 
         let subsequentHTML = '';
-        for (let i = 1; i < uniqueBusList.length; i++) {
-          const nextBus = uniqueBusList[i];
+        for (let i = 1; i < filteredList.length && i < 3; i++) {
+          const nextBus = filteredList[i];
           const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
           const clockTimeNext = formatTime(nextBus.eta);
           const textNext = diffNext <= 0 ? `Departing (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
@@ -415,7 +372,7 @@
               <span class="route-number">6</span>
               <span class="company-badge badge-kmb">KMB</span>
             </div>
-            <div class="destination">To ${firstBus.dest_en || 'Star Ferry'}</div>
+            <div class="destination">To Star Ferry</div>
           </div>
           <div class="eta-container">
             <div class="eta-first ${isArriving1 ? 'eta-arriving' : ''}">${etaDisplay1}</div>
@@ -431,60 +388,44 @@
       }
     }
 
+    // 2. Routes 905, 904, 171 (Using precise KMB & Citybus APIs)[cite: 7]
     async function fetchTerminusETA() {
       try {
         const container = document.getElementById('bus-secondary-container');
+        
+        const routesConfig = [
+          { route: '905', kmbUrl: 'https://data.etabus.gov.hk/v1/transport/kmb/eta/2F8E1900654BF56C/905/1', ctbUrl: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/eta/ctb/002847/905' },
+          { route: '904', kmbUrl: null, ctbUrl: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/eta/ctb/002847/904' },
+          { route: '171', kmbUrl: 'https://data.etabus.gov.hk/v1/transport/kmb/eta/636F6AAF3B891E82/171/1', ctbUrl: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/eta/ctb/002847/171' }
+        ];
+
         let allEtaData = [];
 
-        const promises = JOINT_ROUTES.map(async route => {
+        const promises = routesConfig.map(async cfg => {
           let routeEtas = [];
 
-          try {
-            const kmbUrl = route === '171' 
-              ? `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${BUS_171_KMB_STOP}`
-              : `https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${route}/1`;
-              
-            const kmbRes = await fetch(kmbUrl).then(r => r.json());
-            const list = kmbRes.data || [];
-            const filteredKmb = route === '171' 
-              ? list.filter(item => item.route === '171')
-              : list.filter(item => item.dir === 'O' && parseInt(item.seq) === 1);
-            
-            filteredKmb.forEach(item => {
-              routeEtas.push({
-                company: 'KMB',
-                route: route,
-                dest_tc: item.dest_tc || '',
-                dest_en: item.dest_en || item.dest_tc || '',
-                eta: item.eta,
-                rmk_tc: item.rmk_tc || ''
-              });
-            });
-          } catch(err) {}
-
-          const ctbStopId = termStopsData[route] ? termStopsData[route].ctb_stop : null;
-          if (ctbStopId) {
+          if (cfg.kmbUrl) {
             try {
-              const ctbRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${ctbStopId}/${route}`).then(r => r.json());
-              const list = ctbRes.data || [];
-              list.forEach(bus => {
-                if (bus.eta && bus.dest_tc) {
-                  const isValidDir = (route === '171' && bus.dest_tc.includes('海怡半島')) ||
-                                     (route === '904' && bus.dest_tc.includes('堅尼地城')) ||
-                                     (route === '905' && (bus.dest_tc.includes('灣仔') || bus.dest_tc.includes('會展')));
-                  if (isValidDir) {
-                    routeEtas.push({
-                      company: 'CTB',
-                      route: route,
-                      dest_tc: bus.dest_tc,
-                      dest_en: bus.dest_en || bus.dest_tc,
-                      eta: bus.eta,
-                      rmk_tc: bus.rmk_tc || ''
-                    });
-                  }
+              const res = await fetch(cfg.kmbUrl).then(r => r.json());
+              const list = res.data || [];
+              list.forEach(item => {
+                if (item.eta) {
+                  routeEtas.push({ company: 'KMB', route: cfg.route, dest_tc: item.dest_tc || 'Cross-Harbour', eta: item.eta });
                 }
               });
-            } catch(err) {}
+            } catch(e) {}
+          }
+
+          if (cfg.ctbUrl) {
+            try {
+              const res = await fetch(cfg.ctbUrl).then(r => r.json());
+              const list = res.data || [];
+              list.forEach(item => {
+                if (item.eta) {
+                  routeEtas.push({ company: 'CTB', route: cfg.route, dest_tc: item.dest_tc || 'Cross-Harbour', eta: item.eta });
+                }
+              });
+            } catch(e) {}
           }
 
           return routeEtas;
@@ -494,13 +435,10 @@
         results.forEach(arr => { allEtaData = allEtaData.concat(arr); });
 
         const nowTime = new Date().getTime();
-
         let filteredList = allEtaData.filter(item => {
           if (!item.eta) return false;
-          const busTime = new Date(item.eta).getTime();
-          const diffMinutes = (busTime - nowTime) / 60000;
-          const isArrivingOnly = item.rmk_tc.includes('到達') || item.rmk_tc.includes('落客');
-          return diffMinutes >= -2 && !isArrivingOnly;
+          const diffMinutes = (new Date(item.eta).getTime() - nowTime) / 60000;
+          return diffMinutes >= -2;
         });
 
         filteredList.sort((a, b) => new Date(a.eta) - new Date(b.eta));
@@ -508,37 +446,24 @@
         const groupedByRoute = {};
         filteredList.forEach(item => {
           if (!groupedByRoute[item.route]) groupedByRoute[item.route] = [];
-          
           const time = new Date(item.eta).getTime();
-          const isDuplicate = groupedByRoute[item.route].some(existing => {
-            const existingTime = new Date(existing.eta).getTime();
-            return Math.abs(existingTime - time) < 60000;
-          });
-
+          const isDuplicate = groupedByRoute[item.route].some(existing => Math.abs(new Date(existing.eta).getTime() - time) < 30000);
           if (!isDuplicate && groupedByRoute[item.route].length < 3) {
             groupedByRoute[item.route].push(item);
           }
         });
 
-        const activeRoutes = Object.keys(groupedByRoute);
+        const activeRoutes = ['905', '904', '171'].filter(r => groupedByRoute[r] && groupedByRoute[r].length > 0);
 
         if (activeRoutes.length === 0) {
           container.innerHTML = '<p class="loading" style="margin:0;">No active departures or service ended</p>';
           return;
         }
 
-        activeRoutes.sort((a, b) => {
-          const etaA = new Date(groupedByRoute[a][0].eta);
-          const etaB = new Date(groupedByRoute[b][0].eta);
-          return etaA - etaB;
-        });
-
         container.innerHTML = '';
 
         activeRoutes.forEach(route => {
           const busList = groupedByRoute[route];
-          if (busList.length === 0) return;
-
           const firstBus = busList[0];
           const now = new Date();
 
@@ -547,9 +472,15 @@
           let etaDisplay1 = diff1 <= 0 ? `Departing (${clockTime1})` : `${diff1} min (${clockTime1})`;
           let isArriving1 = diff1 <= 0;
 
-          const badgeClass = firstBus.company === 'KMB' ? 'badge-kmb' : 'badge-ctb';
-          const companyName = firstBus.company === 'KMB' ? 'KMB' : 'CTB';
-          const cardBorderClass = firstBus.company === 'KMB' ? 'kmb' : 'ctb';
+          const isKmb = firstBus.company === 'KMB';
+          const cardBorderClass = isKmb ? 'kmb' : 'ctb';
+          const badgeClass = isKmb ? 'badge-kmb' : 'badge-ctb';
+          const companyName = isKmb ? 'KMB' : 'CTB';
+
+          let destText = firstBus.dest_tc;
+          if (route === '171') destText = 'South Horizons';
+          if (route === '904') destText = 'Kennedy Town';
+          if (route === '905') destText = 'Wan Chai (Convention Centre)';
 
           let subsequentHTML = '';
           for (let i = 1; i < busList.length; i++) {
@@ -557,22 +488,16 @@
             const diffNext = Math.round((new Date(nextBus.eta) - now) / 60000);
             const clockTimeNext = formatTime(nextBus.eta);
             const textNext = diffNext <= 0 ? `Departing (${clockTimeNext})` : `${diffNext} min (${clockTimeNext})`;
-            
             const nextCompany = nextBus.company === 'KMB' ? 'KMB' : 'CTB';
             subsequentHTML += `<div class="eta-subsequent">Next (${nextCompany}): ${textNext}</div>`;
           }
-
-          let destText = firstBus.dest_en || firstBus.dest_tc;
-          if (route === '171') destText = 'South Horizons';
-          if (route === '904') destText = 'Kennedy Town';
-          if (route === '905') destText = 'Wan Chai (Convention Centre)';
 
           const card = document.createElement('div');
           card.className = `card ${cardBorderClass}`;
           card.innerHTML = `
             <div class="route-info">
               <div class="route-header">
-                <span class="route-number">${firstBus.route}</span>
+                <span class="route-number">${route}</span>
                 <span class="company-badge ${badgeClass}">${companyName}</span>
               </div>
               <div class="destination">To ${destText}</div>
@@ -628,13 +553,8 @@
         const groupedByRoute = {};
         filteredList.forEach(item => {
           if (!groupedByRoute[item.route]) groupedByRoute[item.route] = [];
-          
           const time = new Date(item.eta).getTime();
-          const isDuplicate = groupedByRoute[item.route].some(existing => {
-            const existingTime = new Date(existing.eta).getTime();
-            return Math.abs(existingTime - time) < 60000;
-          });
-
+          const isDuplicate = groupedByRoute[item.route].some(existing => Math.abs(new Date(existing.eta).getTime() - time) < 60000);
           if (!isDuplicate && groupedByRoute[item.route].length < 3) {
             groupedByRoute[item.route].push(item);
           }
@@ -647,18 +567,12 @@
           return;
         }
 
-        activeRoutes.sort((a, b) => {
-          const etaA = new Date(groupedByRoute[a][0].eta);
-          const etaB = new Date(groupedByRoute[b][0].eta);
-          return etaA - etaB;
-        });
+        activeRoutes.sort((a, b) => new Date(groupedByRoute[a][0].eta) - new Date(groupedByRoute[b][0].eta));
 
         container.innerHTML = '';
 
         activeRoutes.forEach(route => {
           const busList = groupedByRoute[route];
-          if (busList.length === 0) return;
-
           const firstBus = busList[0];
           const now = new Date();
 
@@ -710,7 +624,9 @@
       document.getElementById('update-time').innerText = `Last updated: ${hours}:${minutes}:${seconds}`;
     }
 
-    initData();
+    fetchAllData();
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(fetchAllData, 30000);
   </script>
 </body>
 </html>
