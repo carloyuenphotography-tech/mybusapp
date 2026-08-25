@@ -435,7 +435,7 @@ function findAndHighlightNearest(userLat, userLng) {
     // 2. 頂部綠色 Banner 顯示最簡明資訊
     if (banner) {
       banner.style.display = 'block';
-      banner.innerText = `📍 最近車站：${stationName} (${distText}) <br> ➔ ${nearestEta}`;
+      banner.innerText = `📍 最近車站：${stationName} (${distText}) ➔ ${nearestEta}`;
     }
 
     nearestElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
