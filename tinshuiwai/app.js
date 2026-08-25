@@ -1,41 +1,39 @@
 /**
  * 265B & 265M 巴士到站時間及路線資訊 App JS
- * Version 3.3.0 - 修正九巴 API 全線站點混合與下一班次數量上限問題
+ * Version 4.0.0 - 徹底整合單一卡片 + 站名與 Stop ID 標示
  */
 
 let activeMainTab = 'kowloon'; // 'kowloon' or 'tsw'
 let timerId = null;
 
-// Preset fallback ETAs for immediate render & offline reliability
+// Stop ID Mapping
+const STOP_MAP = {
+  '8D56DB404D264D5A': '天富苑欣富閣 (TN503)',
+  '73FE2D32F218DA9C': '天恩邨 (TN226)',
+  'A86C1D824A405A0A': '天恆邨總站 (TN500)',
+  'B52DDECE0BCAD48C': '旺角(柏景灣)總站',
+  '912C0B1B3C079C1D': '葵涌(麗瑤邨)總站'
+};
+
+// Default preset fallback data with station name and Stop ID
 const MOCK_DATA = {
   kowloon: [
-    { route: '265B', dest: '旺角(柏景灣)', rmk: '原定班次', etaSeconds: 597, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265B', dest: '旺角(柏景灣)', rmk: '原定班次', etaSeconds: 1497, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', rmk: '原定班次', etaSeconds: 0, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', rmk: '即時班次', etaSeconds: 840, company: 'KMB', dirTag: 'kowloon' }
+    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '原定班次', etaSeconds: 537, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '原定班次', etaSeconds: 1737, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '即時班次', etaSeconds: 0, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '即時班次', etaSeconds: 837, company: 'KMB', dirTag: 'kowloon' }
   ],
   tsw: [
-    { route: '265B', dest: '天水圍 (天恆邨)', rmk: '原定班次', etaSeconds: 320, company: 'KMB', dirTag: 'tsw' },
-    { route: '265B', dest: '天水圍 (天恆邨)', rmk: '即時班次', etaSeconds: 980, company: 'KMB', dirTag: 'tsw' },
-    { route: '265M', dest: '天水圍 (天恆邨)', rmk: '原定班次', etaSeconds: 200, company: 'KMB', dirTag: 'tsw' },
-    { route: '265M', dest: '天水圍 (天恆邨)', rmk: '原定班次', etaSeconds: 894, company: 'KMB', dirTag: 'tsw' }
-  ],
-  tswStops: [
-    { route: '265M', dest: '天恆邨', rmk: '天恩邨 (TN226)', etaSeconds: 200, company: 'KMB', dirTag: 'tsw' },
-    { route: '265M', dest: '天恆邨', rmk: '天恩邨 (TN226)', etaSeconds: 894, company: 'KMB', dirTag: 'tsw' },
-    { route: '269M', dest: '祖堯', rmk: '天恩邨 (TN226)', etaSeconds: 298, company: 'KMB', dirTag: 'kowloon' },
-    { route: '264X', dest: '天耀', rmk: '欣富閣 (TN503)', etaSeconds: 335, company: 'KMB', dirTag: 'tsw' },
-    { route: '265B', dest: '旺角(柏景灣)', rmk: '欣富閣 (TN503)', etaSeconds: 449, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265B', dest: '旺角(柏景灣)', rmk: '欣富閣 (TN503)', etaSeconds: 1400, company: 'KMB', dirTag: 'kowloon' },
-    { route: '276A', dest: '上水(太平)', rmk: '原定班次', etaSeconds: 583, company: 'KMB', dirTag: 'tsw' },
-    { route: '276B', dest: '天富', rmk: '原定班次', etaSeconds: 1135, company: 'KMB', dirTag: 'tsw' }
+    { route: '265B', dest: '天水圍 (天恆邨)', stopName: '美孚站 / 美孚轉車站', stopId: 'E92B1C2A34D15E', rmk: '原定班次', etaSeconds: 320, company: 'KMB', dirTag: 'tsw' },
+    { route: '265B', dest: '天水圍 (天恆邨)', stopName: '美孚站 / 美孚轉車站', stopId: 'E92B1C2A34D15E', rmk: '即時班次', etaSeconds: 980, company: 'KMB', dirTag: 'tsw' },
+    { route: '265M', dest: '天水圍 (天恆邨)', stopName: '葵興站 / 葵興轉車站', stopId: 'F12C3D4A56E78F', rmk: '原定班次', etaSeconds: 200, company: 'KMB', dirTag: 'tsw' },
+    { route: '265M', dest: '天水圍 (天恆邨)', stopName: '葵興站 / 葵興轉車站', stopId: 'F12C3D4A56E78F', rmk: '原定班次', etaSeconds: 894, company: 'KMB', dirTag: 'tsw' }
   ]
 };
 
 let activeState = {
   kowloon: [],
-  tsw: [],
-  tswStops: []
+  tsw: []
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,15 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function initApp() {
   activeState.kowloon = MOCK_DATA.kowloon.map(i => ({ ...i }));
   activeState.tsw = MOCK_DATA.tsw.map(i => ({ ...i }));
-  activeState.tswStops = MOCK_DATA.tswStops.map(i => ({ ...i }));
 
   switchMainTab('kowloon');
 
-  // Start 1s ticker for live countdown animation
   if (timerId) clearInterval(timerId);
   timerId = setInterval(tickSecond, 1000);
 
-  // Fetch real KMB API
   fetchKmbData();
   setInterval(fetchKmbData, 30000);
 }
@@ -61,11 +56,9 @@ function initApp() {
 function switchMainTab(tab) {
   activeMainTab = tab;
 
-  // Toggle tab buttons
   document.getElementById('tab-btn-kowloon').classList.toggle('active', tab === 'kowloon');
   document.getElementById('tab-btn-tsw').classList.toggle('active', tab === 'tsw');
 
-  // Toggle tab content sections
   document.getElementById('tab-kowloon').classList.toggle('active', tab === 'kowloon');
   document.getElementById('tab-tsw').classList.toggle('active', tab === 'tsw');
 
@@ -76,7 +69,7 @@ function switchMainTab(tab) {
 function tickSecond() {
   let updateNeeded = false;
 
-  ['kowloon', 'tsw', 'tswStops'].forEach(key => {
+  ['kowloon', 'tsw'].forEach(key => {
     activeState[key].forEach(item => {
       if (item.etaSeconds > 0) {
         item.etaSeconds -= 1;
@@ -129,7 +122,7 @@ function formatSubEtaText(seconds) {
   return `${mins}分${secs}秒`;
 }
 
-// Group array of ETA entries by Route + Destination
+// Strictly group ETAs into a single object per Route + Destination
 function groupEtasByRoute(items) {
   const groups = {};
   items.forEach(item => {
@@ -140,6 +133,8 @@ function groupEtasByRoute(items) {
         dest: item.dest,
         company: item.company,
         dirTag: item.dirTag,
+        stopName: item.stopName || '',
+        stopId: item.stopId || '',
         etas: []
       };
     }
@@ -149,7 +144,7 @@ function groupEtasByRoute(items) {
     });
   });
 
-  // Sort ETAs inside each group by remaining time
+  // Sort inside each group and eliminate duplicates
   Object.values(groups).forEach(g => {
     g.etas.sort((a, b) => a.etaSeconds - b.etaSeconds);
   });
@@ -167,11 +162,10 @@ function buildConsolidatedCardsHtml(items) {
 
   groupedList.forEach(group => {
     const firstEta = group.etas[0];
-    // ⚠️ 關鍵修復：限制下一班最多只顯示 2 班（最多共 3 班），防止 API 把整條路線所有站點班次全擠在一起
-    const nextEtas = group.etas.slice(1, 3);
+    const nextEtas = group.etas.slice(1, 3); // Maximum 2 next ETAs
 
     const firstEtaObj = formatMainEta(firstEta ? firstEta.etaSeconds : -1);
-    const isM = group.route.includes('M') || group.route.includes('264');
+    const isM = group.route.includes('M');
     const isTswDir = group.dirTag === 'tsw' || group.dest.includes('天恆') || group.dest.includes('天水圍');
 
     let cardClass = 'card';
@@ -184,7 +178,6 @@ function buildConsolidatedCardsHtml(items) {
       badgeClass = 'company-badge badge-m';
     }
 
-    // Build sub ETA string for next buses
     let nextEtaHtml = '';
     if (nextEtas.length > 0) {
       const nextTexts = nextEtas.map(e => formatSubEtaText(e.etaSeconds)).join(' | ');
@@ -192,6 +185,7 @@ function buildConsolidatedCardsHtml(items) {
     }
 
     const rmkText = firstEta ? firstEta.rmk : '';
+    const stopDisplay = group.stopName ? `🚏 ${group.stopName}${group.stopId ? ` · Stop ID: ${group.stopId}` : ''}` : '';
 
     html += `
       <div class="${cardClass}">
@@ -201,6 +195,7 @@ function buildConsolidatedCardsHtml(items) {
             <span class="${badgeClass}">九巴</span>
           </div>
           <div class="destination">${group.dest}</div>
+          ${stopDisplay ? `<div class="stop-info">${stopDisplay}</div>` : ''}
           ${rmkText ? `<div class="remark-tag">${rmkText}</div>` : ''}
         </div>
         <div class="eta-container">
@@ -224,30 +219,29 @@ function renderAllCards() {
   if (containerTsw) {
     containerTsw.innerHTML = buildConsolidatedCardsHtml(activeState.tsw);
   }
-
-  const containerTswStops = document.getElementById('container-tsw-stops-eta');
-  if (containerTswStops) {
-    containerTswStops.innerHTML = buildConsolidatedCardsHtml(activeState.tswStops);
-  }
 }
 
 async function fetchKmbData() {
   try {
     const now = new Date();
 
-    // 1. Fetch 265B Outbound (天恆邨起點站 seq === 1)
+    // 1. Fetch 265B Outbound
     const res265bOut = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/route-eta/265B/1');
     let kowloonItems = [];
     if (res265bOut.ok) {
       const data = await res265bOut.json();
       if (data && data.data) {
-        // ⚠️ 關鍵修復：過濾 seq === 1（起點站天恆邨），只抓取該站的 3 班到站時間，避免拉到全線 22 個站的資料
-        kowloonItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 1 || e.seq === 3)).slice(0, 3).map(e => {
+        // Filter for specific stop (e.g. seq === 3: 天富苑欣富閣, or seq === 1: 天恆邨總站)
+        kowloonItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 3 || e.seq === 1)).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
+          const stopId = e.stop || '8D56DB404D264D5A';
+          const stopName = STOP_MAP[stopId] || '天富苑欣富閣 (TN503)';
           return {
             route: '265B',
             dest: e.dest_tc || '旺角(柏景灣)',
+            stopName: stopName,
+            stopId: stopId,
             rmk: e.rmk_tc || '即時班次',
             etaSeconds: diffSec,
             company: 'KMB',
@@ -257,17 +251,21 @@ async function fetchKmbData() {
       }
     }
 
-    // 2. Fetch 265M Outbound (天恆邨起點站 seq === 1)
+    // 2. Fetch 265M Outbound
     const res265mOut = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/route-eta/265M/1');
     if (res265mOut.ok) {
       const data = await res265mOut.json();
       if (data && data.data) {
-        const mItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 1 || e.seq === 3)).slice(0, 3).map(e => {
+        const mItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 3 || e.seq === 1)).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
+          const stopId = e.stop || '8D56DB404D264D5A';
+          const stopName = STOP_MAP[stopId] || '天富苑欣富閣 (TN503)';
           return {
             route: '265M',
             dest: e.dest_tc || '葵涌(麗瑤邨)',
+            stopName: stopName,
+            stopId: stopId,
             rmk: e.rmk_tc || '即時班次',
             etaSeconds: diffSec,
             company: 'KMB',
@@ -282,7 +280,7 @@ async function fetchKmbData() {
       activeState.kowloon = kowloonItems;
     }
 
-    // 3. Fetch 265B & 265M Inbound (往天水圍/天恆邨)
+    // 3. Fetch 265B & 265M Inbound (Return to TSW)
     const res265bIn = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/route-eta/265B/1');
     let tswItems = [];
     if (res265bIn.ok) {
@@ -291,9 +289,13 @@ async function fetchKmbData() {
         tswItems = data.data.filter(e => e.dir === 'I' && e.seq === 1).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
+          const stopId = e.stop || 'B52DDECE0BCAD48C';
+          const stopName = STOP_MAP[stopId] || '旺角(柏景灣)總站';
           return {
             route: '265B',
             dest: '天水圍 (天恆邨)',
+            stopName: stopName,
+            stopId: stopId,
             rmk: e.rmk_tc || '返天水圍方向',
             etaSeconds: diffSec,
             company: 'KMB',
@@ -310,9 +312,13 @@ async function fetchKmbData() {
         const mInItems = data.data.filter(e => e.dir === 'I' && e.seq === 1).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
+          const stopId = e.stop || '912C0B1B3C079C1D';
+          const stopName = STOP_MAP[stopId] || '葵涌(麗瑤邨)總站';
           return {
             route: '265M',
             dest: '天水圍 (天恆邨)',
+            stopName: stopName,
+            stopId: stopId,
             rmk: e.rmk_tc || '返天水圍方向',
             etaSeconds: diffSec,
             company: 'KMB',
