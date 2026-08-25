@@ -1,6 +1,6 @@
 /**
  * 265B & 265M 巴士到站時間及路線資訊 App JS
- * Version 3.0.0 - 雙分頁（往九龍/葵青 vs 往天水圍）
+ * Version 3.2.0 - 同一路線整合單一卡片 + 輕量精緻 WebApp 排版
  */
 
 let activeMainTab = 'kowloon'; // 'kowloon' or 'tsw'
@@ -9,10 +9,10 @@ let timerId = null;
 // Preset fallback ETAs for immediate render & offline reliability
 const MOCK_DATA = {
   kowloon: [
-    { route: '265B', dest: '旺角(柏景灣)', rmk: '原定班次', etaSeconds: 276, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265B', dest: '旺角(柏景灣)', rmk: '原定班次', etaSeconds: 880, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', rmk: '原定班次', etaSeconds: 449, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', rmk: '即時班次', etaSeconds: 1120, company: 'KMB', dirTag: 'kowloon' }
+    { route: '265B', dest: '旺角(柏景灣)', rmk: '原定班次', etaSeconds: 597, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265B', dest: '旺角(柏景灣)', rmk: '原定班次', etaSeconds: 1497, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', rmk: '原定班次', etaSeconds: 0, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', rmk: '即時班次', etaSeconds: 840, company: 'KMB', dirTag: 'kowloon' }
   ],
   tsw: [
     { route: '265B', dest: '天水圍 (天恆邨)', rmk: '原定班次', etaSeconds: 320, company: 'KMB', dirTag: 'tsw' },
@@ -22,12 +22,12 @@ const MOCK_DATA = {
   ],
   tswStops: [
     { route: '265M', dest: '天恆邨', rmk: '天恩邨 (TN226)', etaSeconds: 200, company: 'KMB', dirTag: 'tsw' },
-    { route: '269M', dest: '祖堯', rmk: '原定班次', etaSeconds: 298, company: 'KMB', dirTag: 'kowloon' },
-    { route: '264X', dest: '天耀', rmk: '天富苑 (TN503)', etaSeconds: 335, company: 'KMB', dirTag: 'tsw' },
-    { route: '265B', dest: '旺角(柏景灣)', rmk: '天富苑 (TN503)', etaSeconds: 449, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '天恆邨', rmk: '天恩邨 (TN226)', etaSeconds: 894, company: 'KMB', dirTag: 'tsw' },
+    { route: '269M', dest: '祖堯', rmk: '天恩邨 (TN226)', etaSeconds: 298, company: 'KMB', dirTag: 'kowloon' },
+    { route: '264X', dest: '天耀', rmk: '欣富閣 (TN503)', etaSeconds: 335, company: 'KMB', dirTag: 'tsw' },
+    { route: '265B', dest: '旺角(柏景灣)', rmk: '欣富閣 (TN503)', etaSeconds: 449, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265B', dest: '旺角(柏景灣)', rmk: '欣富閣 (TN503)', etaSeconds: 1400, company: 'KMB', dirTag: 'kowloon' },
     { route: '276A', dest: '上水(太平)', rmk: '原定班次', etaSeconds: 583, company: 'KMB', dirTag: 'tsw' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', rmk: '天富苑 (TN503)', etaSeconds: 756, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265B', dest: '天恆邨', rmk: '天恩邨 (TN226)', etaSeconds: 884, company: 'KMB', dirTag: 'tsw' },
     { route: '276B', dest: '天富', rmk: '原定班次', etaSeconds: 1135, company: 'KMB', dirTag: 'tsw' }
   ]
 };
@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
-  // Deep clone fallback data
   activeState.kowloon = MOCK_DATA.kowloon.map(i => ({ ...i }));
   activeState.tsw = MOCK_DATA.tsw.map(i => ({ ...i }));
   activeState.tswStops = MOCK_DATA.tswStops.map(i => ({ ...i }));
@@ -106,31 +105,74 @@ function updateHeaderTime() {
   }
 }
 
-function formatEta(seconds) {
+function formatMainEta(seconds) {
   if (seconds <= 0) {
-    return { first: '即將到達', second: '', class: 'eta-arriving' };
+    return { first: '即將到達', class: 'eta-arriving' };
   }
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
 
   if (mins === 0) {
-    return { first: `${secs} 秒`, second: '即將抵達', class: 'eta-arriving' };
+    return { first: `${secs} 秒`, class: 'eta-arriving' };
   } else {
-    return { first: `${mins} 分 ${secs} 秒`, second: '', class: '' };
+    return { first: `${mins} 分 ${secs} 秒`, class: '' };
   }
 }
 
-function buildCardsHtml(items) {
+function formatSubEtaText(seconds) {
+  if (seconds <= 0) return '即將抵達';
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+
+  if (mins === 0) return `${secs}秒`;
+  if (secs === 0) return `${mins}分`;
+  return `${mins}分${secs}秒`;
+}
+
+// Group array of ETA entries by Route + Destination
+function groupEtasByRoute(items) {
+  const groups = {};
+  items.forEach(item => {
+    const key = `${item.route}_${item.dest}`;
+    if (!groups[key]) {
+      groups[key] = {
+        route: item.route,
+        dest: item.dest,
+        company: item.company,
+        dirTag: item.dirTag,
+        etas: []
+      };
+    }
+    groups[key].etas.push({
+      etaSeconds: item.etaSeconds,
+      rmk: item.rmk
+    });
+  });
+
+  // Sort ETAs inside each group by remaining time
+  Object.values(groups).forEach(g => {
+    g.etas.sort((a, b) => a.etaSeconds - b.etaSeconds);
+  });
+
+  return Object.values(groups);
+}
+
+function buildConsolidatedCardsHtml(items) {
   if (!items || items.length === 0) {
-    return '<div style="text-align:center; color:#94a3b8; padding:20px 0;">暫無班次資料</div>';
+    return '<div style="text-align:center; color:#94a3b8; padding:16px 0; font-size:0.8rem;">暫無班次資料</div>';
   }
 
+  const groupedList = groupEtasByRoute(items);
   let html = '';
-  items.forEach(item => {
-    const etaObj = formatEta(item.etaSeconds);
-    const isM = item.route.includes('M') || item.route.includes('264');
-    const isTswDir = item.dirTag === 'tsw' || item.dest.includes('天恆') || item.dest.includes('天水圍');
-    
+
+  groupedList.forEach(group => {
+    const firstEta = group.etas[0];
+    const nextEtas = group.etas.slice(1);
+
+    const firstEtaObj = formatMainEta(firstEta ? firstEta.etaSeconds : -1);
+    const isM = group.route.includes('M') || group.route.includes('264');
+    const isTswDir = group.dirTag === 'tsw' || group.dest.includes('天恆') || group.dest.includes('天水圍');
+
     let cardClass = 'card';
     let badgeClass = 'company-badge';
     if (isTswDir) {
@@ -141,40 +183,50 @@ function buildCardsHtml(items) {
       badgeClass = 'company-badge badge-m';
     }
 
+    // Build sub ETA string for next buses
+    let nextEtaHtml = '';
+    if (nextEtas.length > 0) {
+      const nextTexts = nextEtas.map(e => formatSubEtaText(e.etaSeconds)).join(' | ');
+      nextEtaHtml = `<div class="eta-sub">下一班：${nextTexts}</div>`;
+    }
+
+    const rmkText = firstEta ? firstEta.rmk : '';
+
     html += `
       <div class="${cardClass}">
-        <div>
+        <div class="card-left">
           <div class="route-header">
-            <span class="route-number">${item.route}</span>
+            <span class="route-number">${group.route}</span>
             <span class="${badgeClass}">九巴</span>
           </div>
-          <div class="destination">${item.dest}</div>
-          ${item.rmk ? `<div class="remark-tag">${item.rmk}</div>` : ''}
+          <div class="destination">${group.dest}</div>
+          ${rmkText ? `<div class="remark-tag">${rmkText}</div>` : ''}
         </div>
         <div class="eta-container">
-          <div class="eta-first ${etaObj.class}">${etaObj.first}</div>
-          ${etaObj.second ? `<div class="eta-second">${etaObj.second}</div>` : ''}
+          <div class="eta-first ${firstEtaObj.class}">${firstEtaObj.first}</div>
+          ${nextEtaHtml}
         </div>
       </div>
     `;
   });
+
   return html;
 }
 
 function renderAllCards() {
   const containerKowloon = document.getElementById('container-kowloon-eta');
   if (containerKowloon) {
-    containerKowloon.innerHTML = buildCardsHtml(activeState.kowloon);
+    containerKowloon.innerHTML = buildConsolidatedCardsHtml(activeState.kowloon);
   }
 
   const containerTsw = document.getElementById('container-tsw-eta');
   if (containerTsw) {
-    containerTsw.innerHTML = buildCardsHtml(activeState.tsw);
+    containerTsw.innerHTML = buildConsolidatedCardsHtml(activeState.tsw);
   }
 
   const containerTswStops = document.getElementById('container-tsw-stops-eta');
   if (containerTswStops) {
-    containerTswStops.innerHTML = buildCardsHtml(activeState.tswStops);
+    containerTswStops.innerHTML = buildConsolidatedCardsHtml(activeState.tswStops);
   }
 }
 
@@ -188,7 +240,7 @@ async function fetchKmbData() {
     if (res265bOut.ok) {
       const data = await res265bOut.json();
       if (data && data.data) {
-        kowloonItems = data.data.filter(e => e.dir === 'O' || e.service_type === 1).slice(0, 2).map(e => {
+        kowloonItems = data.data.filter(e => e.dir === 'O' || e.service_type === 1).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
@@ -208,7 +260,7 @@ async function fetchKmbData() {
     if (res265mOut.ok) {
       const data = await res265mOut.json();
       if (data && data.data) {
-        const mItems = data.data.filter(e => e.dir === 'O' || e.service_type === 1).slice(0, 2).map(e => {
+        const mItems = data.data.filter(e => e.dir === 'O' || e.service_type === 1).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
@@ -234,7 +286,7 @@ async function fetchKmbData() {
     if (res265bIn.ok) {
       const data = await res265bIn.json();
       if (data && data.data) {
-        tswItems = data.data.filter(e => e.dir === 'I').slice(0, 2).map(e => {
+        tswItems = data.data.filter(e => e.dir === 'I').map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
@@ -253,7 +305,7 @@ async function fetchKmbData() {
     if (res265mIn.ok) {
       const data = await res265mIn.json();
       if (data && data.data) {
-        const mInItems = data.data.filter(e => e.dir === 'I').slice(0, 2).map(e => {
+        const mInItems = data.data.filter(e => e.dir === 'I').map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
