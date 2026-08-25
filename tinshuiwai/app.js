@@ -1,33 +1,24 @@
 /**
  * 265B & 265M 巴士到站時間及路線資訊 App JS
- * Version 4.0.0 - 徹底整合單一卡片 + 站名與 Stop ID 標示
+ * Version 4.5.0 - 兩分鐘內顯秒 + 隱藏StopID + 站點GPS定位 + WebApp小字微調
  */
 
 let activeMainTab = 'kowloon'; // 'kowloon' or 'tsw'
 let timerId = null;
 
-// Stop ID Mapping
-const STOP_MAP = {
-  '8D56DB404D264D5A': '天富苑欣富閣 (TN503)',
-  '73FE2D32F218DA9C': '天恩邨 (TN226)',
-  'A86C1D824A405A0A': '天恆邨總站 (TN500)',
-  'B52DDECE0BCAD48C': '旺角(柏景灣)總站',
-  '912C0B1B3C079C1D': '葵涌(麗瑤邨)總站'
-};
-
-// Default preset fallback data with station name and Stop ID
+// Default preset fallback data (Removed Stop ID display)
 const MOCK_DATA = {
   kowloon: [
-    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '原定班次', etaSeconds: 537, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '原定班次', etaSeconds: 1737, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '即時班次', etaSeconds: 0, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (TN503)', stopId: '8D56DB404D264D5A', rmk: '即時班次', etaSeconds: 837, company: 'KMB', dirTag: 'kowloon' }
+    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '原定班次', etaSeconds: 537, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '原定班次', etaSeconds: 1737, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '即時班次', etaSeconds: 0, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '即時班次', etaSeconds: 837, company: 'KMB', dirTag: 'kowloon' }
   ],
   tsw: [
-    { route: '265B', dest: '天水圍 (天恆邨)', stopName: '美孚站 / 美孚轉車站', stopId: 'E92B1C2A34D15E', rmk: '原定班次', etaSeconds: 320, company: 'KMB', dirTag: 'tsw' },
-    { route: '265B', dest: '天水圍 (天恆邨)', stopName: '美孚站 / 美孚轉車站', stopId: 'E92B1C2A34D15E', rmk: '即時班次', etaSeconds: 980, company: 'KMB', dirTag: 'tsw' },
-    { route: '265M', dest: '天水圍 (天恆邨)', stopName: '葵興站 / 葵興轉車站', stopId: 'F12C3D4A56E78F', rmk: '原定班次', etaSeconds: 200, company: 'KMB', dirTag: 'tsw' },
-    { route: '265M', dest: '天水圍 (天恆邨)', stopName: '葵興站 / 葵興轉車站', stopId: 'F12C3D4A56E78F', rmk: '原定班次', etaSeconds: 894, company: 'KMB', dirTag: 'tsw' }
+    { route: '265B', dest: '天水圍 (天恆邨)', stopName: '美孚站 / 美孚轉車站 (#9)', rmk: '原定班次', etaSeconds: 320, company: 'KMB', dirTag: 'tsw' },
+    { route: '265B', dest: '天水圍 (天恆邨)', stopName: '美孚站 / 美孚轉車站 (#9)', rmk: '即時班次', etaSeconds: 980, company: 'KMB', dirTag: 'tsw' },
+    { route: '265M', dest: '天水圍 (天恆邨)', stopName: '葵興站 / 葵興轉車站 (#3)', rmk: '原定班次', etaSeconds: 200, company: 'KMB', dirTag: 'tsw' },
+    { route: '265M', dest: '天水圍 (天恆邨)', stopName: '葵興站 / 葵興轉車站 (#3)', rmk: '原定班次', etaSeconds: 894, company: 'KMB', dirTag: 'tsw' }
   ]
 };
 
@@ -94,10 +85,13 @@ function updateHeaderTime() {
   const timeStr = now.toLocaleTimeString('zh-HK', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const elem = document.getElementById('update-time');
   if (elem) {
-    elem.innerText = `最後更新：${timeStr} (動態秒數實時倒數中)`;
+    elem.innerText = `最後更新：${timeStr} (倒數中)`;
   }
 }
 
+/**
+ * ⏱️ 兩分鐘以內 (<= 120 秒) 才顯示秒數，否則僅顯示「X 分」
+ */
 function formatMainEta(seconds) {
   if (seconds <= 0) {
     return { first: '即將到達', class: 'eta-arriving' };
@@ -105,10 +99,15 @@ function formatMainEta(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
 
-  if (mins === 0) {
-    return { first: `${secs} 秒`, class: 'eta-arriving' };
+  // 兩分鐘以內 (<= 120 秒) 才顯示秒數
+  if (seconds <= 120) {
+    if (mins === 0) {
+      return { first: `${secs} 秒`, class: 'eta-arriving' };
+    } else {
+      return { first: `${mins} 分 ${secs} 秒`, class: 'eta-arriving' };
+    }
   } else {
-    return { first: `${mins} 分 ${secs} 秒`, class: '' };
+    return { first: `${mins} 分`, class: '' };
   }
 }
 
@@ -117,12 +116,15 @@ function formatSubEtaText(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
 
-  if (mins === 0) return `${secs}秒`;
-  if (secs === 0) return `${mins}分`;
-  return `${mins}分${secs}秒`;
+  if (seconds <= 120) {
+    if (mins === 0) return `${secs}秒`;
+    return `${mins}分${secs}秒`;
+  } else {
+    return `${mins}分`;
+  }
 }
 
-// Strictly group ETAs into a single object per Route + Destination
+// Group ETAs into a single card per Route + Destination
 function groupEtasByRoute(items) {
   const groups = {};
   items.forEach(item => {
@@ -134,7 +136,6 @@ function groupEtasByRoute(items) {
         company: item.company,
         dirTag: item.dirTag,
         stopName: item.stopName || '',
-        stopId: item.stopId || '',
         etas: []
       };
     }
@@ -144,7 +145,6 @@ function groupEtasByRoute(items) {
     });
   });
 
-  // Sort inside each group and eliminate duplicates
   Object.values(groups).forEach(g => {
     g.etas.sort((a, b) => a.etaSeconds - b.etaSeconds);
   });
@@ -162,7 +162,7 @@ function buildConsolidatedCardsHtml(items) {
 
   groupedList.forEach(group => {
     const firstEta = group.etas[0];
-    const nextEtas = group.etas.slice(1, 3); // Maximum 2 next ETAs
+    const nextEtas = group.etas.slice(1, 3);
 
     const firstEtaObj = formatMainEta(firstEta ? firstEta.etaSeconds : -1);
     const isM = group.route.includes('M');
@@ -185,7 +185,8 @@ function buildConsolidatedCardsHtml(items) {
     }
 
     const rmkText = firstEta ? firstEta.rmk : '';
-    const stopDisplay = group.stopName ? `🚏 ${group.stopName}${group.stopId ? ` · Stop ID: ${group.stopId}` : ''}` : '';
+    // 保留車站名字與編號，已完全刪除 Stop ID
+    const stopDisplay = group.stopName ? `🚏 ${group.stopName}` : '';
 
     html += `
       <div class="${cardClass}">
@@ -231,17 +232,13 @@ async function fetchKmbData() {
     if (res265bOut.ok) {
       const data = await res265bOut.json();
       if (data && data.data) {
-        // Filter for specific stop (e.g. seq === 3: 天富苑欣富閣, or seq === 1: 天恆邨總站)
         kowloonItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 3 || e.seq === 1)).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
-          const stopId = e.stop || '8D56DB404D264D5A';
-          const stopName = STOP_MAP[stopId] || '天富苑欣富閣 (TN503)';
           return {
             route: '265B',
             dest: e.dest_tc || '旺角(柏景灣)',
-            stopName: stopName,
-            stopId: stopId,
+            stopName: '天富苑欣富閣 (#3 TN503)',
             rmk: e.rmk_tc || '即時班次',
             etaSeconds: diffSec,
             company: 'KMB',
@@ -259,13 +256,10 @@ async function fetchKmbData() {
         const mItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 3 || e.seq === 1)).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
-          const stopId = e.stop || '8D56DB404D264D5A';
-          const stopName = STOP_MAP[stopId] || '天富苑欣富閣 (TN503)';
           return {
             route: '265M',
             dest: e.dest_tc || '葵涌(麗瑤邨)',
-            stopName: stopName,
-            stopId: stopId,
+            stopName: '天富苑欣富閣 (#3 TN503)',
             rmk: e.rmk_tc || '即時班次',
             etaSeconds: diffSec,
             company: 'KMB',
@@ -289,13 +283,10 @@ async function fetchKmbData() {
         tswItems = data.data.filter(e => e.dir === 'I' && e.seq === 1).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
-          const stopId = e.stop || 'B52DDECE0BCAD48C';
-          const stopName = STOP_MAP[stopId] || '旺角(柏景灣)總站';
           return {
             route: '265B',
             dest: '天水圍 (天恆邨)',
-            stopName: stopName,
-            stopId: stopId,
+            stopName: '旺角(柏景灣)總站 (#1)',
             rmk: e.rmk_tc || '返天水圍方向',
             etaSeconds: diffSec,
             company: 'KMB',
@@ -312,13 +303,10 @@ async function fetchKmbData() {
         const mInItems = data.data.filter(e => e.dir === 'I' && e.seq === 1).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
-          const stopId = e.stop || '912C0B1B3C079C1D';
-          const stopName = STOP_MAP[stopId] || '葵涌(麗瑤邨)總站';
           return {
             route: '265M',
             dest: '天水圍 (天恆邨)',
-            stopName: stopName,
-            stopId: stopId,
+            stopName: '葵涌(麗瑤邨)總站 (#1)',
             rmk: e.rmk_tc || '返天水圍方向',
             etaSeconds: diffSec,
             company: 'KMB',
@@ -336,5 +324,97 @@ async function fetchKmbData() {
     renderAllCards();
   } catch (err) {
     console.log('API fetch fallback to current state timers:', err);
+  }
+}
+
+/**
+ * 📍 GPS 定位功能：尋找離用戶最近的車站並於底部的路線列表高亮顯示
+ */
+function getUserLocation() {
+  const banner = document.getElementById('geo-status');
+  if (banner) {
+    banner.style.display = 'block';
+    banner.innerText = '📡 定位中，請稍候...';
+  }
+
+  if (!navigator.geolocation) {
+    if (banner) banner.innerText = '❌ 您的裝置不支援 GPS 定位功能';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+      findAndHighlightNearest(userLat, userLng);
+    },
+    (error) => {
+      if (banner) banner.innerText = '⚠️ 無法取得定位權限或訊號微弱';
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+// Distance formula (Haversine in meters)
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth radius in meters
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return Math.round(R * c);
+}
+
+function findAndHighlightNearest(userLat, userLng) {
+  // Clear existing highlights
+  document.querySelectorAll('.station-item').forEach(el => {
+    el.classList.remove('nearest-station');
+    const badge = el.querySelector('.nearest-badge');
+    if (badge) badge.remove();
+  });
+
+  const stationElements = document.querySelectorAll('.station-item[data-lat]');
+  let minDistance = Infinity;
+  let nearestElem = null;
+
+  stationElements.forEach(elem => {
+    const lat = parseFloat(elem.getAttribute('data-lat'));
+    const lng = parseFloat(elem.getAttribute('data-lng'));
+    if (!isNaN(lat) && !isNaN(lng)) {
+      const dist = getDistanceMeters(userLat, userLng, lat, lng);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearestElem = elem;
+      }
+    }
+  });
+
+  const banner = document.getElementById('geo-status');
+  if (nearestElem) {
+    nearestElem.classList.add('nearest-station');
+    
+    const badge = document.createElement('span');
+    badge.className = 'nearest-badge';
+    badge.innerText = '📍 離您最近';
+    nearestElem.appendChild(badge);
+
+    const stationName = nearestElem.getAttribute('data-name') || '附近車站';
+    const distText = minDistance > 1000 ? `${(minDistance / 1000).toFixed(1)} 公里` : `${minDistance} 米`;
+
+    if (banner) {
+      banner.style.display = 'block';
+      banner.innerText = `📍 定位成功：最近車站為「${stationName}」（距離約 ${distText}）`;
+    }
+
+    // Smooth scroll to the nearest station
+    nearestElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else if (banner) {
+    banner.innerText = '⚠️ 找不到附近的車站資料';
   }
 }
