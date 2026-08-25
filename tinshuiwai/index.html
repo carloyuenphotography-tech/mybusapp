@@ -60,7 +60,7 @@
       display: flex;
       gap: 6px;
       justify-content: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       max-width: 480px;
       margin-left: auto;
       margin-right: auto;
@@ -88,6 +88,23 @@
       border-color: #bbf7d0;
     }
     .refresh-btn:active, .geo-btn:active { opacity: 0.8; }
+
+    /* 🟢 定位提示 Banner 寬度修正：限制 max-width: 480px 置中齊平 */
+    .geo-status-banner {
+      background: #f0fdf4;
+      border: 1px dashed #86efac;
+      color: #15803d;
+      font-size: 0.72rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      max-width: 480px;
+      margin: 0 auto 10px auto;
+      display: none;
+      text-align: center;
+      font-weight: 600;
+      box-sizing: border-box;
+      line-height: 1.35;
+    }
 
     /* Main Navigation Tabs */
     .main-tab-container {
@@ -373,19 +390,6 @@
       margin-left: auto;
     }
 
-    .geo-status-banner {
-      background: #f0fdf4;
-      border: 1px dashed #86efac;
-      color: #15803d;
-      font-size: 0.7rem;
-      padding: 6px 10px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      display: none;
-      text-align: center;
-      font-weight: 600;
-    }
-
     .map-shortcut-btn {
       width: 100%;
       padding: 8px 10px;
@@ -570,7 +574,7 @@
 
   <footer>
     <p class="notice-text">💡 數據來自九巴 (KMB) 開放數據 API，實時倒數及班次時間僅供參考。</p>
-    <div class="version-tag">版本 v4.6.0 (首班顯秒 + 簡化按鈕與標籤 + 站點實時班次標籤)</div>
+    <div class="version-tag">版本 v4.7.0 (頂部Banner寬度齊平 + 最近一班精簡顯示 + 車站列表高亮簡化)</div>
   </footer>
 
   <script src="app.js"></script>
