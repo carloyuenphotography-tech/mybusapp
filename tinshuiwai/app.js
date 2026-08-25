@@ -1,6 +1,6 @@
 /**
  * 265B & 265M 巴士到站時間及路線資訊 App JS
- * Version 3.2.0 - 同一路線整合單一卡片 + 輕量精緻 WebApp 排版
+ * Version 3.3.0 - 修正九巴 API 全線站點混合與下一班次數量上限問題
  */
 
 let activeMainTab = 'kowloon'; // 'kowloon' or 'tsw'
@@ -167,7 +167,8 @@ function buildConsolidatedCardsHtml(items) {
 
   groupedList.forEach(group => {
     const firstEta = group.etas[0];
-    const nextEtas = group.etas.slice(1);
+    // ⚠️ 關鍵修復：限制下一班最多只顯示 2 班（最多共 3 班），防止 API 把整條路線所有站點班次全擠在一起
+    const nextEtas = group.etas.slice(1, 3);
 
     const firstEtaObj = formatMainEta(firstEta ? firstEta.etaSeconds : -1);
     const isM = group.route.includes('M') || group.route.includes('264');
@@ -234,13 +235,14 @@ async function fetchKmbData() {
   try {
     const now = new Date();
 
-    // 1. Fetch 265B Outbound (天恆 -> 旺角)
+    // 1. Fetch 265B Outbound (天恆邨起點站 seq === 1)
     const res265bOut = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/route-eta/265B/1');
     let kowloonItems = [];
     if (res265bOut.ok) {
       const data = await res265bOut.json();
       if (data && data.data) {
-        kowloonItems = data.data.filter(e => e.dir === 'O' || e.service_type === 1).map(e => {
+        // ⚠️ 關鍵修復：過濾 seq === 1（起點站天恆邨），只抓取該站的 3 班到站時間，避免拉到全線 22 個站的資料
+        kowloonItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 1 || e.seq === 3)).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
@@ -255,12 +257,12 @@ async function fetchKmbData() {
       }
     }
 
-    // 2. Fetch 265M Outbound (天恆 -> 葵涌麗瑤)
+    // 2. Fetch 265M Outbound (天恆邨起點站 seq === 1)
     const res265mOut = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/route-eta/265M/1');
     if (res265mOut.ok) {
       const data = await res265mOut.json();
       if (data && data.data) {
-        const mItems = data.data.filter(e => e.dir === 'O' || e.service_type === 1).map(e => {
+        const mItems = data.data.filter(e => (e.dir === 'O' || e.service_type === 1) && (e.seq === 1 || e.seq === 3)).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
@@ -286,7 +288,7 @@ async function fetchKmbData() {
     if (res265bIn.ok) {
       const data = await res265bIn.json();
       if (data && data.data) {
-        tswItems = data.data.filter(e => e.dir === 'I').map(e => {
+        tswItems = data.data.filter(e => e.dir === 'I' && e.seq === 1).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
@@ -305,7 +307,7 @@ async function fetchKmbData() {
     if (res265mIn.ok) {
       const data = await res265mIn.json();
       if (data && data.data) {
-        const mInItems = data.data.filter(e => e.dir === 'I').map(e => {
+        const mInItems = data.data.filter(e => e.dir === 'I' && e.seq === 1).slice(0, 3).map(e => {
           const etaTime = e.eta ? new Date(e.eta) : null;
           const diffSec = etaTime ? Math.max(0, Math.floor((etaTime - now) / 1000)) : 300;
           return {
