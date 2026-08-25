@@ -333,10 +333,10 @@
       font-weight: bold;
     }
     .nearest-badge {
-      font-size: 0.6rem;
+      font-size: 0.62rem;
       background: #d97706;
       color: #ffffff;
-      padding: 1px 4px;
+      padding: 1px 6px;
       border-radius: 4px;
       margin-left: 6px;
       font-weight: bold;
@@ -426,8 +426,8 @@
   </header>
 
   <div class="link-container">
-    <button class="refresh-btn" onclick="manualRefresh()">🔄 重新整理到站時間</button>
-    <button class="geo-btn" onclick="getUserLocation()">📍 定位尋找最近車站</button>
+    <button class="refresh-btn" onclick="manualRefresh()">🔄 重新整理</button>
+    <button class="geo-btn" onclick="getUserLocation()">📍 最近車站</button>
   </div>
 
   <div id="geo-status" class="geo-status-banner"></div>
@@ -436,7 +436,7 @@
   <div class="main-tab-container">
     <div class="main-tab-btn active" id="tab-btn-kowloon" onclick="switchMainTab('kowloon')">
       🏙️ 往九龍 / 葵青方向
-      <span class="sub">265B 旺角 | 265M 葵涌祖堯</span>
+      <span class="sub">265B 旺角 | 265M 祖堯</span>
     </div>
     <div class="main-tab-btn" id="tab-btn-tsw" onclick="switchMainTab('tsw')">
       🏡 往天水圍方向
@@ -570,7 +570,7 @@
 
   <footer>
     <p class="notice-text">💡 數據來自九巴 (KMB) 開放數據 API，實時倒數及班次時間僅供參考。</p>
-    <div class="version-tag">版本 v4.5.0 (兩分鐘內顯秒 + 隱藏StopID + 站點GPS定位 + WebApp小字優化)</div>
+    <div class="version-tag">版本 v4.6.0 (首班顯秒 + 簡化按鈕與標籤 + 站點實時班次標籤)</div>
   </footer>
 
   <script src="app.js"></script>
