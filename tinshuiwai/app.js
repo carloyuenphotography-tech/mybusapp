@@ -1,12 +1,11 @@
 /**
  * 265B & 265M 巴士到站時間及路線資訊 App JS
- * Version 4.5.0 - 兩分鐘內顯秒 + 隱藏StopID + 站點GPS定位 + WebApp小字微調
+ * Version 4.6.0 - 首班顯示秒數，其餘班次不顯示秒數 + 簡化介面與站點班次顯示
  */
 
 let activeMainTab = 'kowloon'; // 'kowloon' or 'tsw'
 let timerId = null;
 
-// Default preset fallback data (Removed Stop ID display)
 const MOCK_DATA = {
   kowloon: [
     { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '原定班次', etaSeconds: 537, company: 'KMB', dirTag: 'kowloon' },
@@ -90,7 +89,7 @@ function updateHeaderTime() {
 }
 
 /**
- * ⏱️ 兩分鐘以內 (<= 120 秒) 才顯示秒數，否則僅顯示「X 分」
+ * ⏱️ 最近一個班次：當時間 <= 120 秒時顯示秒數，否則顯示整數分鐘
  */
 function formatMainEta(seconds) {
   if (seconds <= 0) {
@@ -99,7 +98,6 @@ function formatMainEta(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
 
-  // 兩分鐘以內 (<= 120 秒) 才顯示秒數
   if (seconds <= 120) {
     if (mins === 0) {
       return { first: `${secs} 秒`, class: 'eta-arriving' };
@@ -111,17 +109,14 @@ function formatMainEta(seconds) {
   }
 }
 
+/**
+ * ⏱️ 其餘班次（下一班/第三班）：只顯示分鐘，不顯示秒數
+ */
 function formatSubEtaText(seconds) {
   if (seconds <= 0) return '即將抵達';
   const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-
-  if (seconds <= 120) {
-    if (mins === 0) return `${secs}秒`;
-    return `${mins}分${secs}秒`;
-  } else {
-    return `${mins}分`;
-  }
+  if (mins === 0) return '1分內';
+  return `${mins}分`;
 }
 
 // Group ETAs into a single card per Route + Destination
@@ -185,7 +180,6 @@ function buildConsolidatedCardsHtml(items) {
     }
 
     const rmkText = firstEta ? firstEta.rmk : '';
-    // 保留車站名字與編號，已完全刪除 Stop ID
     const stopDisplay = group.stopName ? `🚏 ${group.stopName}` : '';
 
     html += `
@@ -328,7 +322,7 @@ async function fetchKmbData() {
 }
 
 /**
- * 📍 GPS 定位功能：尋找離用戶最近的車站並於底部的路線列表高亮顯示
+ * 📍 GPS 定位：尋找最接近車站，並將原本「離您最近」簡化顯示為該站的班次時間 (ETA)
  */
 function getUserLocation() {
   const banner = document.getElementById('geo-status');
@@ -355,9 +349,8 @@ function getUserLocation() {
   );
 }
 
-// Distance formula (Haversine in meters)
 function getDistanceMeters(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // Earth radius in meters
+  const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
   const φ2 = lat2 * Math.PI / 180;
   const Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -371,8 +364,25 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * c);
 }
 
+/**
+ * 取得當前分頁中該車站對應的班次時間摘要
+ */
+function getStationEtaSummary(stationName) {
+  const currentItems = activeState[activeMainTab] || [];
+  if (currentItems.length === 0) return '暫無數據';
+
+  // 整理目前的班次時間
+  const etaList = currentItems.map(item => {
+    const mins = Math.floor(item.etaSeconds / 60);
+    const timeText = item.etaSeconds <= 0 ? '即將到站' : `${mins}分`;
+    return `${item.route}: ${timeText}`;
+  });
+
+  return etaList.join(' | ');
+}
+
 function findAndHighlightNearest(userLat, userLng) {
-  // Clear existing highlights
+  // 清除先前的標籤與高亮
   document.querySelectorAll('.station-item').forEach(el => {
     el.classList.remove('nearest-station');
     const badge = el.querySelector('.nearest-badge');
@@ -399,20 +409,21 @@ function findAndHighlightNearest(userLat, userLng) {
   if (nearestElem) {
     nearestElem.classList.add('nearest-station');
     
+    const stationName = nearestElem.getAttribute('data-name') || '附近車站';
+    const distText = minDistance > 1000 ? `${(minDistance / 1000).toFixed(1)}公里` : `${minDistance}米`;
+    const etaSummary = getStationEtaSummary(stationName);
+
+    // 將原本的「離您最近」標籤簡化直接顯示為該車站的實時班次時間
     const badge = document.createElement('span');
     badge.className = 'nearest-badge';
-    badge.innerText = '📍 離您最近';
+    badge.innerText = `📍 ${etaSummary}`;
     nearestElem.appendChild(badge);
-
-    const stationName = nearestElem.getAttribute('data-name') || '附近車站';
-    const distText = minDistance > 1000 ? `${(minDistance / 1000).toFixed(1)} 公里` : `${minDistance} 米`;
 
     if (banner) {
       banner.style.display = 'block';
-      banner.innerText = `📍 定位成功：最近車站為「${stationName}」（距離約 ${distText}）`;
+      banner.innerText = `📍 最近車站：${stationName} (${distText}) ➔ 班次：${etaSummary}`;
     }
 
-    // Smooth scroll to the nearest station
     nearestElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
   } else if (banner) {
     banner.innerText = '⚠️ 找不到附近的車站資料';
