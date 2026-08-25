@@ -1,6 +1,6 @@
 /**
  * 265B & 265M 巴士到站時間及路線資訊 App JS
- * Version 4.6.0 - 首班顯示秒數，其餘班次不顯示秒數 + 簡化介面與站點班次顯示
+ * Version 4.7.0 - 定位結果精簡顯示最近 1 班 + Banner 寬度齊平 + 車站標籤簡化為「最近」
  */
 
 let activeMainTab = 'kowloon'; // 'kowloon' or 'tsw'
@@ -322,7 +322,7 @@ async function fetchKmbData() {
 }
 
 /**
- * 📍 GPS 定位：尋找最接近車站，並將原本「離您最近」簡化顯示為該站的班次時間 (ETA)
+ * 📍 定位功能：取得離用戶最近車站，頂部顯示各路線最近的 1 個班次
  */
 function getUserLocation() {
   const banner = document.getElementById('geo-status');
@@ -365,20 +365,22 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * 取得當前分頁中該車站對應的班次時間摘要
+ * 只取各路線最近的【第一個】班次 (1st ETA only)
  */
-function getStationEtaSummary(stationName) {
+function getSingleNearestEtaSummary() {
   const currentItems = activeState[activeMainTab] || [];
   if (currentItems.length === 0) return '暫無數據';
 
-  // 整理目前的班次時間
-  const etaList = currentItems.map(item => {
-    const mins = Math.floor(item.etaSeconds / 60);
-    const timeText = item.etaSeconds <= 0 ? '即將到站' : `${mins}分`;
-    return `${item.route}: ${timeText}`;
-  });
+  const grouped = groupEtasByRoute(currentItems);
+  const singleEtas = grouped.map(g => {
+    const first = g.etas[0];
+    if (!first) return null;
+    const mins = Math.floor(first.etaSeconds / 60);
+    const timeText = first.etaSeconds <= 0 ? '即將到站' : `${mins}分`;
+    return `${g.route}: ${timeText}`;
+  }).filter(Boolean);
 
-  return etaList.join(' | ');
+  return singleEtas.join(' | ');
 }
 
 function findAndHighlightNearest(userLat, userLng) {
@@ -411,17 +413,20 @@ function findAndHighlightNearest(userLat, userLng) {
     
     const stationName = nearestElem.getAttribute('data-name') || '附近車站';
     const distText = minDistance > 1000 ? `${(minDistance / 1000).toFixed(1)}公里` : `${minDistance}米`;
-    const etaSummary = getStationEtaSummary(stationName);
+    
+    // 只保留最接近的一個班次摘要（各路線近一班）
+    const nearestEta = getSingleNearestEtaSummary();
 
-    // 將原本的「離您最近」標籤簡化直接顯示為該車站的實時班次時間
+    // 1. 下方車站列表高亮僅顯示「📍 最近」
     const badge = document.createElement('span');
     badge.className = 'nearest-badge';
-    badge.innerText = `📍 ${etaSummary}`;
+    badge.innerText = '📍 最近';
     nearestElem.appendChild(badge);
 
+    // 2. 頂部綠色 Banner 只顯示最近的一個班次，且寬度限制為齊平的 480px
     if (banner) {
       banner.style.display = 'block';
-      banner.innerText = `📍 最近車站：${stationName} (${distText}) ➔ 班次：${etaSummary}`;
+      banner.innerText = `📍 最近車站：${stationName} (${distText}) ➔ ${nearestEta}`;
     }
 
     nearestElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
