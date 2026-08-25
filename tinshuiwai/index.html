@@ -14,6 +14,7 @@
 
   <style>
     * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
       background-color: #f4f6f9;
       color: #1e293b;
@@ -23,10 +24,25 @@
       -webkit-user-select: none;
       user-select: none;
     }
+
+    /* 📱 WebApp Standalone 專屬微調：字體與間距微幅縮小，適應全螢幕 */
+    @media all and (display-mode: standalone), (display-mode: fullscreen) {
+      body {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      h1 { font-size: 1.05rem !important; }
+      .card { padding: 10px 12px !important; margin-bottom: 8px !important; }
+      .route-number { font-size: 1.3rem !important; }
+      .eta-first { font-size: 1.05rem !important; }
+      .main-tab-btn { padding: 7px 4px !important; font-size: 0.78rem !important; }
+      .station-item { padding: 3px 0 !important; font-size: 0.7rem !important; }
+    }
+
     header {
       text-align: center;
       padding-top: 4px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     h1 {
       font-size: 1.15rem;
@@ -35,37 +51,43 @@
       letter-spacing: 0.3px;
     }
     .update-time {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: #64748b;
       margin-top: 2px;
     }
 
     .link-container {
       display: flex;
+      gap: 6px;
       justify-content: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       max-width: 480px;
       margin-left: auto;
       margin-right: auto;
     }
-    .refresh-btn {
-      width: 100%;
-      padding: 9px 12px;
+    .refresh-btn, .geo-btn {
+      flex: 1;
+      padding: 8px 10px;
       background: #ffffff;
       color: #0f172a;
       border: 1px solid #cbd5e1;
       border-radius: 10px;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 700;
       text-align: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       cursor: pointer;
     }
-    .refresh-btn:active { background: #f1f5f9; }
+    .geo-btn {
+      background: #f0fdf4;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+    .refresh-btn:active, .geo-btn:active { opacity: 0.8; }
 
     /* Main Navigation Tabs */
     .main-tab-container {
@@ -78,12 +100,12 @@
     }
     .main-tab-btn {
       flex: 1;
-      padding: 9px 6px;
+      padding: 8px 6px;
       background: #ffffff;
       color: #475569;
       border: 1.5px solid #cbd5e1;
       border-radius: 12px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
       text-align: center;
@@ -95,7 +117,7 @@
       gap: 2px;
     }
     .main-tab-btn span.sub {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: normal;
       color: #64748b;
     }
@@ -119,10 +141,10 @@
     }
 
     .section-title {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       color: #475569;
-      margin: 12px 0 8px 2px;
+      margin: 10px 0 6px 2px;
       display: flex;
       align-items: center;
       gap: 5px;
@@ -134,13 +156,13 @@
     .card {
       background: #ffffff;
       border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-left: 5px solid #e11d48;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
     .card.m-route { border-left-color: #0284c7; }
     .card.tsw-route { border-left-color: #059669; }
@@ -158,15 +180,15 @@
       gap: 6px;
     }
     .route-number {
-      font-size: 1.45rem;
+      font-size: 1.35rem;
       font-weight: 800;
       color: #0f172a;
       line-height: 1;
     }
     .company-badge {
-      font-size: 0.62rem;
+      font-size: 0.6rem;
       font-weight: bold;
-      padding: 2px 5px;
+      padding: 1px 4px;
       border-radius: 4px;
       background-color: #ffe4e6;
       color: #e11d48;
@@ -181,22 +203,21 @@
     }
 
     .destination {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: #1e293b;
-      margin-top: 3px;
+      margin-top: 2px;
       font-weight: 700;
     }
     .stop-info {
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       color: #64748b;
-      margin-top: 3px;
-      line-height: 1.25;
-      word-break: break-all;
+      margin-top: 2px;
+      line-height: 1.2;
     }
     .remark-tag {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: #94a3b8;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     .eta-container {
@@ -207,19 +228,19 @@
       min-width: 35%;
     }
     .eta-first {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: #059669;
       line-height: 1.1;
       text-align: right;
     }
     .eta-sub {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: #64748b;
-      margin-top: 4px;
+      margin-top: 3px;
       font-weight: 500;
       text-align: right;
-      line-height: 1.3;
+      line-height: 1.25;
     }
     .eta-arriving {
       color: #e11d48;
@@ -241,7 +262,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     .timetable-header {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: bold;
       color: #0f172a;
       margin-bottom: 6px;
@@ -252,30 +273,27 @@
     .timetable-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
     }
     .timetable-table th {
       background-color: #f8fafc;
       color: #475569;
       text-align: left;
-      padding: 5px 6px;
+      padding: 4px 6px;
       border-bottom: 1.5px solid #e2e8f0;
       font-weight: 600;
     }
     .timetable-table td {
-      padding: 5px 6px;
+      padding: 4px 6px;
       border-bottom: 1px solid #f1f5f9;
       color: #334155;
-    }
-    .timetable-table tr:last-child td {
-      border-bottom: none;
     }
     .time-slot {
       font-weight: 600;
       color: #0284c7;
     }
 
-    /* Station Info Panel Styling */
+    /* Station Info Panel Styling & Geolocation Highlight */
     .station-info-panel {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -285,7 +303,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     .panel-title {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: bold;
       color: #0f172a;
       margin-bottom: 6px;
@@ -294,9 +312,9 @@
       gap: 5px;
     }
     .station-list {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       color: #475569;
-      line-height: 1.45;
+      line-height: 1.4;
       margin: 0;
       padding-left: 0;
       list-style: none;
@@ -304,11 +322,24 @@
     .station-item {
       display: flex;
       align-items: center;
-      padding: 4px 0;
+      padding: 4px 6px;
       border-bottom: 1px dashed #f1f5f9;
+      border-radius: 6px;
+      transition: background 0.3s;
     }
-    .station-item:last-child {
-      border-bottom: none;
+    .station-item.nearest-station {
+      background-color: #fef3c7 !important;
+      border: 1px solid #fde047 !important;
+      font-weight: bold;
+    }
+    .nearest-badge {
+      font-size: 0.6rem;
+      background: #d97706;
+      color: #ffffff;
+      padding: 1px 4px;
+      border-radius: 4px;
+      margin-left: 6px;
+      font-weight: bold;
     }
     .station-num {
       width: 18px;
@@ -316,12 +347,12 @@
       border-radius: 50%;
       background: #f1f5f9;
       color: #64748b;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 7px;
+      margin-right: 6px;
       flex-shrink: 0;
     }
     .station-num.highlight {
@@ -337,19 +368,32 @@
       color: #1e293b;
     }
     .station-desc {
-      font-size: 0.65rem;
+      font-size: 0.63rem;
       color: #94a3b8;
       margin-left: auto;
     }
 
+    .geo-status-banner {
+      background: #f0fdf4;
+      border: 1px dashed #86efac;
+      color: #15803d;
+      font-size: 0.7rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: none;
+      text-align: center;
+      font-weight: 600;
+    }
+
     .map-shortcut-btn {
       width: 100%;
-      padding: 9px 12px;
+      padding: 8px 10px;
       background: #ecfdf5;
       color: #047857;
       border: 1px solid #a7f3d0;
       border-radius: 10px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: bold;
       text-align: center;
       text-decoration: none;
@@ -360,19 +404,18 @@
       gap: 6px;
       margin-top: 8px;
     }
-    .map-shortcut-btn:active { background: #d1fae5; }
 
     footer {
       max-width: 480px;
-      margin: 14px auto 8px auto;
-      padding: 8px 12px;
+      margin: 12px auto 6px auto;
+      padding: 8px 10px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
       text-align: center;
     }
-    .notice-text { font-size: 0.7rem; color: #64748b; line-height: 1.3; margin: 0; }
-    .version-tag { font-size: 0.62rem; color: #cbd5e1; margin-top: 3px; }
+    .notice-text { font-size: 0.68rem; color: #64748b; line-height: 1.3; margin: 0; }
+    .version-tag { font-size: 0.6rem; color: #cbd5e1; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -384,7 +427,10 @@
 
   <div class="link-container">
     <button class="refresh-btn" onclick="manualRefresh()">🔄 重新整理到站時間</button>
+    <button class="geo-btn" onclick="getUserLocation()">📍 定位尋找最近車站</button>
   </div>
+
+  <div id="geo-status" class="geo-status-banner"></div>
 
   <!-- 分類分頁頁籤 -->
   <div class="main-tab-container">
@@ -443,84 +489,40 @@
           </tr>
         </tbody>
       </table>
-
-      <div style="margin-top: 6px; border-top: 1px dashed #e2e8f0; padding-top: 5px;">
-        <table class="timetable-table">
-          <thead>
-            <tr>
-              <th>時段 (星期六、日及公眾假期)</th>
-              <th>班次 (分鐘)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="time-slot">05:10 - 08:00</td>
-              <td>15 - 20 分鐘</td>
-            </tr>
-            <tr>
-              <td class="time-slot">08:00 - 18:00</td>
-              <td>10 - 15 分鐘</td>
-            </tr>
-            <tr>
-              <td class="time-slot">18:00 - 23:55</td>
-              <td>15 - 25 分鐘</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
 
     <!-- 265B 沿途各站 -->
     <div class="station-info-panel">
       <div class="panel-title">🚏 265B 沿途各站 (天恆 ➔ 旺角柏景灣)</div>
-      <ul class="station-list">
-        <li class="station-item"><span class="station-num highlight">1</span><span class="station-name">天恆邨總站</span><span class="station-desc">起點站</span></li>
-        <li class="station-item"><span class="station-num">2</span><span class="station-name">天逸邨逸潭樓</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num highlight">3</span><span class="station-name">天富苑欣富閣 (TN503)</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num">4</span><span class="station-name">天頌苑頌恩閣</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num">5</span><span class="station-name">天頌苑頌流閣</span><span class="station-desc">天榮路</span></li>
-        <li class="station-item"><span class="station-num">6</span><span class="station-name">嘉湖山莊麗湖居</span><span class="station-desc">天華路</span></li>
-        <li class="station-item"><span class="station-num">7</span><span class="station-name">嘉湖山莊美湖居</span><span class="station-desc">天葵路</span></li>
-        <li class="station-item"><span class="station-num">8</span><span class="station-name">嘉湖銀座</span><span class="station-desc">天城路</span></li>
-        <li class="station-item"><span class="station-num">9</span><span class="station-name">天慈商場 / 天慈邨</span><span class="station-desc">天城路</span></li>
-        <li class="station-item"><span class="station-num highlight">10</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
-        <li class="station-item"><span class="station-num highlight">11</span><span class="station-name">美孚新邨 / 美孚轉車站</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num">12</span><span class="station-name">荔枝角站</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num">13</span><span class="station-name">昌華街</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num">14</span><span class="station-name">長沙灣遊樂場</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num">15</span><span class="station-name">九龍工業學校</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num">16</span><span class="station-name">西九龍中心 / 欽州街</span><span class="station-desc">深水埗</span></li>
-        <li class="station-item"><span class="station-num">17</span><span class="station-name">荔枝角道 (能仁專上學院)</span><span class="station-desc">荔枝角道</span></li>
-        <li class="station-item"><span class="station-num">18</span><span class="station-name">上海街 (雷生春)</span><span class="station-desc">太子</span></li>
-        <li class="station-item"><span class="station-num highlight">19</span><span class="station-name">旺角街市 / 亞皆老街</span><span class="station-desc">旺角</span></li>
-        <li class="station-item"><span class="station-num">20</span><span class="station-name">銘基書院</span><span class="station-desc">櫻桃街</span></li>
-        <li class="station-item"><span class="station-num">21</span><span class="station-name">海富苑 / 海富商場</span><span class="station-desc">海泓道</span></li>
-        <li class="station-item"><span class="station-num highlight">22</span><span class="station-name">旺角(柏景灣)總站</span><span class="station-desc">終點站</span></li>
+      <ul class="station-list" id="list-265b-out">
+        <li class="station-item" data-lat="22.4687" data-lng="113.9991" data-name="天恆邨總站"><span class="station-num highlight">1</span><span class="station-name">天恆邨總站</span><span class="station-desc">起點站</span></li>
+        <li class="station-item" data-lat="22.4665" data-lng="113.9986" data-name="天逸邨逸潭樓"><span class="station-num">2</span><span class="station-name">天逸邨逸潭樓</span><span class="station-desc">天瑞路</span></li>
+        <li class="station-item" data-lat="22.4641" data-lng="113.9984" data-name="天富苑欣富閣"><span class="station-num highlight">3</span><span class="station-name">天富苑欣富閣 (#3 TN503)</span><span class="station-desc">天瑞路</span></li>
+        <li class="station-item" data-lat="22.4598" data-lng="113.9978" data-name="天頌苑頌恩閣"><span class="station-num">4</span><span class="station-name">天頌苑頌恩閣</span><span class="station-desc">天瑞路</span></li>
+        <li class="station-item" data-lat="22.4585" data-lng="114.0012" data-name="天頌苑頌流閣"><span class="station-num">5</span><span class="station-name">天頌苑頌流閣</span><span class="station-desc">天榮路</span></li>
+        <li class="station-item" data-lat="22.4590" data-lng="114.0041" data-name="嘉湖山莊麗湖居"><span class="station-num">6</span><span class="station-name">嘉湖山莊麗湖居</span><span class="station-desc">天華路</span></li>
+        <li class="station-item" data-lat="22.4578" data-lng="114.0062" data-name="嘉湖山莊美湖居"><span class="station-num">7</span><span class="station-name">嘉湖山莊美湖居</span><span class="station-desc">天葵路</span></li>
+        <li class="station-item" data-lat="22.4552" data-lng="114.0048" data-name="嘉湖銀座"><span class="station-num">8</span><span class="station-name">嘉湖銀座</span><span class="station-desc">天城路</span></li>
+        <li class="station-item" data-lat="22.4501" data-lng="114.0055" data-name="天慈邨"><span class="station-num">9</span><span class="station-name">天慈商場 / 天慈邨</span><span class="station-desc">天城路</span></li>
+        <li class="station-item" data-lat="22.4172" data-lng="114.0621" data-name="大欖隧道轉車站"><span class="station-num highlight">10</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
+        <li class="station-item" data-lat="22.3375" data-lng="114.1381" data-name="美孚站"><span class="station-num highlight">11</span><span class="station-name">美孚新邨 / 美孚轉車站</span><span class="station-desc">長沙灣道</span></li>
+        <li class="station-item" data-lat="22.3351" data-lng="114.1455" data-name="荔枝角站"><span class="station-num">12</span><span class="station-name">荔枝角站</span><span class="station-desc">長沙灣道</span></li>
+        <li class="station-item" data-lat="22.3328" data-lng="114.1558" data-name="西九龍中心"><span class="station-num">16</span><span class="station-name">西九龍中心 / 欽州街</span><span class="station-desc">深水埗</span></li>
+        <li class="station-item" data-lat="22.3235" data-lng="114.1670" data-name="旺角街市"><span class="station-num highlight">19</span><span class="station-name">旺角街市 / 亞皆老街</span><span class="station-desc">旺角</span></li>
+        <li class="station-item" data-lat="22.3188" data-lng="114.1620" data-name="旺角(柏景灣)總站"><span class="station-num highlight">22</span><span class="station-name">旺角(柏景灣)總站</span><span class="station-desc">終點站</span></li>
       </ul>
     </div>
 
     <!-- 265M 沿途各站 -->
     <div class="station-info-panel">
       <div class="panel-title">🚏 265M 沿途各站 (天恆 ➔ 葵涌麗瑤邨)</div>
-      <ul class="station-list">
-        <li class="station-item"><span class="station-num highlight">1</span><span class="station-name">天恆邨總站</span><span class="station-desc">起點站</span></li>
-        <li class="station-item"><span class="station-num">2</span><span class="station-name">天逸邨逸潭樓</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num highlight">3</span><span class="station-name">天富苑欣富閣 (TN503)</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num">4</span><span class="station-name">天頌苑頌恩閣</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num">5</span><span class="station-name">天頌苑頌流閣</span><span class="station-desc">天榮路</span></li>
-        <li class="station-item"><span class="station-num">6</span><span class="station-name">嘉湖山莊麗湖居</span><span class="station-desc">天華路</span></li>
-        <li class="station-item"><span class="station-num">7</span><span class="station-name">嘉湖山莊美湖居</span><span class="station-desc">天葵路</span></li>
-        <li class="station-item"><span class="station-num">8</span><span class="station-name">嘉湖銀座</span><span class="station-desc">天城路</span></li>
-        <li class="station-item"><span class="station-num">9</span><span class="station-name">天慈商場 / 天慈邨</span><span class="station-desc">天城路</span></li>
-        <li class="station-item"><span class="station-num highlight">10</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
-        <li class="station-item"><span class="station-num">11</span><span class="station-name">荃灣眾安街</span><span class="station-desc">青山公路</span></li>
-        <li class="station-item"><span class="station-num">12</span><span class="station-name">大窩口轉車站-大窩口站</span><span class="station-desc">青山公路</span></li>
-        <li class="station-item"><span class="station-num">13</span><span class="station-name">昌榮路迴旋處</span><span class="station-desc">葵涌道</span></li>
-        <li class="station-item"><span class="station-num">14</span><span class="station-name">葵俊苑</span><span class="station-desc">葵涌道</span></li>
-        <li class="station-item"><span class="station-num highlight">15</span><span class="station-name">新葵興花園 / 葵興站</span><span class="station-desc">葵涌道</span></li>
-        <li class="station-item"><span class="station-num">16</span><span class="station-name">葵芳邨</span><span class="station-desc">葵涌道</span></li>
-        <li class="station-item"><span class="station-num">17</span><span class="station-name">下葵涌分科診所</span><span class="station-desc">麗祖路</span></li>
-        <li class="station-item"><span class="station-num highlight">18</span><span class="station-name">葵涌(麗瑤邨)總站 / 祖堯鄰近</span><span class="station-desc">終點站</span></li>
+      <ul class="station-list" id="list-265m-out">
+        <li class="station-item" data-lat="22.4687" data-lng="113.9991" data-name="天恆邨總站"><span class="station-num highlight">1</span><span class="station-name">天恆邨總站</span><span class="station-desc">起點站</span></li>
+        <li class="station-item" data-lat="22.4641" data-lng="113.9984" data-name="天富苑欣富閣"><span class="station-num highlight">3</span><span class="station-name">天富苑欣富閣 (#3 TN503)</span><span class="station-desc">天瑞路</span></li>
+        <li class="station-item" data-lat="22.4172" data-lng="114.0621" data-name="大欖隧道轉車站"><span class="station-num highlight">10</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
+        <li class="station-item" data-lat="22.3725" data-lng="114.1165" data-name="荃灣眾安街"><span class="station-num">11</span><span class="station-name">荃灣眾安街</span><span class="station-desc">青山公路</span></li>
+        <li class="station-item" data-lat="22.3631" data-lng="114.1311" data-name="葵興站"><span class="station-num highlight">15</span><span class="station-name">新葵興花園 / 葵興站</span><span class="station-desc">葵涌道</span></li>
+        <li class="station-item" data-lat="22.3512" data-lng="114.1298" data-name="葵涌(麗瑤邨)總站"><span class="station-num highlight">18</span><span class="station-name">葵涌(麗瑤邨)總站</span><span class="station-desc">終點站</span></li>
       </ul>
     </div>
 
@@ -539,43 +541,24 @@
     <!-- 返回天水圍方向沿途各站 -->
     <div class="station-info-panel">
       <div class="panel-title">🚏 265B 沿途各站 (旺角柏景灣 ➔ 天恆邨)</div>
-      <ul class="station-list">
-        <li class="station-item"><span class="station-num highlight-green">1</span><span class="station-name">旺角(柏景灣)總站</span><span class="station-desc">起點站</span></li>
-        <li class="station-item"><span class="station-num">2</span><span class="station-name">奧陸廣場 / 櫻桃街</span><span class="station-desc">大角咀</span></li>
-        <li class="station-item"><span class="station-num">3</span><span class="station-name">快富街</span><span class="station-desc">彌敦道 / 旺角</span></li>
-        <li class="station-item"><span class="station-num">4</span><span class="station-name">太子站</span><span class="station-desc">彌敦道</span></li>
-        <li class="station-item"><span class="station-num">5</span><span class="station-name">楓樹街</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num">6</span><span class="station-name">北河街</span><span class="station-desc">深水埗</span></li>
-        <li class="station-item"><span class="station-num">7</span><span class="station-name">怡閣苑</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num">8</span><span class="station-name">長沙灣光昌街</span><span class="station-desc">長沙灣道</span></li>
-        <li class="station-item"><span class="station-num highlight-green">9</span><span class="station-name">美孚站 / 美孚轉車站</span><span class="station-desc">美孚</span></li>
-        <li class="station-item"><span class="station-num highlight-green">10</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
-        <li class="station-item"><span class="station-num">11</span><span class="station-name">聚星樓 / 天水圍站</span><span class="station-desc">天福路</span></li>
-        <li class="station-item"><span class="station-num">12</span><span class="station-name">天慈邨</span><span class="station-desc">天城路</span></li>
-        <li class="station-item"><span class="station-num">13</span><span class="station-name">嘉湖海逸酒店</span><span class="station-desc">天恩路</span></li>
-        <li class="station-item"><span class="station-num">14</span><span class="station-name">天水圍市中心</span><span class="station-desc">天恩路</span></li>
-        <li class="station-item"><span class="station-num highlight-green">15</span><span class="station-name">天恩邨 (TN226)</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num">16</span><span class="station-name">天澤邨</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num highlight-green">17</span><span class="station-name">天恆邨總站</span><span class="station-desc">終點站</span></li>
+      <ul class="station-list" id="list-265b-in">
+        <li class="station-item" data-lat="22.3188" data-lng="114.1620" data-name="旺角(柏景灣)總站"><span class="station-num highlight-green">1</span><span class="station-name">旺角(柏景灣)總站</span><span class="station-desc">起點站</span></li>
+        <li class="station-item" data-lat="22.3218" data-lng="114.1685" data-name="太子站"><span class="station-num">4</span><span class="station-name">太子站</span><span class="station-desc">彌敦道</span></li>
+        <li class="station-item" data-lat="22.3375" data-lng="114.1381" data-name="美孚站"><span class="station-num highlight-green">9</span><span class="station-name">美孚站 / 美孚轉車站</span><span class="station-desc">美孚</span></li>
+        <li class="station-item" data-lat="22.4172" data-lng="114.0621" data-name="大欖隧道轉車站"><span class="station-num highlight-green">10</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
+        <li class="station-item" data-lat="22.4611" data-lng="113.9982" data-name="天恩邨"><span class="station-num highlight-green">15</span><span class="station-name">天恩邨 (#15 TN226)</span><span class="station-desc">天瑞路</span></li>
+        <li class="station-item" data-lat="22.4687" data-lng="113.9991" data-name="天恆邨總站"><span class="station-num highlight-green">17</span><span class="station-name">天恆邨總站</span><span class="station-desc">終點站</span></li>
       </ul>
     </div>
 
     <div class="station-info-panel">
       <div class="panel-title">🚏 265M 沿途各站 (葵涌麗瑤邨 ➔ 天恆邨)</div>
-      <ul class="station-list">
-        <li class="station-item"><span class="station-num highlight-green">1</span><span class="station-name">葵涌(麗瑤邨)總站</span><span class="station-desc">起點站</span></li>
-        <li class="station-item"><span class="station-num">2</span><span class="station-name">葵芳邨</span><span class="station-desc">葵涌道</span></li>
-        <li class="station-item"><span class="station-num highlight-green">3</span><span class="station-name">葵興站 / 葵興轉車站</span><span class="station-desc">葵涌道</span></li>
-        <li class="station-item"><span class="station-num">4</span><span class="station-name">葵涌昌榮路</span><span class="station-desc">青山公路</span></li>
-        <li class="station-item"><span class="station-num">5</span><span class="station-name">大窩口站</span><span class="station-desc">青山公路</span></li>
-        <li class="station-item"><span class="station-num">6</span><span class="station-name">荃灣眾安街</span><span class="station-desc">青山公路</span></li>
-        <li class="station-item"><span class="station-num highlight-green">7</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
-        <li class="station-item"><span class="station-num">8</span><span class="station-name">聚星樓 / 天水圍站</span><span class="station-desc">天福路</span></li>
-        <li class="station-item"><span class="station-num">9</span><span class="station-name">天慈邨</span><span class="station-desc">天城路</span></li>
-        <li class="station-item"><span class="station-num">10</span><span class="station-name">嘉湖海逸酒店</span><span class="station-desc">天恩路</span></li>
-        <li class="station-item"><span class="station-num highlight-green">11</span><span class="station-name">天恩邨 (TN226)</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num">12</span><span class="station-name">天澤邨</span><span class="station-desc">天瑞路</span></li>
-        <li class="station-item"><span class="station-num highlight-green">13</span><span class="station-name">天恆邨總站</span><span class="station-desc">終點站</span></li>
+      <ul class="station-list" id="list-265m-in">
+        <li class="station-item" data-lat="22.3512" data-lng="114.1298" data-name="葵涌(麗瑤邨)總站"><span class="station-num highlight-green">1</span><span class="station-name">葵涌(麗瑤邨)總站</span><span class="station-desc">起點站</span></li>
+        <li class="station-item" data-lat="22.3631" data-lng="114.1311" data-name="葵興站"><span class="station-num highlight-green">3</span><span class="station-name">葵興站 / 葵興轉車站</span><span class="station-desc">葵涌道</span></li>
+        <li class="station-item" data-lat="22.4172" data-lng="114.0621" data-name="大欖隧道轉車站"><span class="station-num highlight-green">7</span><span class="station-name">大欖隧道轉車站</span><span class="station-desc">八鄉 Interchange</span></li>
+        <li class="station-item" data-lat="22.4611" data-lng="113.9982" data-name="天恩邨"><span class="station-num highlight-green">11</span><span class="station-name">天恩邨 (#11 TN226)</span><span class="station-desc">天瑞路</span></li>
+        <li class="station-item" data-lat="22.4687" data-lng="113.9991" data-name="天恆邨總站"><span class="station-num highlight-green">13</span><span class="station-name">天恆邨總站</span><span class="station-desc">終點站</span></li>
       </ul>
     </div>
 
@@ -587,7 +570,7 @@
 
   <footer>
     <p class="notice-text">💡 數據來自九巴 (KMB) 開放數據 API，實時倒數及班次時間僅供參考。</p>
-    <div class="version-tag">版本 v4.0.0 (強效路線整合卡片 + 站名與 Stop ID 標示)</div>
+    <div class="version-tag">版本 v4.5.0 (兩分鐘內顯秒 + 隱藏StopID + 站點GPS定位 + WebApp小字優化)</div>
   </footer>
 
   <script src="app.js"></script>
