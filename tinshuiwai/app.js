@@ -1,6 +1,6 @@
 /**
  * 265B & 265M 巴士到站時間及路線資訊 App JS
- * Version 4.7.0 - 定位結果精簡顯示最近 1 班 + Banner 寬度齊平 + 車站標籤簡化為「最近」
+ * Version 4.8.0 - 定位及車站標籤只顯示各路線「最近 1 個班次」，徹底消除重複與複雜資訊
  */
 
 let activeMainTab = 'kowloon'; // 'kowloon' or 'tsw'
@@ -8,10 +8,10 @@ let timerId = null;
 
 const MOCK_DATA = {
   kowloon: [
-    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '原定班次', etaSeconds: 537, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '原定班次', etaSeconds: 1737, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '即時班次', etaSeconds: 0, company: 'KMB', dirTag: 'kowloon' },
-    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '即時班次', etaSeconds: 837, company: 'KMB', dirTag: 'kowloon' }
+    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '原定班次', etaSeconds: 0, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265B', dest: '旺角(柏景灣)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '原定班次', etaSeconds: 1380, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '即時班次', etaSeconds: 180, company: 'KMB', dirTag: 'kowloon' },
+    { route: '265M', dest: '葵涌(麗瑤邨)', stopName: '天富苑欣富閣 (#3 TN503)', rmk: '即時班次', etaSeconds: 1980, company: 'KMB', dirTag: 'kowloon' }
   ],
   tsw: [
     { route: '265B', dest: '天水圍 (天恆邨)', stopName: '美孚站 / 美孚轉車站 (#9)', rmk: '原定班次', etaSeconds: 320, company: 'KMB', dirTag: 'tsw' },
@@ -322,7 +322,7 @@ async function fetchKmbData() {
 }
 
 /**
- * 📍 定位功能：取得離用戶最近車站，頂部顯示各路線最近的 1 個班次
+ * 📍 定位功能：取得離用戶最近車站
  */
 function getUserLocation() {
   const banner = document.getElementById('geo-status');
@@ -365,22 +365,31 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * 只取各路線最近的【第一個】班次 (1st ETA only)
+ * 🎯 關鍵修正：只取每個路線【最近的一個班次】(1st ETA only)，徹底解決畫面出現 6 個班次排成兩行的複雜狀況
  */
 function getSingleNearestEtaSummary() {
   const currentItems = activeState[activeMainTab] || [];
   if (currentItems.length === 0) return '暫無數據';
 
+  // 按路線分組 (Group by route) 並按時間由近至遠排序
   const grouped = groupEtasByRoute(currentItems);
+
+  // 每一條路線只保留 index 0（最近的那一班）
   const singleEtas = grouped.map(g => {
     const first = g.etas[0];
     if (!first) return null;
-    const mins = Math.floor(first.etaSeconds / 60);
-    const timeText = first.etaSeconds <= 0 ? '即將到站' : `${mins}分`;
-    return `${g.route}: ${timeText}`;
+    const timeText = first.etaSeconds <= 0 ? '即將到站' : `${Math.floor(first.etaSeconds / 60)}分`;
+    return {
+      route: g.route,
+      sec: first.etaSeconds,
+      text: `${g.route}: ${timeText}`
+    };
   }).filter(Boolean);
 
-  return singleEtas.join(' | ');
+  // 依時間排序（最快到的路線排前面）
+  singleEtas.sort((a, b) => a.sec - b.sec);
+
+  return singleEtas.map(e => e.text).join(' | ');
 }
 
 function findAndHighlightNearest(userLat, userLng) {
@@ -414,16 +423,16 @@ function findAndHighlightNearest(userLat, userLng) {
     const stationName = nearestElem.getAttribute('data-name') || '附近車站';
     const distText = minDistance > 1000 ? `${(minDistance / 1000).toFixed(1)}公里` : `${minDistance}米`;
     
-    // 只保留最接近的一個班次摘要（各路線近一班）
+    // 只保留每個路線最接近的 1 個班次（如：265B: 即將到站 | 265M: 3分）
     const nearestEta = getSingleNearestEtaSummary();
 
-    // 1. 下方車站列表高亮僅顯示「📍 最近」
+    // 1. 車站列表中高亮站點旁的 Badge 標籤：簡潔顯示每個路線最近一班
     const badge = document.createElement('span');
     badge.className = 'nearest-badge';
-    badge.innerText = '📍 最近';
+    badge.innerText = `📍 ${nearestEta}`;
     nearestElem.appendChild(badge);
 
-    // 2. 頂部綠色 Banner 只顯示最近的一個班次，且寬度限制為齊平的 480px
+    // 2. 頂部綠色 Banner 顯示最簡明資訊
     if (banner) {
       banner.style.display = 'block';
       banner.innerText = `📍 最近車站：${stationName} (${distText}) ➔ ${nearestEta}`;
